@@ -2,9 +2,12 @@
 #include <freertos/task.h>
 #include <nvs_flash.h>
 #include <driver/gpio.h>
-#include "Pins.hpp"
-#include "Util/stdafx.h"
 #include <esp_log.h>
+#include "Pins.hpp"
+#include "Devices/Display.h"
+#include "Devices/Backlight.h"
+#include "Util/stdafx.h"
+#include "Util/Services.h"
 
 
 void init(){
@@ -20,6 +23,19 @@ void init(){
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
+
+	auto settings = new Settings();
+	Services.set(Service::Settings, settings);
+
+	auto display = new Display();
+	display->drawTest();
+
+	auto bl = new Backlight(LEDC_CHANNEL_0);
+	Services.set(Service::Backlight, bl);
+
+	bl->fadeIn();
+
+	printf("Init done.\n");
 }
 
 extern "C" void app_main(void){
