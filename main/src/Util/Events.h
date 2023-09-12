@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include <mutex>
 
-enum class Facility { Input, Encoders };
+enum class Facility { Input, Encoders, WiFiSTA };
 
 struct Event {
 	Facility facility;
