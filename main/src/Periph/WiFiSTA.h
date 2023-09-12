@@ -2,6 +2,7 @@
 #define PERSE_ROVER_WIFIAP_H
 
 #include <esp_event.h>
+#include <esp_netif_types.h>
 #include <semaphore>
 
 class WiFiSTA {
@@ -33,6 +34,8 @@ private:
 
 	static constexpr int ConnectRetries = 2;
 	int connectTries;
+
+	static esp_netif_t* createNetif();
 
 };
 
