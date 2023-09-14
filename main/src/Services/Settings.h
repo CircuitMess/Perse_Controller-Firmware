@@ -3,10 +3,17 @@
 
 #include <nvs.h>
 
+//TODO - change default joystick calibration values if the HW has predictable offsets
+struct JoystickCalibration {
+	uint32_t maxX = 4095, minX = 0;
+	uint32_t maxY = 4095, minY = 0;
+	uint32_t centerX = 4095 / 2, centerY = 4095 / 2;
+};
 struct SettingsStruct {
 	bool sound = true;
 	uint8_t screenBrightness = 80;
 	uint8_t sleepTime = 3;
+	JoystickCalibration joystickCalibration;
 };
 
 class Settings {
