@@ -58,6 +58,14 @@ void WiFiSTA::event(int32_t id, void* data){
 		const auto mac = mac2str(event->bssid);
 		ESP_LOGI(TAG, "connected bssid %s, chan=%d", mac.c_str(), event->channel);
 
+		const esp_netif_ip_info_t ip = {
+				.ip =		{ .addr = esp_ip4addr_aton("11.0.0.2") },
+				.netmask =	{ .addr = esp_ip4addr_aton("255.255.255.0") },
+				.gw =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
+		};
+		const auto netif = esp_netif_get_default_netif();
+		esp_netif_set_ip_info(netif, &ip);
+
 		state = Connected;
 
 		Event evt { .action = Event::Connect, .connect = { .success = true } };
@@ -91,9 +99,9 @@ void WiFiSTA::event(int32_t id, void* data){
 esp_netif_t* WiFiSTA::createNetif(){
 	esp_netif_inherent_config_t base{};
 	memcpy(&base, ESP_NETIF_BASE_DEFAULT_WIFI_AP, sizeof(esp_netif_inherent_config_t));
-	base.flags = (esp_netif_flags_t) (base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED));
+	base.flags = (esp_netif_flags_t) ((base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED)) | ESP_NETIF_FLAG_GARP);
 
-	esp_netif_ip_info_t ip = {
+	const esp_netif_ip_info_t ip = {
 			.ip =		{ .addr = esp_ip4addr_aton("11.0.0.2") },
 			.netmask =	{ .addr = esp_ip4addr_aton("255.255.255.0") },
 			.gw =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
@@ -105,9 +113,10 @@ esp_netif_t* WiFiSTA::createNetif(){
 
 	esp_netif_t* netif = esp_netif_new(&cfg);
 	assert(netif);
+	esp_netif_set_default_netif(netif);
 
-	esp_netif_attach_wifi_ap(netif);
-	esp_wifi_set_default_wifi_ap_handlers();
+	esp_netif_attach_wifi_station(netif);
+	esp_wifi_set_default_wifi_sta_handlers();
 
 	return netif;
 }
@@ -117,4 +126,8 @@ void WiFiSTA::connect(){
 	connectTries = 0;
 	state = Connecting;
 	esp_wifi_connect();
+}
+
+WiFiSTA::State WiFiSTA::getState(){
+	return state;
 }
