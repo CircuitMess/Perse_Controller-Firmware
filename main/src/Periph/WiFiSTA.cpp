@@ -118,3 +118,7 @@ void WiFiSTA::connect(){
 	state = Connecting;
 	esp_wifi_connect();
 }
+
+WiFiSTA::State WiFiSTA::getState(){
+	return state;
+}

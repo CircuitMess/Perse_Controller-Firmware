@@ -25,11 +25,14 @@ public:
 
 	void connect();
 
+	enum State { Connected, Connecting, Disconnected };
+	State getState();
+
 private:
 	esp_event_handler_instance_t evtHandler;
 	void event(int32_t id, void* data);
 
-	enum { Connected, Connecting, Disconnected } state = Disconnected;
+	State state = Disconnected;
 	std::binary_semaphore initSem{ 0 };
 
 	static constexpr int ConnectRetries = 2;
