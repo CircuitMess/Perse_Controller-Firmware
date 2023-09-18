@@ -8,7 +8,9 @@
 #include "Devices/Backlight.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
-
+#include "Periph/WiFiSTA.h"
+#include "Util/Events.h"
+#include "Services/TCPClient.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -36,6 +38,9 @@ void init(){
 	bl->fadeIn();
 
 	printf("Init done.\n");
+	auto wifi = new WiFiSTA();
+	auto tcp = new TCPClient();
+	Services.set(Service::TCP, tcp);
 }
 
 extern "C" void app_main(void){
