@@ -39,6 +39,7 @@ void init(){
 
 	printf("Init done.\n");
 	auto wifi = new WiFiSTA();
+	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPClient();
 	Services.set(Service::TCP, tcp);
 }
