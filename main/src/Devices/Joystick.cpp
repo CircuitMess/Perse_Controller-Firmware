@@ -4,7 +4,7 @@
 
 Joystick::Joystick(gpio_num_t joyX, gpio_num_t joyY) : Threaded("Joystick", 4 * 1024), settings(*(Settings*) Services.get(Service::Settings)),
 													   adcX(joyX), adcY(joyY){
-	calibration = settings.get().joystickCalibration;
+	calibration = settings.get().joyCalib;
 	enableFilters();
 	start();
 }
@@ -98,7 +98,7 @@ void Joystick::stopRangeCalib(){
 	inCalibration = false;
 
 	auto setts = settings.get();
-	setts.joystickCalibration = calibration;
+	setts.joyCalib = calibration;
 	settings.set(setts);
 	settings.store();
 

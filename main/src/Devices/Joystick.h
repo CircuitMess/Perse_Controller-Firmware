@@ -29,7 +29,7 @@ private:
 	static constexpr uint32_t DeadZoneVal = 10;
 	void loop() override;
 
-	JoystickCalibration calibration;
+	JoyCalib calibration;
 	std::atomic_bool inCalibration = false;
 	std::mutex rangeCalibrationMut;
 	std::mutex snapshotMut;
