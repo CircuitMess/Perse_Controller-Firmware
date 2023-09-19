@@ -23,6 +23,11 @@ bool TCPClient::connect(){
 		ESP_LOGE(TAG, "Can't create socket, errno=%d: %s", errno, strerror(errno));
 		return false;
 	}
+	timeval to{};
+	to.tv_sec = 1;
+	to.tv_usec = 0;
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*) &to, sizeof(to));
+
 
 	sockaddr_in addr{};
 	addr.sin_family = AF_INET;
