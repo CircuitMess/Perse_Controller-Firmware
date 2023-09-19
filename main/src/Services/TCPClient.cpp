@@ -1,4 +1,5 @@
 #include "TCPClient.h"
+#include "Util/Events.h"
 #include <lwip/sockets.h>
 #include <esp_log.h>
 
@@ -33,6 +34,9 @@ bool TCPClient::connect(){
 		return false;
 	}
 
+	Event event{ Event::Status::Connected };
+	Events::post(Facility::TCP, event);
+
 	ESP_LOGI(TAG, "Connection established");
 
 	return true;
@@ -43,6 +47,9 @@ void TCPClient::disconnect(){
 		ESP_LOGW(TAG, "Disconnect, but not connected");
 		return;
 	}
+
+	Event event{ Event::Status::Disconnected };
+	Events::post(Facility::TCP, event);
 
 	close(sock);
 	sock = -1;
