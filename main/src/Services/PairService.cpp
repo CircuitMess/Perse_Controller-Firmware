@@ -1,13 +1,13 @@
 #include "PairService.h"
 #include "Util/Services.h"
 
-PairService::PairService() : wifi(*(WiFiSTA*) Services.get(Service{/*TODO - set actual service*/})),
-							 tcp(*(TCPClient*) Services.get(Service{/*TODO - set actual service*/})),
+PairService::PairService() : wifi(*(WiFiSTA*) Services.get(Service::WiFi)),
+							 tcp(*(TCPClient*) Services.get(Service::TCP)),
 							 thread([this](){ loop(); }, "PairService", 4 * 1024), queue(10){
 
 	wifi.connect();
 	Events::listen(Facility::WiFiSTA, &queue);
-
+	thread.start();
 }
 
 PairService::~PairService(){

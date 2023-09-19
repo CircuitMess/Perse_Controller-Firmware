@@ -11,6 +11,7 @@
 #include "Periph/WiFiSTA.h"
 #include "Util/Events.h"
 #include "Services/TCPClient.h"
+#include "Services/PairService.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -18,7 +19,7 @@ void init(){
 			.mode = GPIO_MODE_INPUT
 	};
 	gpio_config(&cfg);
-
+	esp_log_level_set("WiFi_STA", ESP_LOG_VERBOSE);
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
 		ESP_ERROR_CHECK(nvs_flash_erase());
@@ -42,6 +43,17 @@ void init(){
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPClient();
 	Services.set(Service::TCP, tcp);
+
+	auto pair = new PairService();
+	while(pair->getState() == PairService::State::Pairing){
+		vTaskDelay(1000);
+		printf("pairService state check\n");
+	}
+	if(pair->getState() == PairService::State::Success){
+		printf("pair ok\n");
+	}else{
+		printf("pair fail\n");
+	}
 }
 
 extern "C" void app_main(void){
