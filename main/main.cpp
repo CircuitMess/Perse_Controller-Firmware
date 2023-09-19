@@ -12,6 +12,7 @@
 #include "Util/Events.h"
 #include "Services/TCPClient.h"
 #include "Services/PairService.h"
+#include "Services/Comm.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -43,6 +44,7 @@ void init(){
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPClient();
 	Services.set(Service::TCP, tcp);
+	auto comm = new Comm();
 
 	auto pair = new PairService();
 	while(pair->getState() == PairService::State::Pairing){
@@ -51,6 +53,12 @@ void init(){
 	}
 	if(pair->getState() == PairService::State::Success){
 		printf("pair ok\n");
+		vTaskDelay(1000);
+		while(1){
+			printf("send drive dir\n");
+			comm->sendDriveDir(0b1010, 0b1111);
+			vTaskDelay(1000/ portTICK_PERIOD_MS);
+		}
 	}else{
 		printf("pair fail\n");
 	}
