@@ -6,6 +6,13 @@
 
 class TCPClient {
 public:
+
+	struct Event {
+		enum class Status {
+			Connected, Disconnected
+		} status;
+	};
+
 	TCPClient();
 
 	bool isConnected();
