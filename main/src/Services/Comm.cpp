@@ -38,7 +38,7 @@ void Comm::loop(){
 void Comm::sendDriveDir(uint8_t direction, uint8_t speed){
 	uint8_t code = direction & 0b1111;
 	code |= (speed << 4);
-	ControlPacket packet{ ComType::DriveDir, code };
+	ControlPacket packet{ CommType::DriveDir, code };
 	sendPacket(packet);
 }
 
