@@ -3,7 +3,8 @@
 #include "Util/stdafx.h"
 
 Joystick::Joystick(gpio_num_t joyX, gpio_num_t joyY) : Threaded("Joystick", 4 * 1024), settings(*(Settings*) Services.get(Service::Settings)),
-													   adcX(joyX), adcY(joyY){
+													   adcX(joyX), adcY(joyY),
+													   calibThread([this](){ calibLoop(); }, "JoyCalib", 2 * 1024){
 	calibration = settings.get().joyCalib;
 	enableFilters();
 	start();
@@ -51,14 +52,66 @@ glm::vec2 Joystick::getPos() const{
 
 
 void Joystick::loop(){
+	adcX.sample();
+	adcY.sample();
+	delayMillis(10);
+}
+
+void Joystick::startRangeCalib(){
+	if(inCalibration) return;
+
+	calibration.maxX = calibration.minX = 4095 / 2;
+	calibration.maxY = calibration.minY = 4095 / 2;
+
+	stop();
+	disableFilters();
+	calibThread.start();
+
+	inCalibration = true;
+}
+
+void Joystick::stopRangeCalib(){
+	if(!inCalibration) return;
+
+	calibThread.stop();
+
+	inCalibration = false;
+
+	auto setts = settings.get();
+	setts.joyCalib = calibration;
+	settings.set(setts);
+	settings.store();
+
+	enableFilters();
+	start();
+}
+
+void Joystick::centerCalib(){
+	if(inCalibration) return;
+
+	stop();
+	disableFilters();
+
+	calibration.centerX = adcX.sample();
+	calibration.centerY = adcY.sample();
+
+	enableFilters();
+	start();
+}
+
+void Joystick::enableFilters(){
+	adcX.setEmaA(FilterStrength);
+	adcY.setEmaA(FilterStrength);
+}
+
+void Joystick::disableFilters(){
+	adcX.setEmaA(1);
+	adcY.setEmaA(1);
+}
+
+void Joystick::calibLoop(){
 	uint32_t valX = adcX.sample();
 	uint32_t valY = adcY.sample();
-
-	std::unique_lock lg(rangeCalibrationMut);
-	if(!inCalibration){
-		vTaskDelay(10 / portTICK_PERIOD_MS);
-		return;
-	}
 
 	if(valX > calibration.maxX){
 		calibration.maxX = valX;
@@ -73,56 +126,5 @@ void Joystick::loop(){
 		calibration.minY = valY;
 	}
 
-	lg.unlock();
-
-	vTaskDelay(10 / portTICK_PERIOD_MS);
-}
-
-void Joystick::startRangeCalib(){
-	if(inCalibration) return;
-
-	calibration.maxX = calibration.minX = 4095 / 2;
-	calibration.maxY = calibration.minY = 4095 / 2;
-
-	std::lock_guard lg(rangeCalibrationMut);
-	disableFilters();
-
-	inCalibration = true;
-}
-
-void Joystick::stopRangeCalib(){
-	if(!inCalibration) return;
-
-	std::lock_guard lg(rangeCalibrationMut);
-
-	inCalibration = false;
-
-	auto setts = settings.get();
-	setts.joyCalib = calibration;
-	settings.set(setts);
-	settings.store();
-
-	enableFilters();
-}
-
-void Joystick::centerCalib(){
-	if(inCalibration) return;
-
-	std::lock_guard lg(snapshotMut);
-	disableFilters();
-
-	calibration.centerX = adcX.sample();
-	calibration.centerY = adcY.sample();
-
-	enableFilters();
-}
-
-void Joystick::enableFilters(){
-	adcX.setEmaA(FilterStrength);
-	adcY.setEmaA(FilterStrength);
-}
-
-void Joystick::disableFilters(){
-	adcX.setEmaA(1);
-	adcY.setEmaA(1);
+	delayMillis(10);
 }

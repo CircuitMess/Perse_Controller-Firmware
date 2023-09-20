@@ -31,11 +31,12 @@ private:
 
 	JoyCalib calibration;
 	std::atomic_bool inCalibration = false;
-	std::mutex rangeCalibrationMut;
-	std::mutex snapshotMut;
 
 	void enableFilters();
 	void disableFilters();
+
+	ThreadedClosure calibThread;
+	void calibLoop();
 };
 
 
