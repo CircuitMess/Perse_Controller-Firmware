@@ -5,9 +5,9 @@ PairService::PairService() : wifi(*(WiFiSTA*) Services.get(Service::WiFi)),
 							 tcp(*(TCPClient*) Services.get(Service::TCP)),
 							 thread([this](){ loop(); }, "PairService", 4 * 1024), queue(10){
 
-	wifi.connect();
 	Events::listen(Facility::WiFiSTA, &queue);
-
+	thread.start();
+	wifi.connect();
 }
 
 PairService::~PairService(){
