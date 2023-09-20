@@ -26,7 +26,7 @@ private:
 	ADC adcX, adcY;
 
 	static constexpr float FilterStrength = 0.3; //1.0 - no filter, 0 - full strength
-	static constexpr uint32_t DeadZoneVal = 10;
+	static constexpr uint32_t DeadZoneVal = 5;
 	void loop() override;
 
 	JoyCalib calibration;
