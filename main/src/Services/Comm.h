@@ -8,22 +8,28 @@
 
 class Comm : private Threaded {
 public:
+	struct Event{
+		union{
+
+		};
+		uint8_t raw;
+	};
+
 	Comm();
 	~Comm() override;
 
 	/**
-	 * @param direction Bitwise OR-ed values of direction buttons, using only the lowest 4 bits.
-	 * Lowest to highest bit represents forward, backward, left, right, respectively
-	 * @param speed Lowest 4 bits indicate driving speed (0 - 15), used for rough speed estimates, otherwise sendDriveSpeed() is preferred.
-	 * If speed is zero, then a default value is used.
+	 * @param angle
+	 * @param speed
 	 */
-	void sendDriveDir(uint8_t direction, uint8_t speed = 0);
+	void sendDriveDir(DriveDir dir);
 
 private:
 	TCPClient& tcp;
 	void loop() override;
 
 	void sendPacket(const ControlPacket& packet);
+	Event processPacket(const ControlPacket& packet);
 
 	EventQueue queue;
 };

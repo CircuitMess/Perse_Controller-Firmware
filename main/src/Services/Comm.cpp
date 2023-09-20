@@ -23,22 +23,29 @@ void Comm::loop(){
 		tcp.read(reinterpret_cast<uint8_t*>(&packet), sizeof(ControlPacket));
 
 		if(tcp.isConnected()){
-			Events::post(Facility::Comm, packet);
+			Event e = processPacket(packet);
+			Events::post(Facility::Comm, e);
 		}
 	}
 
 	if(!tcp.isConnected()){
-		Event event{};
+		::Event event{};
 		while(!queue.get(event, portMAX_DELAY));
 		//Only a TCP connected event will unblock the thread
 		free(event.data);
 	}
 }
 
-void Comm::sendDriveDir(uint8_t direction, uint8_t speed){
-	uint8_t code = direction & 0b1111;
-	code |= (speed << 4);
+void Comm::sendDriveDir(DriveDir dir){
+	uint8_t code = CommData::encodeDriveDir(dir);
 	ControlPacket packet{ CommType::DriveDir, code };
 	sendPacket(packet);
+}
+
+Comm::Event Comm::processPacket(const ControlPacket& packet){
+	Event e{};
+	e.raw = packet.data;
+
+	return e;
 }
 
