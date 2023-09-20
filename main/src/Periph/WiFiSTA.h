@@ -44,13 +44,8 @@ private:
 	static esp_netif_t* createNetif();
 
 	static constexpr uint16_t ScanListSize = 10;
-	wifi_ap_record_t ap_info[ScanListSize];
 
 	static wifi_ap_record_t* findNetwork(wifi_ap_record_t* ap_info, uint32_t numRecords);
-	static constexpr wifi_scan_config_t ScanConfig = {
-			.channel = 1,
-			.scan_type = WIFI_SCAN_TYPE_PASSIVE
-	};
 };
 
 

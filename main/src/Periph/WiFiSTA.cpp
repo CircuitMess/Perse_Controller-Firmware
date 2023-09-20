@@ -59,15 +59,16 @@ void WiFiSTA::event(int32_t id, void* data){
 		const auto netif = esp_netif_get_default_netif();
 		esp_netif_set_ip_info(netif, &ip);
 
-		if(state == Connecting){
-			state = Connected;
-
-			Event evt { .action = Event::Connect, .connect = { .success = true } };
-			memcpy(evt.connect.bssid, event->bssid, 6);
-			Events::post(Facility::WiFiSTA, evt);
-		}else if(state == ConnAbort){
+		if(state == ConnAbort){
 			esp_wifi_disconnect();
+			return;
 		}
+
+		state = Connected;
+
+		Event evt { .action = Event::Connect, .connect = { .success = true } };
+		memcpy(evt.connect.bssid, event->bssid, 6);
+		Events::post(Facility::WiFiSTA, evt);
 
 	}else if(id == WIFI_EVENT_STA_DISCONNECTED){
 		auto event = (wifi_event_sta_disconnected_t*) data;
@@ -101,29 +102,31 @@ void WiFiSTA::event(int32_t id, void* data){
 	}else if(id == WIFI_EVENT_SCAN_DONE){
 		if(state != Scanning) return;
 
+		wifi_ap_record_t ap_info[ScanListSize];
+		memset(ap_info, 0, sizeof(ap_info));
 		auto number = ScanListSize;
 		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
-		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&number));
 		auto ret = findNetwork(ap_info, number);
 
-		if(ret != nullptr){
-			state = Connecting;
-			connectTries = 0;
-
-			wifi_config_t cfg_sta = {
-					.sta = {
-							.password = "RoverRover"
-					}
-			};
-			strncpy((char*) cfg_sta.sta.ssid, (char*) ret->ssid, 32);
-			ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg_sta));
-
-			esp_wifi_connect();
-		}else{
+		if(ret == nullptr){
 			state = Disconnected;
 			Event evt{ .action = Event::Connect, .connect = { .success = false } };
 			Events::post(Facility::WiFiSTA, evt);
+			return;
 		}
+
+		state = Connecting;
+		connectTries = 0;
+
+		wifi_config_t cfg_sta = {
+				.sta = {
+						.password = "RoverRover"
+				}
+		};
+		strncpy((char*) cfg_sta.sta.ssid, (char*) ret->ssid, 32);
+		ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg_sta));
+
+		esp_wifi_connect();
 	}
 }
 
@@ -156,7 +159,10 @@ void WiFiSTA::connect(){
 	if(state != Disconnected) return;
 
 	state = Scanning;
-	memset(ap_info, 0, sizeof(ap_info));
+	const wifi_scan_config_t ScanConfig = {
+			.channel = 1,
+			.scan_type = WIFI_SCAN_TYPE_PASSIVE
+	};
 	esp_wifi_scan_start(&ScanConfig, false);
 }
 
