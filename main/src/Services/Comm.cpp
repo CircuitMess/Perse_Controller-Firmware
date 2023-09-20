@@ -45,6 +45,7 @@ void Comm::sendDriveDir(DriveDir dir){
 Comm::Event Comm::processPacket(const ControlPacket& packet){
 	Event e{};
 	e.raw = packet.data;
+	e.type = packet.type;
 
 	return e;
 }
