@@ -25,6 +25,8 @@ private:
 	ThreadedClosure thread;
 	EventQueue queue;
 
+	void processEvent(const WiFiSTA::Event& event);
+
 	void loop();
 };
 
