@@ -95,6 +95,11 @@ void Joystick::centerCalib(){
 	calibration.centerX = adcX.sample();
 	calibration.centerY = adcY.sample();
 
+	auto setts = settings.get();
+	setts.joyCalib = calibration;
+	settings.set(setts);
+	settings.store();
+
 	enableFilters();
 	start();
 }
