@@ -35,14 +35,7 @@ WiFiSTA::WiFiSTA(){
 	wifi_init_config_t cfg_wifi = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg_wifi);
 
-	wifi_config_t cfg_sta = {
-			.sta = {
-					.ssid = "Perseverance Rover",
-					.password = "12345678"
-			}
-	};
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg_sta));
 	ESP_ERROR_CHECK(esp_wifi_start());
 
 	initSem.acquire();
@@ -66,11 +59,17 @@ void WiFiSTA::event(int32_t id, void* data){
 		const auto netif = esp_netif_get_default_netif();
 		esp_netif_set_ip_info(netif, &ip);
 
+		if(state == ConnAbort){
+			esp_wifi_disconnect();
+			return;
+		}
+
 		state = Connected;
 
 		Event evt { .action = Event::Connect, .connect = { .success = true } };
 		memcpy(evt.connect.bssid, event->bssid, 6);
 		Events::post(Facility::WiFiSTA, evt);
+
 	}else if(id == WIFI_EVENT_STA_DISCONNECTED){
 		auto event = (wifi_event_sta_disconnected_t*) data;
 		const auto mac = mac2str(event->bssid);
@@ -88,11 +87,46 @@ void WiFiSTA::event(int32_t id, void* data){
 			return;
 		}
 
+		if(state == ConnAbort){
+			state = Disconnected;
+			Event evt{ .action = Event::Connect, .connect = { .success = false } };
+			Events::post(Facility::WiFiSTA, evt);
+			return;
+		}
+
 		state = Disconnected;
 
 		Event evt { .action = Event::Disconnect };
 		memcpy(evt.disconnect.bssid, event->bssid, 6);
 		Events::post(Facility::WiFiSTA, evt);
+	}else if(id == WIFI_EVENT_SCAN_DONE){
+		if(state != Scanning) return;
+
+		wifi_ap_record_t ap_info[ScanListSize];
+		memset(ap_info, 0, sizeof(ap_info));
+		auto number = ScanListSize;
+		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
+		auto ret = findNetwork(ap_info, number);
+
+		if(ret == nullptr){
+			state = Disconnected;
+			Event evt{ .action = Event::Connect, .connect = { .success = false } };
+			Events::post(Facility::WiFiSTA, evt);
+			return;
+		}
+
+		state = Connecting;
+		connectTries = 0;
+
+		wifi_config_t cfg_sta = {
+				.sta = {
+						.password = "RoverRover"
+				}
+		};
+		strncpy((char*) cfg_sta.sta.ssid, (char*) ret->ssid, 32);
+		ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg_sta));
+
+		esp_wifi_connect();
 	}
 }
 
@@ -123,11 +157,45 @@ esp_netif_t* WiFiSTA::createNetif(){
 
 void WiFiSTA::connect(){
 	if(state != Disconnected) return;
-	connectTries = 0;
-	state = Connecting;
-	esp_wifi_connect();
+
+	state = Scanning;
+	const wifi_scan_config_t ScanConfig = {
+			.channel = 1,
+			.scan_type = WIFI_SCAN_TYPE_PASSIVE
+	};
+	esp_wifi_scan_start(&ScanConfig, false);
 }
 
 WiFiSTA::State WiFiSTA::getState(){
 	return state;
+}
+
+void WiFiSTA::disconnect(){
+	if(state == Disconnected) return;
+
+	switch(state){
+		case Connected:
+			esp_wifi_disconnect();
+			break;
+		case Connecting:
+			state = ConnAbort;
+			esp_wifi_disconnect();
+			break;
+		case Disconnected:
+			break;
+		case Scanning:
+			esp_wifi_scan_stop();
+			break;
+		case ConnAbort:
+			break;
+	}
+}
+
+wifi_ap_record_t* WiFiSTA::findNetwork(wifi_ap_record_t* ap_info, uint32_t numRecords){
+	for(int i = 0; i < numRecords; ++i){
+		if(strncmp((const char*) ap_info[i].ssid, "Perseverance Rover", 18) == 0){
+			return &ap_info[i];
+		}
+	}
+	return nullptr;
 }
