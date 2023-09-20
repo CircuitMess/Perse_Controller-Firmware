@@ -16,15 +16,15 @@ Joystick::~Joystick(){
 
 float Joystick::getX() const{
 	auto val = adcX.getVal();
-	if(abs(val - calibration.centerX) <= DeadZoneVal){
-		return 0;
-	}
+	if(abs(val - calibration.centerX) <= DeadZoneVal) return 0;
+
 	val = std::clamp((uint32_t) val, calibration.minX, calibration.maxX);
+
 	float mapped;
 	if(val >= calibration.centerX){
 		mapped = map(val, calibration.centerX, calibration.maxX, 0, 1);
 	}else{
-		mapped = map(val, calibration.minX, calibration.centerX, 0, 1) - 1.0;
+		mapped = map(val, calibration.minX, calibration.centerX, 0, 1) - 1.0f;
 	}
 
 	return mapped;
@@ -32,15 +32,15 @@ float Joystick::getX() const{
 
 float Joystick::getY() const{
 	auto val = adcY.getVal();
-	if(abs(val - calibration.centerY) <= DeadZoneVal){
-		return 0;
-	}
+	if(abs(val - calibration.centerY) <= DeadZoneVal) return 0;
+
 	val = std::clamp((uint32_t) val, calibration.minY, calibration.maxY);
+
 	float mapped;
 	if(val >= calibration.centerY){
 		mapped = map(val, calibration.centerY, calibration.maxY, 0, 1);
 	}else{
-		mapped = map(val, calibration.minY, calibration.centerY, 0, 1) - 1.0;
+		mapped = map(val, calibration.minY, calibration.centerY, 0, 1) - 1.0f;
 	}
 
 	return mapped;
@@ -49,7 +49,6 @@ float Joystick::getY() const{
 glm::vec2 Joystick::getPos() const{
 	return glm::vec2(getX(), getY());
 }
-
 
 void Joystick::loop(){
 	adcX.sample();
@@ -65,9 +64,8 @@ void Joystick::startRangeCalib(){
 
 	stop();
 	disableFilters();
-	calibThread.start();
-
 	inCalibration = true;
+	calibThread.start();
 }
 
 void Joystick::stopRangeCalib(){
@@ -75,13 +73,12 @@ void Joystick::stopRangeCalib(){
 
 	calibThread.stop();
 
-	inCalibration = false;
-
 	auto setts = settings.get();
 	setts.joyCalib = calibration;
 	settings.set(setts);
 	settings.store();
 
+	inCalibration = false;
 	enableFilters();
 	start();
 }
