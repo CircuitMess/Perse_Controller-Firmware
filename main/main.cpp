@@ -11,6 +11,10 @@
 #include "Periph/WiFiSTA.h"
 #include "Util/Events.h"
 #include "Services/TCPClient.h"
+#include "LV_Interface/LVGL.h"
+#include "LV_Interface/InputLVGL.h"
+#include "LV_Interface/FSLVGL.h"
+
 
 void init(){
 	gpio_config_t cfg = {
@@ -34,6 +38,10 @@ void init(){
 
 	auto bl = new Backlight(LEDC_CHANNEL_0);
 	Services.set(Service::Backlight, bl);
+
+	auto lvgl = new LVGL(*display);
+	auto lvglInput = new InputLVGL();
+	auto fs = new FSLVGL('S');
 
 	bl->fadeIn();
 
