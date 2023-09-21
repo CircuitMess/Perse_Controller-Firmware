@@ -1,8 +1,10 @@
 #include "LVGL.h"
+#include <lvgl.h>
+#include "LVScreen.h"
 #include "InputLVGL.h"
-#include "Theme/theme.h"
+#include "Util/Services.h"
 
-LVGL::LVGL(Display& display) : display(display){
+LVGL::LVGL(Display& display) : Threaded("LVGL", 4 * 1024, 6, 1), display(display){
 	lv_init();
 	lv_disp_draw_buf_init(&lvDrawBuf, drawBuffer, nullptr, sizeof(drawBuffer) / 2);
 
@@ -13,9 +15,10 @@ LVGL::LVGL(Display& display) : display(display){
 	lvDispDrv.draw_buf = &lvDrawBuf;
 	lvDispDrv.user_data = this;
 	lvDisplay = lv_disp_drv_register(&lvDispDrv);
+}
 
-	auto theme = theme_init(lvDisplay);
-	lv_disp_set_theme(lvDisplay, theme);
+LVGL::~LVGL(){
+	stop();
 }
 
 void LVGL::flush(lv_disp_drv_t* dispDrv, const lv_area_t* area, lv_color_t* pixels){
@@ -37,21 +40,19 @@ void LVGL::loop(){
 	if(currentScreen){
 		currentScreen->loop();
 	}
-	if(!currentScreen) return;
 
 	auto ttn = lv_timer_handler();
 	if(ttn <= 0 || ttn > LV_DISP_DEF_REFR_PERIOD) ttn = 1;
 	vTaskDelay(ttn);
 }
 
-void LVGL::resume(){
-	if(currentScreen){
-		lv_obj_invalidate(*currentScreen);
-	}
-}
-
 void LVGL::startScreen(std::function<std::unique_ptr<LVScreen>()> create){
 	stopScreen();
+
+	lv_obj_t* tmp = lv_obj_create(nullptr);
+	lv_scr_load_anim(tmp, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
+
+	currentScreen.reset();
 
 	currentScreen = create();
 	currentScreen->start(this);
@@ -59,15 +60,11 @@ void LVGL::startScreen(std::function<std::unique_ptr<LVScreen>()> create){
 }
 
 void LVGL::stopScreen(){
+	if(!currentScreen) return;
+	currentScreen->stop();
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
+}
 
-	if(currentScreen){
-		currentScreen->stop();
-
-		// and switch to a temp screen. if currentScreen isn't set, that means a temp screen is already running
-		lv_obj_t* tmp = lv_obj_create(nullptr);
-		lv_scr_load_anim(tmp, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
-	}
-
-	currentScreen.reset();
+lv_disp_t* LVGL::disp() const{
+	return lvDisplay;
 }
