@@ -62,7 +62,7 @@ void TCPClient::disconnect(){
 
 bool TCPClient::read(uint8_t* buf, size_t count){
 	if(sock == -1){
-		ESP_LOGW(TAG, "Write, but not connected");
+		ESP_LOGW(TAG, "Read, but not connected");
 		return false;
 	}
 
