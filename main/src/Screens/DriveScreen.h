@@ -5,10 +5,12 @@
 #include "Services/Comm.h"
 #include "Devices/Joystick.h"
 #include "Services/PairService.h"
+#include "Devices/Display.h"
+#include "Services/Feed.h"
 
 class DriveScreen : public LVScreen {
 public:
-	DriveScreen(Joystick* joystick);
+	DriveScreen(Joystick* joystick, Display* display);
 	~DriveScreen() override;
 
 private:
@@ -20,12 +22,18 @@ private:
 	bool calibration = false;
 	EventQueue queue;
 	Joystick* joystick;
+	Display* display;
 	PairService* pair = nullptr;
 
 	ThreadedClosure calibThread;
 	void calibLoop();
 
 	lv_obj_t* joystickLabel;
+
+	Feed feed;
+
+	ThreadedClosure joySender;
+	void sendJoy();
 };
 
 

@@ -31,7 +31,7 @@ void LVGL::flush(lv_disp_drv_t* dispDrv, const lv_area_t* area, lv_color_t* pixe
 	auto h = (area->y2 - area->y1 + 1);
 	auto data = &pixels->full;
 
-	lgfx.pushImage(x, y, w, h, data);
+	// lgfx.pushImage(x, y, w, h, data);
 
 	lv_disp_flush_ready(dispDrv);
 }

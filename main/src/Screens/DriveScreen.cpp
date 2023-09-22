@@ -6,8 +6,8 @@
 #include <glm.hpp>
 #include <gtx/vector_angle.hpp>
 
-DriveScreen::DriveScreen(Joystick* joystick) : comm((Comm*) Services.get(Service::Comm)), queue(12), joystick(joystick),
-											   calibThread([this](){ calibLoop(); }, "CalibThread", 4096){
+DriveScreen::DriveScreen(Joystick* joystick, Display* display) : comm((Comm*) Services.get(Service::Comm)), queue(12), joystick(joystick), display(display),
+											   calibThread([this](){ calibLoop(); }, "CalibThread", 4096), joySender([this](){ sendJoy(); }, "JoySender", 8000, 5, 0){
 	printf("DriveScreen constructed\n");
 	lv_obj_t* label = lv_label_create(obj);
 	lv_label_set_text(label, "Test drive");
@@ -34,28 +34,20 @@ void DriveScreen::loop(){
 	if(pair == nullptr) return;
 	if(pair->getState() != PairService::State::Success) return;
 
+	feed.nextFrame([this](const DriveInfo& info, const Color* img){
+		auto lgfx = display->getLGFX();
+		lgfx.pushImage(0, 0, 160, 120, img);
+	});
 
-	auto vec = joystick->getPos();
-	float val = std::clamp(glm::length(vec), 0.f, 1.f);
-	float angle = 0;
-	if(val > 0){
-		vec = glm::normalize(vec);
-		angle = glm::degrees(glm::angle(vec, { 0.0, 1.0 }));
-		if(vec.x < 0){
-			angle = 360 - angle;
-		}
-	}
-	comm->sendDriveDir({ static_cast<uint16_t>(angle), val });
-	lv_label_set_text_fmt(joystickLabel, "angle: %d   val: %d", (int)angle, (int)(val*100.0));
-
-	printf("angle: %.2f, val: %.2f\n", angle, val);
+	// lv_label_set_text_fmt(joystickLabel, "angle: %d   val: %d", (int)angle, (int)(val*100.0));
 }
 
 void DriveScreen::onStart(){
 	Events::listen(Facility::Input, &queue);
-	calibThread.start();
+	// calibThread.start();
 
 	pair = new PairService();
+	joySender.start();
 
 }
 
@@ -73,4 +65,24 @@ void DriveScreen::calibLoop(){
 		}
 	}
 	free(item.data);
+}
+
+void DriveScreen::sendJoy(){
+	delayMillis(20);
+
+	if(pair == nullptr) return;
+	if(pair->getState() != PairService::State::Success) return;
+
+	auto vec = joystick->getPos();
+	float val = std::clamp(glm::length(vec), 0.f, 1.f);
+	float angle = 0;
+	if(val > 0){
+		vec = glm::normalize(vec);
+		angle = glm::degrees(glm::angle(vec, { 0.0, 1.0 }));
+		if(vec.x < 0){
+			angle = 360 - angle;
+		}
+	}
+	comm->sendDriveDir({ static_cast<uint16_t>(angle), val });
+	printf("angle: %.2f, val: %.2f\n", angle, val);
 }

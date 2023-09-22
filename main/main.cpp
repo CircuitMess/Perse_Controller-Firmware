@@ -62,7 +62,7 @@ void init(){
 	auto input = new Input();
 	auto joystick = new Joystick((gpio_num_t) JOY_H, (gpio_num_t) JOY_V);
 
-	lvgl->startScreen([&joystick](){ return std::make_unique<DriveScreen>(joystick); });
+	lvgl->startScreen([joystick, display](){ return std::make_unique<DriveScreen>(joystick, display); });
 
 	lvgl->start();
 
