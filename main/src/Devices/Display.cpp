@@ -15,6 +15,10 @@ Display::~Display(){
 	bus.release();
 }
 
+Sprite& Display::getCanvas(){
+	return canvas;
+}
+
 void Display::setupBus(){
 	lgfx::Bus_SPI::config_t cfg = {
 		.freq_write = 40000000,
