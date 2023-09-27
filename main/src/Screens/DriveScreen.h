@@ -31,9 +31,14 @@ private:
 	lv_obj_t* joystickLabel;
 
 	Feed feed;
+	bool paired = false;
 
 	ThreadedClosure joySender;
 	void sendJoy();
+
+	int head = 0;
+	int arm = 50;
+	int pinch = 50;
 };
 
 

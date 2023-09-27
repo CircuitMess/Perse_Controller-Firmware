@@ -18,6 +18,7 @@
 #include "Devices/Joystick.h"
 #include "Services/Comm.h"
 #include "Devices/Input.h"
+#include "Devices/Encoders.h"
 #include "Screens/DriveScreen.h"
 
 
@@ -40,7 +41,7 @@ void init(){
 	Services.set(Service::Settings, settings);
 
 	auto display = new Display();
-	display->drawTest();
+	display->getLGFX().clear(TFT_BLACK);
 
 	auto bl = new Backlight(LEDC_CHANNEL_0);
 	Services.set(Service::Backlight, bl);
@@ -61,6 +62,7 @@ void init(){
 
 	auto input = new Input();
 	auto joystick = new Joystick((gpio_num_t) JOY_H, (gpio_num_t) JOY_V);
+	auto enc = new Encoders();
 
 	lvgl->startScreen([joystick, display](){ return std::make_unique<DriveScreen>(joystick, display); });
 

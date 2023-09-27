@@ -24,6 +24,9 @@ public:
 	 * @param speed
 	 */
 	void sendDriveDir(DriveDir dir);
+	void sendHead(uint8_t head);
+	void sendArm(uint8_t head);
+	void sendPinch(uint8_t head);
 
 private:
 	TCPClient& tcp;

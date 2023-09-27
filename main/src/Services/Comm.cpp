@@ -42,6 +42,21 @@ void Comm::sendDriveDir(DriveDir dir){
 	sendPacket(packet);
 }
 
+void Comm::sendHead(uint8_t head){
+	ControlPacket packet{ CommType::Headlights, head };
+	sendPacket(packet);
+}
+
+void Comm::sendArm(uint8_t head){
+	ControlPacket packet{ CommType::Arm, head };
+	sendPacket(packet);
+}
+
+void Comm::sendPinch(uint8_t head){
+	ControlPacket packet{ CommType::Pinch, head };
+	sendPacket(packet);
+}
+
 Comm::Event Comm::processPacket(const ControlPacket& packet){
 	Event e{};
 	e.raw = packet.data;

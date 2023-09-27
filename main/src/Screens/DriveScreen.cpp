@@ -1,10 +1,12 @@
 #include "DriveScreen.h"
 #include "Util/Services.h"
 #include "Devices/Input.h"
+#include "Devices/Encoders.h"
 #include "Util/stdafx.h"
 #include "LV_Interface/Theme/theme.h"
 #include <glm.hpp>
 #include <gtx/vector_angle.hpp>
+#include "Pins.hpp"
 
 DriveScreen::DriveScreen(Joystick* joystick, Display* display) : comm((Comm*) Services.get(Service::Comm)), queue(12), joystick(joystick), display(display),
 											   calibThread([this](){ calibLoop(); }, "CalibThread", 4096), joySender([this](){ sendJoy(); }, "JoySender", 8000, 5, 0){
@@ -34,16 +36,45 @@ void DriveScreen::loop(){
 	if(pair == nullptr) return;
 	if(pair->getState() != PairService::State::Success) return;
 
+	if(!paired){
+		paired = true;
+		gpio_config_t cfg = {
+				.pin_bit_mask = 1ULL << LED_PAIR,
+				.mode = GPIO_MODE_OUTPUT
+		};
+		gpio_config(&cfg);
+		gpio_set_level((gpio_num_t) LED_PAIR, 1);
+	}
+
 	feed.nextFrame([this](const DriveInfo& info, const Color* img){
 		auto lgfx = display->getLGFX();
-		lgfx.pushImage(0, 0, 160, 120, img);
+		lgfx.pushImage(0, 4, 160, 120, img);
 	});
+
+	Event evt{};
+	if(queue.get(evt, 0)){
+		if(evt.facility == Facility::Encoders){
+			auto data = (Encoders::Data*) evt.data;
+			if(data->enc == Encoders::Cam){
+				head = std::clamp(head + data->dir*5, 0, 255);
+				comm->sendHead(head);
+			}else if(data->enc == Encoders::Arm){
+				arm = std::clamp(arm + data->dir*5, 0, 100);
+				comm->sendArm(arm);
+			}else if(data->enc == Encoders::Pinch){
+				pinch = std::clamp(pinch + data->dir*5, 0, 100);
+				comm->sendPinch(pinch);
+			}
+		}
+
+		free(evt.data);
+	}
 
 	// lv_label_set_text_fmt(joystickLabel, "angle: %d   val: %d", (int)angle, (int)(val*100.0));
 }
 
 void DriveScreen::onStart(){
-	Events::listen(Facility::Input, &queue);
+	Events::listen(Facility::Encoders, &queue);
 	// calibThread.start();
 
 	pair = new PairService();
@@ -84,5 +115,5 @@ void DriveScreen::sendJoy(){
 		}
 	}
 	comm->sendDriveDir({ static_cast<uint16_t>(angle), val });
-	printf("angle: %.2f, val: %.2f\n", angle, val);
+	//printf("angle: %.2f, val: %.2f\n", angle, val);
 }
