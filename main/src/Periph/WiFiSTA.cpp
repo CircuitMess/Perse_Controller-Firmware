@@ -123,7 +123,8 @@ void WiFiSTA::event(int32_t id, void* data){
 						.password = "RoverRover"
 				}
 		};
-		strncpy((char*) cfg_sta.sta.ssid, (char*) ret->ssid, 32);
+		memcpy(cfg_sta.sta.ssid, ret->ssid, 32);
+		cfg_sta.sta.ssid[31] = 0;
 		ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg_sta));
 
 		esp_wifi_connect();
