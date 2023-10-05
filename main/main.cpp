@@ -11,6 +11,7 @@
 #include "Periph/WiFiSTA.h"
 #include "Util/Events.h"
 #include "Services/TCPClient.h"
+#include "Services/RoverState.h"
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
@@ -50,6 +51,10 @@ void init(){
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPClient();
 	Services.set(Service::TCP, tcp);
+
+	auto rover = new RoverState();
+	Services.set(Service::RoverState, rover);
+
 }
 
 extern "C" void app_main(void){
