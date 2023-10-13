@@ -16,7 +16,6 @@
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
 
-
 void init(){
 	gpio_config_t cfg = {
 			.pin_bit_mask = 0,
