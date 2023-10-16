@@ -15,6 +15,7 @@
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
+#include "Services/Comm.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -54,6 +55,8 @@ void init(){
 	auto rover = new RoverState();
 	Services.set(Service::RoverState, rover);
 
+	auto comm = new Comm();
+	Services.set(Service::Comm, comm);
 }
 
 extern "C" void app_main(void){

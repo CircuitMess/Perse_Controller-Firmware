@@ -26,6 +26,24 @@ void Comm::sendHeadlights(HeadlightsMode headlights) {
 	sendPacket(packet);
 }
 
+void Comm::sendArmPos(ArmPos position) {
+	const ControlPacket packet {
+			.type = CommType::Headlights,
+			.data = (uint8_t)position
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendArmPinch(ArmPinch pinch) {
+	const ControlPacket packet {
+			.type = CommType::Headlights,
+			.data = (uint8_t)pinch
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
@@ -70,4 +88,3 @@ Comm::Event Comm::processPacket(const ControlPacket& packet)
 
 	return event;
 }
-
