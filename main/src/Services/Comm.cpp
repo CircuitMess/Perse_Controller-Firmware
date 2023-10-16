@@ -28,7 +28,7 @@ void Comm::sendHeadlights(HeadlightsMode headlights) {
 
 void Comm::sendArmPos(ArmPos position) {
 	const ControlPacket packet {
-			.type = CommType::Headlights,
+			.type = CommType::ArmPosition,
 			.data = (uint8_t)position
 	};
 
@@ -37,7 +37,7 @@ void Comm::sendArmPos(ArmPos position) {
 
 void Comm::sendArmPinch(ArmPinch pinch) {
 	const ControlPacket packet {
-			.type = CommType::Headlights,
+			.type = CommType::ArmPinch,
 			.data = (uint8_t)pinch
 	};
 
