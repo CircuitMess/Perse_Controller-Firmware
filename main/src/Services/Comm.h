@@ -31,6 +31,7 @@ public:
 	void sendHeadlights(HeadlightsMode headlights);
 	void sendArmPos(ArmPos position);
 	void sendArmPinch(ArmPinch pinch);
+	void sendCameraRotation(CameraRotation rotation);
 
 private:
 	TCPClient& tcp;
