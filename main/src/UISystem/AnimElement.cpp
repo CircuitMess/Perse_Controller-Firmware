@@ -4,36 +4,44 @@
 
 static const char* TAG = "AnimElement";
 
-AnimElement::AnimElement(ElementContainer* parent, const char* path) : Element(parent), gif(fopen(path, "r")){
+AnimElement::AnimElement(ElementContainer* parent, const char* path) : Element(parent), gif(std::make_unique<GIFSprite>(fopen(path, "r"))){
 
 	lastMicros = micros();
 }
 
 void AnimElement::setPath(const char* path){
 	auto file = fopen(path, "r");
+
 	if(ferror(file) != 0){
 		ESP_LOGE(TAG, "Couldn't open file %s", path);
+		return;
 	}
+
+	gif.reset();
+	gif = std::make_unique<GIFSprite>(file);
+	lastMicros = micros();
 }
 
 void AnimElement::setLoopMode(GIF::LoopMode loopMode){
-	gif.setLoopMode(loopMode);
+	gif->setLoopMode(loopMode);
 }
 
 void AnimElement::start(){
-	gif.start();
+	gif->start();
+	lastMicros = micros();
 }
 
 void AnimElement::stop(){
-	gif.stop();
+	gif->stop();
 }
 
 void AnimElement::reset(){
-	gif.reset();
+	gif->reset();
+	lastMicros = micros();
 }
 
 void AnimElement::draw(Sprite* canvas){
-	auto sprite = gif.getSprite();
+	auto sprite = gif->getSprite();
 	sprite.pushRotateZoom(canvas, std::round(x + (float) sprite.width() / 2.0), std::round(y + (float) sprite.height() / 2.0), 0, 1, 1, TFT_TRANSPARENT);
 }
 
@@ -42,5 +50,5 @@ void AnimElement::loop(){
 	auto diff = current - lastMicros;
 	lastMicros = current;
 
-	gif.loop(diff);
+	gif->loop(diff);
 }

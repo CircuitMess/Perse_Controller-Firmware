@@ -9,24 +9,32 @@ UIThread::~UIThread(){
 	stop();
 }
 
-void UIThread::startScreen(std::function<std::unique_ptr<Screen>()> create){
-	currentScreen.reset();
-	currentScreen = create();
+void UIThread::startScreen(ScreenCreateFunc create){
+	creator = std::move(create);
 }
 
 void UIThread::loop(){
 	if(!currentScreen){
-		delayMillis(FrameTime);
-		return;
+		if(!creator){
+			delayMillis(FrameTime);
+			return;
+
+		}
+		currentScreen.reset();
+		currentScreen = creator(display.getCanvas());
+		creator = {};
 	}
 
 	const auto currMicros = esp_timer_get_time();
 
 	currentScreen->loop();
-	if(!currentScreen) return; // in case the screen exited in its loop
+	if(creator){
+		currentScreen.reset();
+		currentScreen = creator(display.getCanvas());
+		creator = {};
+	}
 
-	display.getCanvas().pushSprite(0, 0);
-	display.getLGFX().display();
+	display.commit();
 
 	const auto loopTime = (micros() - currMicros) / 1000;
 	if(loopTime > FrameTime){

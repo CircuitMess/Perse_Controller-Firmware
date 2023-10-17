@@ -2,7 +2,7 @@
 #include "Modal.h"
 #include "Element.h"
 
-Screen::Screen(Sprite* canvas) : canvas(canvas){
+Screen::Screen(Sprite& canvas) : canvas(canvas){
 }
 
 Screen::~Screen(){
@@ -17,7 +17,7 @@ void Screen::loop(){
 
 	preDraw();
 	for(auto& element : elements){
-		element->draw(canvas);
+		element->draw(&canvas);
 	}
 	if(modal){
 		modal->loop();

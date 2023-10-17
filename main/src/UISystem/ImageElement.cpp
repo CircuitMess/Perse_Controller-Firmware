@@ -18,6 +18,9 @@ ImageElement::~ImageElement(){
 }
 
 void ImageElement::setPath(const char* path){
+	if(!ferror(file)){
+		fclose(file);
+	}
 	file = fopen(path, "r");
 	if(ferror(file) != 0){
 		ESP_LOGE(TAG, "Couldn't open file %s", path);

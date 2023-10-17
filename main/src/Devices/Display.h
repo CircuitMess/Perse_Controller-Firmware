@@ -12,10 +12,11 @@ public:
 
 	LGFX_Device& getLGFX();
 
-	void drawTest();
+	void commit();
 
 	Sprite& getCanvas();
 
+	void drawTest();
 
 private:
 	lgfx::Bus_SPI bus;

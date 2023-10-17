@@ -5,20 +5,25 @@
 #include "Devices/Display.h"
 #include "Screen.h"
 
-class UIThread : public Threaded{
+class UIThread : public Threaded {
+	typedef std::function<std::unique_ptr<Screen>(Sprite& canvas)> ScreenCreateFunc;
+
 public:
 	UIThread(Display& display);
 	~UIThread() override;
 
-	void startScreen(std::function<std::unique_ptr<Screen>()> create);
+	void startScreen(ScreenCreateFunc create);
 
 protected:
 	void loop() override;
 
 private:
+
 	Display& display;
 
 	static constexpr uint32_t FrameTime = 25; // [ms]
+
+	ScreenCreateFunc creator;
 
 	std::unique_ptr<Screen> currentScreen;
 };

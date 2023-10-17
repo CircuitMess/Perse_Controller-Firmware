@@ -16,6 +16,6 @@ void Modal::loop(){
 	}
 
 	for(auto& element : elements){
-		element->draw(screen->canvas);
+		element->draw(&screen->canvas);
 	}
 }

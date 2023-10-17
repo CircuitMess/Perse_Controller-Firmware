@@ -9,7 +9,7 @@ class Modal;
 class Screen : public ElementContainer{
 	friend Modal;
 public:
-	Screen(Sprite* canvas);
+	Screen(Sprite& canvas);
 	~Screen() override;
 
 	void loop();
@@ -19,7 +19,7 @@ protected:
 	virtual void preDraw(){}
 	virtual void postDraw(){}
 
-	Sprite* canvas;
+	Sprite& canvas;
 
 private:
 	Modal* modal = nullptr;

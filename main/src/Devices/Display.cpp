@@ -22,6 +22,10 @@ Sprite& Display::getCanvas(){
 	return canvas;
 }
 
+void Display::commit(){
+	canvas.pushSprite(0, 0);
+}
+
 void Display::setupBus(){
 	lgfx::Bus_SPI::config_t cfg = {
 		.freq_write = 40000000,

@@ -12,10 +12,10 @@ struct TextStyle {
 
 class LabelElement : public Element {
 public:
-	LabelElement(ElementContainer* parent, const char* text);
+	LabelElement(ElementContainer* parent, std::string text);
 	~LabelElement() override = default;
 
-	void setText(const char* text);
+	void setText(std::string text);
 	void draw(Sprite* canvas) override;
 
 	void setStyle(TextStyle style);
@@ -25,7 +25,7 @@ public:
 
 private:
 	TextStyle style = DefaultStyle;
-	const char* text = "Text";
+	std::string text = "Text";
 
 	static constexpr TextStyle DefaultStyle = { &lgfx::fonts::Font0, TFT_BLACK, 1, textdatum_t::top_left };
 };

@@ -17,7 +17,7 @@ public:
 	void draw(Sprite* canvas) override;
 	void loop() override;
 private:
-	GIFSprite gif;
+	std::unique_ptr<GIFSprite> gif;
 	uint32_t lastMicros = 0;
 };
 

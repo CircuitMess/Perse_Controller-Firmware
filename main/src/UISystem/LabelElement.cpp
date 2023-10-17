@@ -1,9 +1,9 @@
 #include "LabelElement.h"
 
-LabelElement::LabelElement(ElementContainer* parent, const char* text) : Element(parent){}
+LabelElement::LabelElement(ElementContainer* parent, std::string text) : Element(parent), text(std::move(text)){}
 
-void LabelElement::setText(const char* text){
-	this->text = text;
+void LabelElement::setText(std::string text){
+	this->text = std::move(text);
 }
 
 void LabelElement::draw(Sprite* canvas){
@@ -12,7 +12,7 @@ void LabelElement::draw(Sprite* canvas){
 	canvas->setTextColor(style.color);
 	canvas->setTextSize(style.scale);
 
-	canvas->drawString(text, x, y);
+	canvas->drawString(text.c_str(), x, y);
 }
 
 void LabelElement::setStyle(TextStyle style){
