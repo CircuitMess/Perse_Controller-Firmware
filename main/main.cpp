@@ -15,7 +15,7 @@
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
-
+#include "Periph/SPIFFS.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -30,6 +30,8 @@ void init(){
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
+
+	const auto spiffs = new SPIFFS();
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
