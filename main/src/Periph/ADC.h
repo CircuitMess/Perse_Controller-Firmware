@@ -1,36 +1,29 @@
 #ifndef CLOCKSTAR_FIRMWARE_ADC_H
 #define CLOCKSTAR_FIRMWARE_ADC_H
 
+#include <esp_adc/adc_oneshot.h>
 #include <hal/gpio_types.h>
-#include <driver/adc_types_legacy.h>
 
-class ADC {
+class ADC
+{
 public:
-	// Specifying min and max maps value to [-100, +100]
-	ADC(gpio_num_t pin, float ema_a = 1, int min = 0, int max = 0, int readingOffset = 0);
+	explicit ADC(gpio_num_t pin, float ema_a = 1, int min = 0, int max = 0, float readingOffset = 0.0f);
+	virtual ~ADC();
 
-	// Take a sample and get current value
 	float sample();
-
-	// Get current value without sampling
-	float getVal() const;
+	float getValue() const;
 
 	void resetEma();
-	void setEmaA(float emaA);
+	void setEmaA(float ema_a);
 
 private:
-	bool valid = true;
-
 	const gpio_num_t pin;
-	adc1_channel_t chan;
-
-	float ema_a;
-	const float min, max;
-	const float offset;
-
-	float val = -1;
-
+	float emaA;
+	const float min;
+	const float max;
+	const float readingOffset;
+	float value = -1.0f;
+	adc_oneshot_unit_handle_t adc_handle;
 };
-
 
 #endif //CLOCKSTAR_FIRMWARE_ADC_H

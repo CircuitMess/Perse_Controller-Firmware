@@ -2,6 +2,7 @@
 #include <freertos/task.h>
 #include <nvs_flash.h>
 #include <driver/gpio.h>
+#include <esp_sleep.h>
 #include <esp_log.h>
 #include "Pins.hpp"
 #include "Devices/Display.h"
@@ -15,7 +16,7 @@
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
-
+#include "Devices/Battery.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -33,6 +34,19 @@ void init(){
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
+
+	auto battery = new Battery();
+	battery->begin();
+
+	if (battery->isShutdown()) {
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL));
+		esp_deep_sleep_start();
+		return;
+	}
 
 	auto display = new Display();
 	display->drawTest();
