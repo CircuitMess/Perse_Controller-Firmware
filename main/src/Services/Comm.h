@@ -11,7 +11,7 @@ public:
 	struct Event{
 		CommType type;
 		union{
-
+			HeadlightsMode headlights;
 		};
 		uint8_t raw;
 	};
@@ -24,6 +24,7 @@ public:
 	 * @param speed
 	 */
 	void sendDriveDir(DriveDir dir);
+	void sendHeadlights(HeadlightsMode headlights);
 
 private:
 	TCPClient& tcp;
@@ -34,6 +35,5 @@ private:
 
 	EventQueue queue;
 };
-
 
 #endif //PERSE_MISSIONCTRL_COMM_H
