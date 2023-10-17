@@ -11,7 +11,8 @@
 #include "Periph/WiFiSTA.h"
 #include "Util/Events.h"
 #include "Services/TCPClient.h"
-
+#include "Services/RoverState.h"
+#include "Periph/SPIFFS.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -26,6 +27,8 @@ void init(){
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
+
+	const auto spiffs = new SPIFFS();
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
@@ -43,6 +46,10 @@ void init(){
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPClient();
 	Services.set(Service::TCP, tcp);
+
+	auto rover = new RoverState();
+	Services.set(Service::RoverState, rover);
+
 }
 
 extern "C" void app_main(void){
