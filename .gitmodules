@@ -7,9 +7,6 @@
 [submodule "components/Perse-Common"]
 	path = components/Perse-Common
 	url = https://github.com/CircuitMess/Perse-Common
-[submodule "components/lvgl"]
-	path = components/lvgl
-	url = https://github.com/lvgl/lvgl
 [submodule "components/JPEGDEC"]
 	path = components/JPEGDEC
 	url = https://github.com/bitbank2/JPEGDEC.git
