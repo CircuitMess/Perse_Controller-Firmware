@@ -32,6 +32,7 @@ void UIThread::loop(){
 		currentScreen.reset();
 		currentScreen = creator(display.getCanvas());
 		creator = {};
+		return;
 	}
 
 	display.commit();
