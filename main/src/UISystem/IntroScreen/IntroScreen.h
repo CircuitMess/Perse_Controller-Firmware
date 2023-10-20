@@ -3,6 +3,8 @@
 
 #include <glm.hpp>
 #include <string>
+#include <vector>
+#include <tuple>
 #include "UISystem/Screen.h"
 #include "UISystem/UIThread.h"
 
@@ -24,6 +26,8 @@ private:
 	static constexpr uint8_t crossMargin = 2;
 	static constexpr float pauseDuration = 0.5f;
 	static constexpr float moveDuration = 1.0f;
+	static const std::string crossPath;
+	static const std::vector<std::tuple<std::string, uint16_t, uint16_t>> imageInfos;
 
 	uint64_t lastLoopTime = 0;
 	uint8_t moveIndex = 0;

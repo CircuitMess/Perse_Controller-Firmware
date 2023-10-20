@@ -4,17 +4,25 @@
 #include "Util/stdafx.h"
 #include "Util/Services.h"
 
-std::unique_ptr<Screen> IntroScreen::createScreen(Sprite &canvas) {
+const std::vector<std::tuple<std::string, uint16_t, uint16_t>> IntroScreen::imageInfos = {
+		{"/spiffs/logo-cm.raw", 91, 91},
+		{"/spiffs/logo-geek.raw", 97, 81},
+		{"/spiffs/logo-space.raw", 116, 29},
+		{"/spiffs/logo-artemis.raw", 105, 14}
+};
+
+const std::string IntroScreen::crossPath = "/spiffs/cross.raw";
+
+std::unique_ptr<Screen> IntroScreen::createScreen(Sprite& canvas) {
 	return std::make_unique<IntroScreen>(canvas);
 }
 
 IntroScreen::IntroScreen(Sprite& canvas) : Screen(canvas), lastLoopTime(micros()) {
 	createStaticElements();
 
-	createMovingImage("/spiffs/logo-cm.raw", 91, 91);
-	createMovingImage("/spiffs/logo-geek.raw", 97, 81);
-	createMovingImage("/spiffs/logo-space.raw", 116, 29);
-	createMovingImage("/spiffs/logo-artemis.raw", 105, 14);
+	for (const std::tuple<std::string, uint16_t, uint16_t>& tuple : imageInfos) {
+			createMovingImage(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple));
+	}
 }
 
 IntroScreen::~IntroScreen() = default;
@@ -22,7 +30,12 @@ IntroScreen::~IntroScreen() = default;
 void IntroScreen::onLoop() {
 	Screen::onLoop();
 
-	float deltaTime = (micros() - lastLoopTime) / 1000000.0f; // [s]
+	if (!movingImages.empty() && movingImages.back() != nullptr && movingImages.back()->getY() <= - movingImages.back()->getHeight()) {
+		transition();
+		return;
+	}
+
+	const float deltaTime = (micros() - lastLoopTime) / 1000000.0f; // [s]
 	lastLoopTime = micros();
 
 	canvas.clear(C_RGB(backgroundColor.x, backgroundColor.y, backgroundColor.z));
@@ -60,11 +73,6 @@ void IntroScreen::onLoop() {
 		if (startingY > centerY && endingY <= centerY) {
 			paused = true;
 		}
-
-		if (i == movingImages.size() - 1 && endingY <= - movingImage->getHeight()) {
-			// If all images are off screen, transition
-			transition();
-		}
 	}
 
 	if (paused) {
@@ -89,7 +97,7 @@ void IntroScreen::createStaticElements() {
 
 	for (int x = 0; x < 2; ++x) {
 		for (int y = 0; y < 2; ++y) {
-			cross = new ImageElement(this, "/spiffs/cross.raw", 9, 9);
+			cross = new ImageElement(this, crossPath.c_str(), 9, 9);
 			cross->setPos(crossMargin + x * (getWidth() - cross->getWidth() - 2 * crossMargin), crossMargin + y * (getHeight() - cross->getHeight() - 2 * crossMargin));
 			elements.emplace_back(cross);
 		}
