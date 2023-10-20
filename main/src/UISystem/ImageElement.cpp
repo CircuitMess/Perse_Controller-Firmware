@@ -31,6 +31,14 @@ void ImageElement::draw(Sprite* canvas){
 	drawFile(*canvas, file, x, y, width, height, 1, TFT_TRANSPARENT);
 }
 
+uint16_t ImageElement::getWidth() const {
+	return width;
+}
+
+uint16_t ImageElement::getHeight() const {
+	return height;
+}
+
 void ImageElement::drawFile(Sprite& sprite, FILE* icon, int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t scale, int32_t maskingColor){
 	static constexpr uint32_t BufferLength = 512;
 
@@ -57,4 +65,3 @@ void ImageElement::drawFile(Sprite& sprite, FILE* icon, int16_t x, int16_t y, ui
 		}
 	}
 }
-

@@ -24,3 +24,11 @@ void Screen::loop(){
 	}
 	postDraw();
 }
+
+int32_t Screen::getWidth() const {
+	return canvas.width();
+}
+
+int32_t Screen::getHeight() const {
+	return canvas.height();
+}

@@ -13,6 +13,8 @@
 #include "Services/TCPClient.h"
 #include "Services/RoverState.h"
 #include "Periph/SPIFFS.h"
+#include "UISystem/IntroScreen/IntroScreen.h"
+#include "UISystem/UIThread.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -50,6 +52,9 @@ void init(){
 	auto rover = new RoverState();
 	Services.set(Service::RoverState, rover);
 
+	auto uiThread = new UIThread(*display);
+	uiThread->startScreen(&IntroScreen::createScreen);
+	uiThread->start();
 }
 
 extern "C" void app_main(void){

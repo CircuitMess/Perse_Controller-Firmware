@@ -14,6 +14,9 @@ public:
 
 	void loop();
 
+	int32_t getWidth() const;
+	int32_t getHeight() const;
+
 protected:
 	virtual void onLoop(){}
 	virtual void preDraw(){}

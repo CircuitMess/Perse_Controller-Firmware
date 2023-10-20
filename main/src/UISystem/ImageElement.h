@@ -11,6 +11,9 @@ public:
 	void setPath(const char* path);
 	void draw(Sprite* canvas) override;
 
+	uint16_t getWidth() const;
+	uint16_t getHeight() const;
+
 private:
 	FILE* file;
 	uint16_t width, height;
