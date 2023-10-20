@@ -21,6 +21,7 @@ protected:
 	virtual void onLoop(){}
 	virtual void preDraw(){}
 	virtual void postDraw(){}
+	virtual void transition(){}
 
 	Sprite& canvas;
 

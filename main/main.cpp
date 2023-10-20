@@ -55,6 +55,7 @@ void init(){
 	auto uiThread = new UIThread(*display);
 	uiThread->startScreen(&IntroScreen::createScreen);
 	uiThread->start();
+	Services.set(Service::UI, uiThread);
 }
 
 extern "C" void app_main(void){

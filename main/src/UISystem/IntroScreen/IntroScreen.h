@@ -17,16 +17,17 @@ public:
 
 protected:
 	virtual void onLoop() override;
+	virtual void transition() override;
 
 private:
 	static constexpr glm::vec<3, uint8_t> backgroundColor = {38, 38, 73};
 	static constexpr uint8_t crossMargin = 2;
 
 	uint64_t lastLoopTime = 0;
-	uint8_t transitionIndex = 0;
-	const float pauseDuration = 2.0f;
-	const float transitionDuration = 2.0f;
-	float transitionTime = 0.0f;
+	uint8_t moveIndex = 0;
+	const float pauseDuration = 0.5f;
+	const float moveDuration = 1.0f;
+	float moveTime = 0.0f;
 	float pausedTime = 0.0f;
 	bool paused = false;
 	std::vector<class ImageElement*> movingImages;
@@ -34,7 +35,7 @@ private:
 private:
 	void createStaticElements();
 	void createMovingImage(const std::string& path, uint16_t width, uint16_t height);
-	static float easeInOutCirc(float x);
+	static float easeInOut(float x);
 };
 
 #endif //PERSE_MISSIONCTRL_INTROSCREEN_H

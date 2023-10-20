@@ -2,6 +2,7 @@
 #include "UISystem/ImageElement.h"
 #include "Color.h"
 #include "Util/stdafx.h"
+#include "Util/Services.h"
 
 std::unique_ptr<Screen> IntroScreen::createScreen(Sprite &canvas) {
 	return std::make_unique<IntroScreen>(canvas);
@@ -28,16 +29,16 @@ void IntroScreen::onLoop() {
 
 	if (paused && pausedTime <= pauseDuration) {
 		pausedTime += deltaTime;
-		transitionTime = 0.0f;
+		moveTime = 0.0f;
 		return;
 	}
 	else {
 		pausedTime = 0.0f;
-		transitionTime += deltaTime;
+		moveTime += deltaTime;
 		paused = false;
 	}
 
-	const float deltaPercent = easeInOutCirc(std::clamp(transitionTime / transitionDuration, 0.0f, 1.0f));
+	const float deltaPercent = easeInOut(std::clamp(moveTime / moveDuration, 0.0f, 1.0f));
 	const float delta = getHeight() * deltaPercent;
 
 	for (int i = 0; i < movingImages.size(); ++i) {
@@ -46,7 +47,7 @@ void IntroScreen::onLoop() {
 			continue;
 		}
 
-		const int16_t baseImageY = (i + 1) * getHeight() + (getHeight() - movingImage->getHeight()) / 2 - transitionIndex * getHeight();
+		const int16_t baseImageY = (i + 1) * getHeight() + (getHeight() - movingImage->getHeight()) / 2 - moveIndex * getHeight();
 
 		const int16_t startingY = movingImage->getY();
 
@@ -59,11 +60,27 @@ void IntroScreen::onLoop() {
 		if (startingY > centerY && endingY <= centerY) {
 			paused = true;
 		}
+
+		if (i == movingImages.size() - 1 && endingY <= - movingImage->getHeight()) {
+			transition();
+		}
 	}
 
 	if (paused) {
-		++transitionIndex;
+		++moveIndex;
 	}
+}
+
+void IntroScreen::transition() {
+	canvas.clear(0);
+
+	UIThread* thread = (UIThread*)Services.get(Service::UI);
+	if (thread == nullptr) {
+		return;
+	}
+
+	// TODO: transition to the next screen
+	//thread->startScreen();
 }
 
 void IntroScreen::createStaticElements() {
@@ -85,10 +102,10 @@ void IntroScreen::createMovingImage(const std::string& path, uint16_t width, uin
 	image->setPos((getWidth() - image->getWidth()) / 2, (getHeight() - image->getHeight()) / 2 + movingImages.size() * getHeight());
 }
 
-float IntroScreen::easeInOutCirc(float x) {
+float IntroScreen::easeInOut(float x) {
 	if (x < 0.5f) {
-		return (1.0f - std::sqrt(1.0f - std::pow(2.0f * x, 2))) / 2.0f;
+		return 4.0f * std::pow(x, 3);
 	}
 
-	return (std::sqrt(1.0f - std::pow(-2.0f * x + 2.0f, 2)) + 1.0f) / 2.0f;
+	return 1.0f - std::pow(-2.0f * x + 2, 3) / 2;
 }
