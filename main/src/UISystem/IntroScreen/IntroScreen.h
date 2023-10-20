@@ -22,11 +22,11 @@ protected:
 private:
 	static constexpr glm::vec<3, uint8_t> backgroundColor = {38, 38, 73};
 	static constexpr uint8_t crossMargin = 2;
+	static constexpr float pauseDuration = 0.5f;
+	static constexpr float moveDuration = 1.0f;
 
 	uint64_t lastLoopTime = 0;
 	uint8_t moveIndex = 0;
-	const float pauseDuration = 0.5f;
-	const float moveDuration = 1.0f;
 	float moveTime = 0.0f;
 	float pausedTime = 0.0f;
 	bool paused = false;

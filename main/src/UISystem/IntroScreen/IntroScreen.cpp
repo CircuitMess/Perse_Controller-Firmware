@@ -62,6 +62,7 @@ void IntroScreen::onLoop() {
 		}
 
 		if (i == movingImages.size() - 1 && endingY <= - movingImage->getHeight()) {
+			// If all images are off screen, transition
 			transition();
 		}
 	}
