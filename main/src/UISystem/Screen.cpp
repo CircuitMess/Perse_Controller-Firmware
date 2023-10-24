@@ -9,6 +9,10 @@ Screen::~Screen(){
 	delete modal;
 }
 
+void Screen::setBgColor(Color color){
+	bgColor = color;
+}
+
 void Screen::loop(){
 	onLoop();
 
@@ -18,6 +22,8 @@ void Screen::loop(){
 }
 
 void Screen::draw(){
+	canvas.clear(bgColor);
+
 	preDraw();
 
 	for(auto& element : elements){

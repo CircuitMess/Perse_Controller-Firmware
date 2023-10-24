@@ -3,6 +3,7 @@
 
 #include "ElementContainer.h"
 #include "Devices/Display.h"
+#include "Color.h"
 
 class Modal;
 
@@ -22,8 +23,12 @@ protected:
 
 	Sprite& canvas;
 
+	void setBgColor(Color color);
+
 private:
 	Modal* modal = nullptr;
+	Color bgColor = TFT_BLACK;
+
 };
 
 
