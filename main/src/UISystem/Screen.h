@@ -13,6 +13,7 @@ public:
 	~Screen() override;
 
 	void loop();
+	void draw();
 
 protected:
 	virtual void onLoop(){}
