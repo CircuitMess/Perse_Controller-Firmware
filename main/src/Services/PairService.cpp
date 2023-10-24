@@ -1,5 +1,6 @@
 #include "PairService.h"
 #include "Util/Services.h"
+#include "Util/stdafx.h"
 
 PairService::PairService() : wifi(*(WiFiSTA*) Services.get(Service::WiFi)),
 							 tcp(*(TCPClient*) Services.get(Service::TCP)),
@@ -11,8 +12,17 @@ PairService::PairService() : wifi(*(WiFiSTA*) Services.get(Service::WiFi)),
 }
 
 PairService::~PairService(){
+	thread.stop(0);
+
+	if(state == State::Pairing){
+		wifi.disconnect();
+	}
+
+	while(thread.running()){
+		delayMillis(1);
+	}
+
 	Events::unlisten(&queue);
-	thread.stop();
 }
 
 PairService::State PairService::getState() const{
@@ -21,7 +31,7 @@ PairService::State PairService::getState() const{
 
 void PairService::loop(){
 	Event event{};
-	while(!queue.get(event, portMAX_DELAY)){}
+	if(!queue.get(event, portMAX_DELAY)) return;
 
 	if(event.facility == Facility::WiFiSTA){
 		auto& data = *((WiFiSTA::Event*) event.data);
@@ -35,10 +45,13 @@ void PairService::processEvent(const WiFiSTA::Event& event){
 
 	if(event.connect.success){
 		bool res = tcp.connect();
+		if(!res){
+			wifi.disconnect();
+		}
 		state = res ? State::Success : State::Fail;
 	}else{
 		state = State::Fail;
 	}
 
-	thread.stop();
+	thread.stop(0);
 }
