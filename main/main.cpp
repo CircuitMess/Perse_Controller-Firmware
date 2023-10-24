@@ -12,10 +12,8 @@
 #include "Util/Events.h"
 #include "Services/TCPClient.h"
 #include "Services/RoverState.h"
-#include "LV_Interface/LVGL.h"
-#include "LV_Interface/InputLVGL.h"
-#include "LV_Interface/FSLVGL.h"
 #include "Services/Comm.h"
+#include "Periph/SPIFFS.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -31,6 +29,8 @@ void init(){
 	}
 	ESP_ERROR_CHECK(ret);
 
+	const auto spiffs = new SPIFFS();
+
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
 
@@ -39,10 +39,6 @@ void init(){
 
 	auto bl = new Backlight(LEDC_CHANNEL_0);
 	Services.set(Service::Backlight, bl);
-
-	auto lvgl = new LVGL(*display);
-	auto lvglInput = new InputLVGL();
-	auto fs = new FSLVGL('S');
 
 	bl->fadeIn();
 
