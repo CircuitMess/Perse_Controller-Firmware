@@ -4,16 +4,16 @@
 #include <driver/gpio.h>
 #include <esp_log.h>
 #include "Pins.hpp"
-#include "Devices/Display.h"
-#include "Devices/Backlight.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
-#include "Periph/WiFiSTA.h"
 #include "Util/Events.h"
+#include "Periph/WiFiSTA.h"
+#include "Periph/SPIFFS.h"
+#include "Devices/Display.h"
+#include "Devices/Backlight.h"
 #include "Services/TCPClient.h"
 #include "Services/RoverState.h"
 #include "Services/Comm.h"
-#include "Periph/SPIFFS.h"
 
 void init(){
 	gpio_config_t cfg = {
