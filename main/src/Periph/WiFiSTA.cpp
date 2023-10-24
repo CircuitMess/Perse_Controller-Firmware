@@ -100,7 +100,12 @@ void WiFiSTA::event(int32_t id, void* data){
 		memcpy(evt.disconnect.bssid, event->bssid, 6);
 		Events::post(Facility::WiFiSTA, evt);
 	}else if(id == WIFI_EVENT_SCAN_DONE){
-		if(state != Scanning) return;
+		if(state == ConnAbort){
+			state = Disconnected;
+			Event evt{ .action = Event::Connect, .connect = { .success = false } };
+			Events::post(Facility::WiFiSTA, evt);
+			return;
+		}else if(state != Scanning) return;
 
 		wifi_ap_record_t ap_info[ScanListSize];
 		memset(ap_info, 0, sizeof(ap_info));
@@ -185,6 +190,7 @@ void WiFiSTA::disconnect(){
 		case Disconnected:
 			break;
 		case Scanning:
+			state = ConnAbort;
 			esp_wifi_scan_stop();
 			break;
 		case ConnAbort:
