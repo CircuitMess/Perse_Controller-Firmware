@@ -167,7 +167,10 @@ void WiFiSTA::connect(){
 	state = Scanning;
 	const wifi_scan_config_t ScanConfig = {
 			.channel = 1,
-			.scan_type = WIFI_SCAN_TYPE_PASSIVE
+			.scan_type = WIFI_SCAN_TYPE_PASSIVE,
+			.scan_time = {
+					.passive = 1500
+			}
 	};
 	esp_wifi_scan_start(&ScanConfig, false);
 }
