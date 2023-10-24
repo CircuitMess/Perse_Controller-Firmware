@@ -12,6 +12,7 @@
 #include "Util/Events.h"
 #include "Services/TCPClient.h"
 #include "Services/RoverState.h"
+#include "Services/Comm.h"
 #include "Periph/SPIFFS.h"
 
 void init(){
@@ -50,6 +51,8 @@ void init(){
 	auto rover = new RoverState();
 	Services.set(Service::RoverState, rover);
 
+	auto comm = new Comm();
+	Services.set(Service::Comm, comm);
 }
 
 extern "C" void app_main(void){
