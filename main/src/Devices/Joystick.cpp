@@ -15,7 +15,7 @@ Joystick::~Joystick(){
 }
 
 float Joystick::getX() const{
-	auto val = adcX.getVal();
+	auto val = adcX.getValue();
 	if(abs(val - calibration.centerX) <= DeadZoneVal) return 0;
 
 	val = std::clamp((uint32_t) val, calibration.minX, calibration.maxX);
@@ -31,7 +31,7 @@ float Joystick::getX() const{
 }
 
 float Joystick::getY() const{
-	auto val = adcY.getVal();
+	auto val = adcY.getValue();
 	if(abs(val - calibration.centerY) <= DeadZoneVal) return 0;
 
 	val = std::clamp((uint32_t) val, calibration.minY, calibration.maxY);
