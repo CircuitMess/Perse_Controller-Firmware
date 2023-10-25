@@ -35,6 +35,8 @@ void UIThread::loop(){
 		return;
 	}
 
+	currentScreen->draw();
+
 	display.commit();
 
 	const auto loopTime = (micros() - currMicros) / 1000;

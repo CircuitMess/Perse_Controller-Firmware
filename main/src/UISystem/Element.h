@@ -21,7 +21,7 @@ public:
 	void setPos(int16_t x, int16_t y);
 
 protected:
-	int16_t x, y;
+	int16_t x = 0, y = 0;
 
 private:
 	ElementContainer* parent;

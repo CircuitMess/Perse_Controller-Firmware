@@ -100,7 +100,12 @@ void WiFiSTA::event(int32_t id, void* data){
 		memcpy(evt.disconnect.bssid, event->bssid, 6);
 		Events::post(Facility::WiFiSTA, evt);
 	}else if(id == WIFI_EVENT_SCAN_DONE){
-		if(state != Scanning) return;
+		if(state == ConnAbort){
+			state = Disconnected;
+			Event evt{ .action = Event::Connect, .connect = { .success = false } };
+			Events::post(Facility::WiFiSTA, evt);
+			return;
+		}else if(state != Scanning) return;
 
 		wifi_ap_record_t ap_info[ScanListSize];
 		memset(ap_info, 0, sizeof(ap_info));
@@ -133,7 +138,7 @@ void WiFiSTA::event(int32_t id, void* data){
 
 esp_netif_t* WiFiSTA::createNetif(){
 	esp_netif_inherent_config_t base{};
-	memcpy(&base, ESP_NETIF_BASE_DEFAULT_WIFI_AP, sizeof(esp_netif_inherent_config_t));
+	memcpy(&base, ESP_NETIF_BASE_DEFAULT_WIFI_STA, sizeof(esp_netif_inherent_config_t));
 	base.flags = (esp_netif_flags_t) ((base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED)) | ESP_NETIF_FLAG_GARP);
 
 	const esp_netif_ip_info_t ip = {
@@ -143,7 +148,7 @@ esp_netif_t* WiFiSTA::createNetif(){
 	};
 	base.ip_info = &ip;
 
-	esp_netif_config_t cfg = ESP_NETIF_DEFAULT_WIFI_AP();
+	esp_netif_config_t cfg = ESP_NETIF_DEFAULT_WIFI_STA();
 	cfg.base = &base;
 
 	esp_netif_t* netif = esp_netif_new(&cfg);
@@ -162,7 +167,10 @@ void WiFiSTA::connect(){
 	state = Scanning;
 	const wifi_scan_config_t ScanConfig = {
 			.channel = 1,
-			.scan_type = WIFI_SCAN_TYPE_PASSIVE
+			.scan_type = WIFI_SCAN_TYPE_PASSIVE,
+			.scan_time = {
+					.passive = 1500
+			}
 	};
 	esp_wifi_scan_start(&ScanConfig, false);
 }
@@ -185,6 +193,7 @@ void WiFiSTA::disconnect(){
 		case Disconnected:
 			break;
 		case Scanning:
+			state = ConnAbort;
 			esp_wifi_scan_stop();
 			break;
 		case ConnAbort:
