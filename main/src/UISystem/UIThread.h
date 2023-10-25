@@ -3,7 +3,8 @@
 
 #include "Util/Threaded.h"
 #include "Devices/Display.h"
-#include "Screen.h"
+
+class Screen;
 
 typedef std::function<std::unique_ptr<Screen>(Sprite& canvas)> ScreenCreateFunc;
 
