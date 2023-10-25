@@ -23,22 +23,19 @@ IntroScreen::IntroScreen(Sprite& canvas) : Screen(canvas), lastLoopTime(micros()
 	for (const std::tuple<std::string, uint16_t, uint16_t>& tuple : imageInfos) {
 			createMovingImage(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple));
 	}
+
+	setBgColor(C_RGB(backgroundColor.x, backgroundColor.y, backgroundColor.z));
 }
 
 IntroScreen::~IntroScreen() = default;
 
+void IntroScreen::preDraw() {
+	setBgColor(C_RGB(backgroundColor.x, backgroundColor.y, backgroundColor.z));
+}
+
 void IntroScreen::onLoop() {
-	Screen::onLoop();
-
-	if (!movingImages.empty() && movingImages.back() != nullptr && movingImages.back()->getY() <= - movingImages.back()->getHeight()) {
-		transition();
-		return;
-	}
-
 	const float deltaTime = (micros() - lastLoopTime) / 1000000.0f; // [s]
 	lastLoopTime = micros();
-
-	canvas.clear(C_RGB(backgroundColor.x, backgroundColor.y, backgroundColor.z));
 
 	if (paused && pausedTime <= pauseDuration) {
 		pausedTime += deltaTime;
@@ -49,6 +46,11 @@ void IntroScreen::onLoop() {
 		pausedTime = 0.0f;
 		moveTime += deltaTime;
 		paused = false;
+	}
+
+	if (!movingImages.empty() && movingImages.back() != nullptr && movingImages.back()->getY() <= (getHeight() - movingImages.back()->getHeight()) / 2) {
+		// TODO: transition to the pairing screen
+		return;
 	}
 
 	const float deltaPercent = easeInOut(std::clamp(moveTime / moveDuration, 0.0f, 1.0f));
@@ -78,18 +80,6 @@ void IntroScreen::onLoop() {
 	if (paused) {
 		++moveIndex;
 	}
-}
-
-void IntroScreen::transition() {
-	canvas.clear(0);
-
-	UIThread* thread = (UIThread*)Services.get(Service::UI);
-	if (thread == nullptr) {
-		return;
-	}
-
-	// TODO: transition to the next screen
-	//thread->startScreen();
 }
 
 void IntroScreen::createStaticElements() {

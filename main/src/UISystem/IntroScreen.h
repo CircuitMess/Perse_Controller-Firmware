@@ -1,12 +1,12 @@
 #ifndef PERSE_MISSIONCTRL_INTROSCREEN_H
 #define PERSE_MISSIONCTRL_INTROSCREEN_H
 
-#include <glm.hpp>
+#include "../../lib/glm/glm/glm.hpp"
 #include <string>
 #include <vector>
 #include <tuple>
-#include "UISystem/Screen.h"
-#include "UISystem/UIThread.h"
+#include "Screen.h"
+#include "UIThread.h"
 
 class IntroScreen : public Screen
 {
@@ -18,8 +18,8 @@ public:
 	virtual ~IntroScreen() override;
 
 protected:
+	virtual void preDraw() override;
 	virtual void onLoop() override;
-	virtual void transition() override;
 
 private:
 	static constexpr glm::vec<3, uint8_t> backgroundColor = {38, 38, 73};

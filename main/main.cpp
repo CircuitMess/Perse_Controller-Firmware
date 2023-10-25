@@ -16,7 +16,7 @@
 #include "Services/RoverState.h"
 #include "Devices/Battery.h"
 #include "Services/Comm.h"
-#include "UISystem/IntroScreen/IntroScreen.h"
+#include "UISystem/IntroScreen.h"
 #include "UISystem/UIThread.h"
 
 void init(){
