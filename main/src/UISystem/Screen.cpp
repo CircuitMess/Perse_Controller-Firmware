@@ -44,3 +44,11 @@ void Screen::transition(ScreenCreateFunc create){
 
 	ui->startScreen(create);
 }
+
+int32_t Screen::getWidth() const {
+	return canvas.width();
+}
+
+int32_t Screen::getHeight() const {
+	return canvas.height();
+}

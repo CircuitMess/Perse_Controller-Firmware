@@ -14,11 +14,10 @@
 #include "Devices/Backlight.h"
 #include "Services/TCPClient.h"
 #include "Services/RoverState.h"
-#include "LV_Interface/LVGL.h"
-#include "LV_Interface/InputLVGL.h"
-#include "LV_Interface/FSLVGL.h"
 #include "Devices/Battery.h"
 #include "Services/Comm.h"
+#include "UISystem/IntroScreen.h"
+#include "UISystem/UIThread.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -58,7 +57,7 @@ void init(){
 
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
-  
+
 	auto battery = new Battery();
 	battery->begin();
 
@@ -71,6 +70,11 @@ void init(){
 		esp_deep_sleep_start();
 		return;
 	}
+
+	auto uiThread = new UIThread(*display);
+	uiThread->startScreen(&IntroScreen::createScreen);
+	uiThread->start();
+	Services.set(Service::UI, uiThread);
 }
 
 extern "C" void app_main(void){
