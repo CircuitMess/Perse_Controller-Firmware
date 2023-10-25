@@ -59,7 +59,7 @@ void init(){
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
   
-  auto battery = new Battery();
+	auto battery = new Battery();
 	battery->begin();
 
 	if (battery->isShutdown()) {
