@@ -12,7 +12,7 @@
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
 #include "UISystem/UIThread.h"
-#include "UISystem/IntroScreen.h"
+#include "Screens/IntroScreen.h"
 #include "Util/Services.h"
 
 [[noreturn]] void shutdown(){

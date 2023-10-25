@@ -1,12 +1,11 @@
 #ifndef PERSE_MISSIONCTRL_INTROSCREEN_H
 #define PERSE_MISSIONCTRL_INTROSCREEN_H
 
-#include "../../lib/glm/glm/glm.hpp"
+#include <glm.hpp>
 #include <string>
 #include <vector>
 #include <tuple>
-#include "Screen.h"
-#include "UIThread.h"
+#include "UISystem/Screen.h"
 
 class IntroScreen : public Screen
 {
