@@ -1,4 +1,5 @@
 #include "UIThread.h"
+#include "Screen.h"
 #include "Util/stdafx.h"
 
 UIThread::UIThread(Display& display) : Threaded("UIThread", 4 * 1024, 6, 1), display(display){
