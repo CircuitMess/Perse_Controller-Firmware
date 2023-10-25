@@ -78,8 +78,7 @@ void Comm::loop(){
 	}
 }
 
-Comm::Event Comm::processPacket(const ControlPacket& packet)
-{
+Comm::Event Comm::processPacket(const ControlPacket& packet) {
 	Event event {
 		.type = packet.type,
 		.raw = packet.data
@@ -90,8 +89,20 @@ Comm::Event Comm::processPacket(const ControlPacket& packet)
 			event.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
 			break;
 		}
-		case CommType::Battery : {
+		case CommType::Battery: {
 			event.batteryPercent = packet.data;
+			break;
+		}
+		case CommType::ArmPosition: {
+			event.armPos = packet.data;
+			break;
+		}
+		case CommType::ArmPinch: {
+			event.armPinch = packet.data;
+			break;
+		}
+		case CommType::CameraRotation: {
+			event.cameraRotation = packet.data;
 			break;
 		}
 		default: {
