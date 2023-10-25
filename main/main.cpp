@@ -58,7 +58,6 @@ void init(){
 	Services.set(Service::Input, input);
 
 	auto display = new Display();
-	display->drawTest();
 
 	auto bl = new Backlight(LEDC_CHANNEL_0);
 	Services.set(Service::Backlight, bl);
