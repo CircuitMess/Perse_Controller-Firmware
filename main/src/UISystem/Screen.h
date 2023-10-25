@@ -3,6 +3,7 @@
 
 #include "ElementContainer.h"
 #include "Devices/Display.h"
+#include "UISystem/UIThread.h"
 #include "Color.h"
 
 class Modal;
@@ -20,6 +21,8 @@ protected:
 	virtual void onLoop(){}
 	virtual void preDraw(){}
 	virtual void postDraw(){}
+
+	void transition(ScreenCreateFunc create);
 
 	Sprite& canvas;
 

@@ -1,6 +1,7 @@
 #include "Screen.h"
 #include "Modal.h"
 #include "Element.h"
+#include "Util/Services.h"
 
 Screen::Screen(Sprite& canvas) : canvas(canvas){
 }
@@ -35,4 +36,11 @@ void Screen::draw(){
 	}
 
 	postDraw();
+}
+
+void Screen::transition(ScreenCreateFunc create){
+	auto ui = (UIThread*) Services.get(Service::UI);
+	if(ui == nullptr) return;
+
+	ui->startScreen(create);
 }

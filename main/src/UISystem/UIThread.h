@@ -5,9 +5,9 @@
 #include "Devices/Display.h"
 #include "Screen.h"
 
-class UIThread : public Threaded {
-	typedef std::function<std::unique_ptr<Screen>(Sprite& canvas)> ScreenCreateFunc;
+typedef std::function<std::unique_ptr<Screen>(Sprite& canvas)> ScreenCreateFunc;
 
+class UIThread : public Threaded {
 public:
 	UIThread(Display& display);
 	~UIThread() override;
