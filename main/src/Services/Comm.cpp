@@ -11,6 +11,48 @@ Comm::~Comm(){
 	stop();
 }
 
+void Comm::sendDriveDir(DriveDir dir){
+	uint8_t code = CommData::encodeDriveDir(dir);
+	ControlPacket packet{ CommType::DriveDir, code };
+	sendPacket(packet);
+}
+
+void Comm::sendHeadlights(HeadlightsMode headlights) {
+	const ControlPacket packet {
+		.type = CommType::Headlights,
+		.data = (uint8_t)headlights
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendArmPos(ArmPos position) {
+	const ControlPacket packet {
+			.type = CommType::ArmPosition,
+			.data = (uint8_t)position
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendArmPinch(ArmPinch pinch) {
+	const ControlPacket packet {
+			.type = CommType::ArmPinch,
+			.data = (uint8_t)pinch
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendCameraRotation(CameraRotation rotation) {
+	const ControlPacket packet {
+			.type = CommType::CameraRotation,
+			.data = rotation
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
@@ -36,17 +78,22 @@ void Comm::loop(){
 	}
 }
 
-void Comm::sendDriveDir(DriveDir dir){
-	uint8_t code = CommData::encodeDriveDir(dir);
-	ControlPacket packet{ CommType::DriveDir, code };
-	sendPacket(packet);
+Comm::Event Comm::processPacket(const ControlPacket& packet)
+{
+	Event event {
+		.type = packet.type,
+		.raw = packet.data
+	};
+
+	switch (packet.type){
+        case CommType::Headlights: {
+			event.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
+			break;
+		}
+		default: {
+			break;
+		}
+	}
+
+	return event;
 }
-
-Comm::Event Comm::processPacket(const ControlPacket& packet){
-	Event e{};
-	e.raw = packet.data;
-	e.type = packet.type;
-
-	return e;
-}
-

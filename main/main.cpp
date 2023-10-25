@@ -5,18 +5,20 @@
 #include <esp_sleep.h>
 #include <esp_log.h>
 #include "Pins.hpp"
-#include "Devices/Display.h"
-#include "Devices/Backlight.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
-#include "Periph/WiFiSTA.h"
 #include "Util/Events.h"
+#include "Periph/WiFiSTA.h"
+#include "Periph/SPIFFS.h"
+#include "Devices/Display.h"
+#include "Devices/Backlight.h"
 #include "Services/TCPClient.h"
 #include "Services/RoverState.h"
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
 #include "Devices/Battery.h"
+#include "Services/Comm.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -32,6 +34,8 @@ void init(){
 	}
 	ESP_ERROR_CHECK(ret);
 
+	const auto spiffs = new SPIFFS();
+
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
 
@@ -40,10 +44,6 @@ void init(){
 
 	auto bl = new Backlight(LEDC_CHANNEL_0);
 	Services.set(Service::Backlight, bl);
-
-	auto lvgl = new LVGL(*display);
-	auto lvglInput = new InputLVGL();
-	auto fs = new FSLVGL('S');
 
 	bl->fadeIn();
 
@@ -56,7 +56,10 @@ void init(){
 	auto rover = new RoverState();
 	Services.set(Service::RoverState, rover);
 
-	auto battery = new Battery();
+	auto comm = new Comm();
+	Services.set(Service::Comm, comm);
+  
+  auto battery = new Battery();
 	battery->begin();
 
 	if (battery->isShutdown()) {
