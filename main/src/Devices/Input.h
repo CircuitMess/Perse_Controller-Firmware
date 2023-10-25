@@ -20,6 +20,8 @@ public:
 		enum Action { Release, Press } action;
 	};
 
+	bool getState(Button btn);
+
 private:
 	void scan();
 	void pressed(Button btn);
