@@ -90,6 +90,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet)
 			event.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
 			break;
 		}
+		case CommType::Battery : {
+			event.batteryPercent = packet.data;
+			break;
+		}
 		default: {
 			break;
 		}

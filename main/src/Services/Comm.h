@@ -16,6 +16,7 @@ public:
 				ArmPos armPos;
 				ArmPinch armPinch;
 			};
+			uint8_t batteryPercent;
 		};
 		uint8_t raw;
 	};
