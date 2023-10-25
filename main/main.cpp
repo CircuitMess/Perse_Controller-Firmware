@@ -7,6 +7,7 @@
 #include "Devices/Battery.h"
 #include "Devices/Display.h"
 #include "Devices/Backlight.h"
+#include "Devices/Input.h"
 #include "Services/TCPClient.h"
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
@@ -52,6 +53,9 @@ void init(){
 
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
+
+	auto input = new Input();
+	Services.set(Service::Input, input);
 
 	auto display = new Display();
 	display->drawTest();
