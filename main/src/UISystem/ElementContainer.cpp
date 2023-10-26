@@ -7,3 +7,9 @@ ElementContainer::~ElementContainer(){
 		delete element;
 	}
 }
+
+void ElementContainer::onElements(std::function<void(Element*)> func){
+	for(auto el : elements){
+		func(el);
+	}
+}

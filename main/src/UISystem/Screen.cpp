@@ -17,9 +17,9 @@ void Screen::setBgColor(Color color){
 void Screen::loop(){
 	onLoop();
 
-	for(auto& element : elements){
-		element->loop();
-	}
+	onElements([](Element* el){
+		el->loop();
+	});
 }
 
 void Screen::draw(){
@@ -27,9 +27,9 @@ void Screen::draw(){
 
 	preDraw();
 
-	for(auto& element : elements){
-		element->draw(&canvas);
-	}
+	onElements([this](Element* el){
+		el->draw(&canvas);
+	});
 
 	if(modal){
 		modal->loop();
