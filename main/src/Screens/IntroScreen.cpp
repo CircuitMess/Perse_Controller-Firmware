@@ -90,14 +90,12 @@ void IntroScreen::createStaticElements() {
 		for (int y = 0; y < 2; ++y) {
 			cross = new ImageElement(this, crossPath.c_str(), 9, 9);
 			cross->setPos(crossMargin + x * (getWidth() - cross->getWidth() - 2 * crossMargin), crossMargin + y * (getHeight() - cross->getHeight() - 2 * crossMargin));
-			elements.emplace_back(cross);
 		}
 	}
 }
 
 void IntroScreen::createMovingImage(const std::string& path, uint16_t width, uint16_t height) {
 	ImageElement* image = new ImageElement(this, path.c_str(), width, height);
-	elements.emplace_back(image);
 	movingImages.emplace_back(image);
 	image->setPos((getWidth() - image->getWidth()) / 2, (getHeight() - image->getHeight()) / 2 + movingImages.size() * getHeight());
 }
