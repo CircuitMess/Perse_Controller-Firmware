@@ -11,6 +11,7 @@
 #include "Devices/Backlight.h"
 #include "Devices/Input.h"
 #include "Devices/AW9523.h"
+#include "Devices/Joystick.h"
 #include "Services/TCPClient.h"
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
@@ -65,6 +66,9 @@ void init(){
 
 	auto input = new Input();
 	Services.set(Service::Input, input);
+
+	auto joy = new Joystick(*adc);
+	Services.set(Service::Joystick, joy);
 
 	auto display = new Display();
 
