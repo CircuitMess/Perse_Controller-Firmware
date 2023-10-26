@@ -20,6 +20,10 @@ void Screen::loop(){
 	onElements([](Element* el){
 		el->loop();
 	});
+
+	if(modal){
+		modal->draw();
+	}
 }
 
 void Screen::draw(){
@@ -31,11 +35,11 @@ void Screen::draw(){
 		el->draw(&canvas);
 	});
 
-	if(modal){
-		modal->loop();
-	}
-
 	postDraw();
+
+	if(modal){
+		modal->draw();
+	}
 }
 
 void Screen::transition(ScreenCreateFunc create){

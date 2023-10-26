@@ -11,6 +11,9 @@ public:
 	~Modal() override;
 
 	void loop();
+
+	void draw();
+
 private:
 	Screen* screen = nullptr;
 };

@@ -14,7 +14,9 @@ void Modal::loop(){
 	onElements([](Element* el){
 		el->loop();
 	});
+}
 
+void Modal::draw(){
 	onElements([this](Element* el){
 		el->draw(&screen->canvas);
 	});
