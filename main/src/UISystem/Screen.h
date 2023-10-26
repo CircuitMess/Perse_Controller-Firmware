@@ -35,6 +35,8 @@ private:
 	Modal* modal = nullptr;
 	Color bgColor = TFT_BLACK;
 
+	bool transitioned = false;
+
 };
 
 

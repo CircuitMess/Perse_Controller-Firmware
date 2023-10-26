@@ -17,6 +17,8 @@ void Screen::setBgColor(Color color){
 void Screen::loop(){
 	onLoop();
 
+	if(transitioned) return;
+
 	onElements([](Element* el){
 		el->loop();
 	});
@@ -47,6 +49,7 @@ void Screen::transition(ScreenCreateFunc create){
 	if(ui == nullptr) return;
 
 	ui->startScreen(create);
+	transitioned = true;
 }
 
 int32_t Screen::getWidth() const {
