@@ -1,16 +1,38 @@
 #include "Joystick.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
+#include "Pins.hpp"
 
-Joystick::Joystick(gpio_num_t joyX, gpio_num_t joyY) : Threaded("Joystick", 4 * 1024), settings(*(Settings*) Services.get(Service::Settings)),
-													   adcX(joyX), adcY(joyY),
-													   calibThread([this](){ calibLoop(); }, "JoyCalib", 2 * 1024){
+Joystick::Joystick(ADC& adc) : Threaded("Joystick", 4 * 1024), settings(*(Settings*) Services.get(Service::Settings)),
+							   adcX(adc, (gpio_num_t) JOY_H), adcY(adc, (gpio_num_t) JOY_V),
+							   calibThread([this](){ calibLoop(); }, "JoyCalib", 2 * 1024){
+
+	for(const auto pin : { JOY_H, JOY_V }){
+		adc_unit_t unit;
+		adc_channel_t chan;
+		adc_oneshot_io_to_channel(pin, &unit, &chan);
+
+		adc.config(chan, {
+				.atten = ADC_ATTEN_DB_11,
+				.bitwidth = ADC_BITWIDTH_12
+		});
+	}
+
 	calibration = settings.get().joyCalib;
 	enableFilters();
-	start();
 }
 
 Joystick::~Joystick(){
+	stop();
+	calibThread.stop();
+}
+
+void Joystick::begin(){
+	if(inCalibration) return;
+	start();
+}
+
+void Joystick::end(){
 	stop();
 }
 
@@ -80,7 +102,6 @@ void Joystick::stopRangeCalib(){
 
 	inCalibration = false;
 	enableFilters();
-	start();
 }
 
 void Joystick::centerCalib(){
@@ -98,7 +119,6 @@ void Joystick::centerCalib(){
 	settings.store();
 
 	enableFilters();
-	start();
 }
 
 void Joystick::enableFilters(){

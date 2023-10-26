@@ -5,6 +5,7 @@
 #include "Periph/WiFiSTA.h"
 #include "Periph/SPIFFS.h"
 #include "Periph/I2C.h"
+#include "Periph/ADC.h"
 #include "Devices/Battery.h"
 #include "Devices/Display.h"
 #include "Devices/Backlight.h"
@@ -28,7 +29,9 @@
 }
 
 void init(){
-	auto battery = new Battery();
+	auto adc = new ADC(ADC_UNIT_1);
+
+	auto battery = new Battery(*adc);
 	if(battery->isShutdown()){
 		shutdown();
 		return;
