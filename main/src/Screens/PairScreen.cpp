@@ -2,8 +2,8 @@
 #include "Devices/Input.h"
 
 PairScreen::PairScreen(Sprite& canvas) : Screen(canvas), evts(6){
-	text1 = new LabelElement(this, "");
-	text2 = new LabelElement(this, "Hold PAIR to pair...");
+	text1 = new LabelElement(this, "Hold PAIR to pair...");
+	text2 = new LabelElement(this, "");
 
 	const TextStyle style = {
 			.color = TFT_GREEN,
