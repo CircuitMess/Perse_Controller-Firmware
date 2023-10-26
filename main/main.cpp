@@ -4,16 +4,19 @@
 #include <esp_sleep.h>
 #include "Periph/WiFiSTA.h"
 #include "Periph/SPIFFS.h"
+#include "Periph/I2C.h"
 #include "Devices/Battery.h"
 #include "Devices/Display.h"
 #include "Devices/Backlight.h"
 #include "Devices/Input.h"
+#include "Devices/AW9523.h"
 #include "Services/TCPClient.h"
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
 #include "UISystem/UIThread.h"
 #include "Screens/IntroScreen.h"
 #include "Util/Services.h"
+#include "Pins.hpp"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -30,6 +33,9 @@ void init(){
 		shutdown();
 		return;
 	}
+
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5c);
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
