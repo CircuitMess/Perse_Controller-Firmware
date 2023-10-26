@@ -53,6 +53,15 @@ void Comm::sendCameraRotation(CameraRotation rotation) {
 	sendPacket(packet);
 }
 
+void Comm::sendFeedQuality(uint8_t quality){
+	const ControlPacket packet {
+			.type = CommType::FeedQuality,
+			.data = quality
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 

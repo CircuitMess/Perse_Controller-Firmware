@@ -34,6 +34,7 @@ public:
 	void sendArmPos(ArmPos position);
 	void sendArmPinch(ArmPinch pinch);
 	void sendCameraRotation(CameraRotation rotation);
+	void sendFeedQuality(uint8_t quality);
 
 private:
 	TCPClient& tcp;
