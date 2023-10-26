@@ -16,6 +16,8 @@ public:
 				ArmPos armPos;
 				ArmPinch armPinch;
 			};
+			ModulePlugData modulePlug;
+			ModuleData moduleData;
 		};
 		uint8_t raw;
 	};
@@ -32,6 +34,7 @@ public:
 	void sendArmPos(ArmPos position);
 	void sendArmPinch(ArmPinch pinch);
 	void sendCameraRotation(CameraRotation rotation);
+	void sendModulesEnable(bool enable);
 
 private:
 	TCPClient& tcp;

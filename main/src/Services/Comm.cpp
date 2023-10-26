@@ -63,11 +63,21 @@ void Comm::loop(){
 	bool readOK = false;
 	if(tcp.isConnected()){
 		ControlPacket packet{};
-		readOK = tcp.read(reinterpret_cast<uint8_t*>(&packet), sizeof(ControlPacket));
+		readOK = tcp.read(reinterpret_cast<uint8_t*>(&packet.type), sizeof(CommType));
 
 		if(readOK){
-			Event e = processPacket(packet);
-			Events::post(Facility::Comm, e);
+			//special read and process case for ModuleData packets
+			if(packet.type == CommType::ModuleData){
+				ModuleData moduleData{};
+				readOK = tcp.read(reinterpret_cast<uint8_t*>(&moduleData), sizeof(ModuleData));
+				if(readOK){
+					Event e{ CommType::ModuleData, { .moduleData = moduleData }, 0 };
+					Events::post(Facility::Comm, e);
+				}
+			}else{
+				Event e = processPacket(packet);
+				Events::post(Facility::Comm, e);
+			}
 		}
 	}
 
@@ -76,6 +86,15 @@ void Comm::loop(){
 		while(!queue.get(event, portMAX_DELAY));
 		free(event.data);
 	}
+}
+
+void Comm::sendModulesEnable(bool enable){
+	const ControlPacket packet {
+		.type = CommType::ModulesEnable,
+		.data = (uint8_t)enable
+	};
+
+	sendPacket(packet);
 }
 
 Comm::Event Comm::processPacket(const ControlPacket& packet)
@@ -88,6 +107,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet)
 	switch (packet.type){
         case CommType::Headlights: {
 			event.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
+			break;
+		}
+		case CommType::ModulePlug: {
+			event.modulePlug = CommData::decodeModulePlug(packet.data);
 			break;
 		}
 		default: {
