@@ -23,6 +23,8 @@ adc_unit_t ADC::getUnit() const{
 }
 
 int ADC::read(adc_channel_t chan){
+	std::lock_guard lock(readMut);
+
 	int val;
 	ESP_ERROR_CHECK(adc_oneshot_read(hndl, chan, &val));
 	return val;

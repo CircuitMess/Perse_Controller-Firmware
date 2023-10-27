@@ -2,6 +2,7 @@
 #define CLOCKSTAR_FIRMWARE_ADC_H
 
 #include <esp_adc/adc_oneshot.h>
+#include <mutex>
 
 class ADC {
 public:
@@ -17,6 +18,8 @@ public:
 private:
 	adc_oneshot_unit_handle_t hndl;
 	adc_unit_t unit;
+
+	std::mutex readMut;
 
 };
 

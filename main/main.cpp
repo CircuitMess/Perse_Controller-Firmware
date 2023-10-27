@@ -12,9 +12,11 @@
 #include "Devices/Input.h"
 #include "Devices/AW9523.h"
 #include "Devices/Joystick.h"
+#include "Devices/Encoders.h"
 #include "Services/TCPClient.h"
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
+#include "Services/LED.h"
 #include "UISystem/UIThread.h"
 #include "Screens/IntroScreen.h"
 #include "Util/Services.h"
@@ -38,8 +40,17 @@ void init(){
 		return;
 	}
 
+	const gpio_config_t cfg = {
+			.pin_bit_mask = 1ULL << LED_PAIR,
+			.mode = GPIO_MODE_OUTPUT
+	};
+	gpio_config(&cfg);
+	gpio_set_level((gpio_num_t) LED_PAIR, 0);
+
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
+	auto led = new LED(*aw9523);
+	Services.set(Service::LED, led);
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
@@ -66,6 +77,8 @@ void init(){
 
 	auto input = new Input();
 	Services.set(Service::Input, input);
+
+	auto encoders = new Encoders();
 
 	auto joy = new Joystick(*adc);
 	Services.set(Service::Joystick, joy);
