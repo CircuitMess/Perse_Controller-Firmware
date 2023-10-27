@@ -40,6 +40,13 @@ void init(){
 		return;
 	}
 
+	const gpio_config_t cfg = {
+			.pin_bit_mask = 1ULL << LED_PAIR,
+			.mode = GPIO_MODE_OUTPUT
+	};
+	gpio_config(&cfg);
+	gpio_set_level((gpio_num_t) LED_PAIR, 0);
+
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
 	auto led = new LED(*aw9523);
