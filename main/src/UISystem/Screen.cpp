@@ -1,6 +1,7 @@
 #include "Screen.h"
 #include "Modal.h"
 #include "Element.h"
+#include "Util/Services.h"
 
 Screen::Screen(Sprite& canvas) : canvas(canvas){
 }
@@ -16,8 +17,14 @@ void Screen::setBgColor(Color color){
 void Screen::loop(){
 	onLoop();
 
-	for(auto& element : elements){
-		element->loop();
+	if(transitioned) return;
+
+	onElements([](Element* el){
+		el->loop();
+	});
+
+	if(modal){
+		modal->draw();
 	}
 }
 
@@ -26,13 +33,29 @@ void Screen::draw(){
 
 	preDraw();
 
-	for(auto& element : elements){
-		element->draw(&canvas);
-	}
-
-	if(modal){
-		modal->loop();
-	}
+	onElements([this](Element* el){
+		el->draw(&canvas);
+	});
 
 	postDraw();
+
+	if(modal){
+		modal->draw();
+	}
+}
+
+void Screen::transition(ScreenCreateFunc create){
+	auto ui = (UIThread*) Services.get(Service::UI);
+	if(ui == nullptr) return;
+
+	ui->startScreen(create);
+	transitioned = true;
+}
+
+int32_t Screen::getWidth() const {
+	return canvas.width();
+}
+
+int32_t Screen::getHeight() const {
+	return canvas.height();
 }

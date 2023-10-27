@@ -2,6 +2,7 @@
 #define PERSE_MISSIONCTRL_ELEMENTCONTAINER_H
 
 #include <vector>
+#include <functional>
 
 class Element;
 
@@ -11,6 +12,9 @@ public:
 	virtual ~ElementContainer();
 
 protected:
+	void onElements(std::function<void(Element*)>);
+
+private:
 	std::vector<Element*> elements;
 };
 

@@ -1,16 +1,17 @@
 #ifndef PERSE_MISSIONCTRL_JOYSTICK_H
 #define PERSE_MISSIONCTRL_JOYSTICK_H
 
+#include "Periph/ADC.h"
+#include "Services/Settings.h"
+#include "Services/ADCReader.h"
+#include "Util/Threaded.h"
+#include <vec2.hpp>
 #include <atomic>
 #include <mutex>
-#include "Services/Settings.h"
-#include "Periph/ADC.h"
-#include "vec2.hpp"
-#include "Util/Threaded.h"
 
 class Joystick : private Threaded {
 public:
-	Joystick(gpio_num_t joyX, gpio_num_t joyY);
+	Joystick(ADC& adc);
 	~Joystick() override;
 
 	float getX() const;
@@ -21,9 +22,13 @@ public:
 	void stopRangeCalib();
 	void centerCalib();
 
+	void begin();
+	void end();
+
 private:
 	Settings& settings; //used for reading/writing calibration data
-	ADC adcX, adcY;
+	ADCReader adcX;
+	ADCReader adcY;
 
 	static constexpr float FilterStrength = 0.3; //1.0 - no filter, 0 - full strength
 	static constexpr uint32_t DeadZoneVal = 5;

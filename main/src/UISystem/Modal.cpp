@@ -11,11 +11,13 @@ Modal::~Modal(){
 }
 
 void Modal::loop(){
-	for(auto& element : elements){
-		element->loop();
-	}
+	onElements([](Element* el){
+		el->loop();
+	});
+}
 
-	for(auto& element : elements){
-		element->draw(&screen->canvas);
-	}
+void Modal::draw(){
+	onElements([this](Element* el){
+		el->draw(&screen->canvas);
+	});
 }

@@ -1,11 +1,12 @@
 #ifndef PERSE_ROVER_BATTERY_H
 #define PERSE_ROVER_BATTERY_H
 
+#include "Periph/ADC.h"
+#include "Services/ADCReader.h"
+#include "Util/Threaded.h"
+#include "Util/Hysteresis.h"
 #include <hal/gpio_types.h>
 #include <esp_efuse.h>
-#include "Util/Threaded.h"
-#include "Periph/ADC.h"
-#include "Util/Hysteresis.h"
 
 class Battery : private SleepyThreaded
 {
@@ -22,7 +23,7 @@ public:
 	};
 
 public:
-	Battery();
+	Battery(ADC& adc);
 	void begin();
 
 	uint8_t getPerc() const;
@@ -40,7 +41,7 @@ private:
 	static constexpr esp_efuse_desc_t AdcHigh = {EFUSE_BLK3, 8, 8 };
 	static constexpr const esp_efuse_desc_t* EfuseAdcHigh[] = {&AdcHigh, nullptr };
 
-	ADC adc;
+	ADCReader adc;
 	Hysteresis hysteresis;
 	bool shutdown = false;
 

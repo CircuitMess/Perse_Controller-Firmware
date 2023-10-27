@@ -3,6 +3,7 @@
 
 #include "ElementContainer.h"
 #include "Devices/Display.h"
+#include "UISystem/UIThread.h"
 #include "Color.h"
 
 class Modal;
@@ -16,10 +17,15 @@ public:
 	void loop();
 	void draw();
 
+	int32_t getWidth() const;
+	int32_t getHeight() const;
+
 protected:
 	virtual void onLoop(){}
 	virtual void preDraw(){}
 	virtual void postDraw(){}
+
+	void transition(ScreenCreateFunc create);
 
 	Sprite& canvas;
 
@@ -28,6 +34,8 @@ protected:
 private:
 	Modal* modal = nullptr;
 	Color bgColor = TFT_BLACK;
+
+	bool transitioned = false;
 
 };
 
