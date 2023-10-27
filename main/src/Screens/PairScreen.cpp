@@ -1,5 +1,6 @@
 #include "PairScreen.h"
 #include "Devices/Input.h"
+#include "Screens/DriveScreen.h"
 
 PairScreen::PairScreen(Sprite& canvas) : Screen(canvas), evts(6){
 	text1 = new LabelElement(this, "Hold PAIR to pair...");
@@ -37,7 +38,7 @@ void PairScreen::onLoop(){
 		pair.reset();
 
 		if(state == PairService::State::Success){
-			// TODO: go to DriveScreen
+			transition([](Sprite& canvas){ return std::make_unique<DriveScreen>(canvas); });
 		}else if(state == PairService::State::Fail){
 			text1->setText("Pair failed.");
 			text2->setText("Hold PAIR to pair...");
