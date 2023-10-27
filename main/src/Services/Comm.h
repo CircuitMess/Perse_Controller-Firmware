@@ -16,6 +16,8 @@ public:
 				ArmPos armPos;
 				ArmPinch armPinch;
 			};
+			CameraRotation cameraRotation;
+			uint8_t batteryPercent;
 		};
 		uint8_t raw;
 	};
