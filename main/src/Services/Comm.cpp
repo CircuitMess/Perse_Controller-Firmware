@@ -75,8 +75,11 @@ void Comm::loop(){
 					Events::post(Facility::Comm, e);
 				}
 			}else{
-				Event e = processPacket(packet);
-				Events::post(Facility::Comm, e);
+				readOK = tcp.read(reinterpret_cast<uint8_t*>(&packet.data), sizeof(ControlPacket::data));
+				if(readOK){
+					Event e = processPacket(packet);
+					Events::post(Facility::Comm, e);
+				}
 			}
 		}
 	}
