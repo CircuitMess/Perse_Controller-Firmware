@@ -96,9 +96,15 @@ void DriveScreen::sendDriveDir(){
 
 	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
 	if(len < 0.1){
-		comm.sendDriveDir({ 0, 0.0f });
+		if (shouldSendZeroDrive) {
+			comm.sendDriveDir({ 0, 0.0f });
+			shouldSendZeroDrive = false;
+		}
+
 		return;
 	}
+
+	shouldSendZeroDrive = true;
 
 	auto angle = glm::degrees(glm::angle(glm::normalize(dir), { 0.0, 1.0 }));
 	if(dir.x < 0){

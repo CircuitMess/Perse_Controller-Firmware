@@ -36,6 +36,7 @@ private:
 	void preDraw() override;
 	void onLoop() override;
 
+	bool shouldSendZeroDrive = true;
 	uint64_t startTime;
 	static constexpr uint64_t StartHoldTime = 1000; // [ms]
 	bool holdDone = false;
