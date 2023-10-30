@@ -12,6 +12,8 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), 
 
 	gpio_set_level((gpio_num_t) LED_PAIR, 1);
 
+	comm.sendFeedQuality(1);
+
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
 		.color = TFT_GREEN,
