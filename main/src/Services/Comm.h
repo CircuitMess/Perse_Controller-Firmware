@@ -18,6 +18,8 @@ public:
 			};
 			CameraRotation cameraRotation;
 			uint8_t batteryPercent;
+			ModulePlugData modulePlug;
+			ModuleData moduleData;
 		};
 		uint8_t raw;
 	};
@@ -35,6 +37,7 @@ public:
 	void sendArmPinch(ArmPinch pinch);
 	void sendCameraRotation(CameraRotation rotation);
 	void sendFeedQuality(uint8_t quality);
+	void sendModulesEnable(bool enable);
 
 private:
 	TCPClient& tcp;
