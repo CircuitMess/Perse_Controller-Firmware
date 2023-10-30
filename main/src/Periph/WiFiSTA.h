@@ -43,7 +43,7 @@ private:
 
 	static esp_netif_t* createNetif();
 
-	static constexpr uint16_t ScanListSize = 10;
+	static constexpr uint16_t ScanListSize = 24;
 
 	static wifi_ap_record_t* findNetwork(wifi_ap_record_t* ap_info, uint32_t numRecords);
 };
