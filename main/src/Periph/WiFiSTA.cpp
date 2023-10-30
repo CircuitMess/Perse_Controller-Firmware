@@ -202,10 +202,20 @@ void WiFiSTA::disconnect(){
 }
 
 wifi_ap_record_t* WiFiSTA::findNetwork(wifi_ap_record_t* ap_info, uint32_t numRecords){
+	std::vector<wifi_ap_record_t*> networks;
 	for(int i = 0; i < numRecords; ++i){
 		if(strncmp((const char*) ap_info[i].ssid, "Perseverance Rover", 18) == 0){
-			return &ap_info[i];
+			networks.emplace_back(&ap_info[i]);
 		}
 	}
-	return nullptr;
+
+	std::sort(networks.begin(), networks.end(), [](wifi_ap_record_t* first, wifi_ap_record_t* second) -> bool {
+		return first->rssi > second->rssi;
+	});
+
+	if (networks.empty()) {
+		return nullptr;
+	}
+
+	return networks.front();
 }
