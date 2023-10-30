@@ -22,7 +22,7 @@ private:
 	struct EncPins { uint8_t pinA, pinB; };
 	static const std::unordered_map<Enc, EncPins> PinMap;
 
-	static constexpr uint64_t SleepTime = 5; // [ms]
+	static constexpr uint64_t SleepTime = 2; // [ms]
 
 	void loop() override;
 

@@ -29,6 +29,9 @@ private:
 	Joystick& joy;
 	uint64_t lastDirSend = 0;
 	static constexpr uint64_t DirSendInterval = 50; // [ms]
+	static constexpr int8_t ArmDirectionMultiplier = -2;
+	static constexpr int8_t PinchDirectionMultiplier = 5;
+	static constexpr int8_t CameraDirectionMultiplier = -4;
 	void sendDriveDir();
 
 	void extractInfo(const DriveInfo& info);
