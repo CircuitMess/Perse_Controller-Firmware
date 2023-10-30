@@ -96,9 +96,15 @@ void DriveScreen::sendDriveDir(){
 
 	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
 	if(len < 0.1){
-		comm.sendDriveDir({ 0, 0.0f });
+		if (shouldSendZeroDrive) {
+			comm.sendDriveDir({ 0, 0.0f });
+			shouldSendZeroDrive = false;
+		}
+
 		return;
 	}
+
+	shouldSendZeroDrive = true;
 
 	auto angle = glm::degrees(glm::angle(glm::normalize(dir), { 0.0, 1.0 }));
 	if(dir.x < 0){
@@ -175,15 +181,15 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armUnlocked) return;
 
 	if(evt.enc == Encoders::Arm){
-		armPos = std::clamp(armPos + evt.dir, 0, 100);
+		armPos = std::clamp(armPos + ArmDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPos(armPos);
 		led.blink(evt.dir > 0 ? EXTLED_ARM_DOWN : EXTLED_ARM_UP);
 	}else if(evt.enc == Encoders::Pinch){
-		pinchPos = std::clamp(pinchPos + evt.dir, 0, 100);
+		pinchPos = std::clamp(pinchPos + PinchDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPinch(pinchPos);
 		led.blink(evt.dir > 0 ? EXTLED_PINCH_OPEN : EXTLED_PINCH_CLOSE);
 	}else if(evt.enc == Encoders::Cam){
-		camPos = std::clamp(camPos + evt.dir, 0, 100);
+		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendCameraRotation(camPos);
 	}
 }
