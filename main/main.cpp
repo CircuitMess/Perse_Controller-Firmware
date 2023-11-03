@@ -16,7 +16,7 @@
 #include "Services/TCPClient.h"
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
-#include "Services/LED.h"
+#include "Services/LEDService.h"
 #include "UISystem/UIThread.h"
 #include "Screens/IntroScreen.h"
 #include "Util/Services.h"
@@ -41,16 +41,20 @@ void init(){
 	}
 
 	const gpio_config_t cfg = {
-			.pin_bit_mask = 1ULL << LED_PAIR,
+			.pin_bit_mask = 0,
 			.mode = GPIO_MODE_OUTPUT
 	};
 	gpio_config(&cfg);
-	gpio_set_level((gpio_num_t) LED_PAIR, 0);
 
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
-	auto led = new LED(*aw9523);
+	auto led = new LEDService(*aw9523);
 	Services.set(Service::LED, led);
+
+	led->on(LED::Power);
+	led->off(LED::Pair);
+	led->off(LED::PanicLeft);
+	led->off(LED::PanicRight);
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
