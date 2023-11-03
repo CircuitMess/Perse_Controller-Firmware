@@ -12,12 +12,16 @@ public:
 	Input();
 	virtual ~Input();
 
-	enum Button { Pair, Panic, Joy, EncArm, EncPinch, EncCam, SwLight, SwArm  };
+	enum Button {
+		Pair, Panic, Joy, EncArm, EncPinch, EncCam, SwLight, SwArm
+	};
 	static const std::unordered_map<Button, const char*> PinLabels;
 
 	struct Data {
 		Button btn;
-		enum Action { Release, Press } action;
+		enum Action {
+			Release, Press
+		} action;
 	};
 
 	bool getState(Button btn);
@@ -31,7 +35,9 @@ private:
 
 	std::unordered_map<Button, bool> btnState;
 
-	enum DbDir { Release, Press, None };
+	enum DbDir {
+		Release, Press, None
+	};
 	std::unordered_map<Button, uint64_t> dbTime;
 	static constexpr uint64_t SleepTime = 20; // [ms]
 	static constexpr uint64_t DebounceTime = 5; // [ms]

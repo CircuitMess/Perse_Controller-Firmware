@@ -7,8 +7,9 @@
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
 
-DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*)Services.get(Service::Comm))), led(*((LED*)Services.get(Service::LED))), joy(*((Joystick*)Services.get(Service::Joystick))){
-	lastFrame.resize(160*120, 0);
+DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
+										   led(*((LED*) Services.get(Service::LED))), joy(*((Joystick*) Services.get(Service::Joystick))){
+	lastFrame.resize(160 * 120, 0);
 
 	gpio_set_level((gpio_num_t) LED_PAIR, 1);
 
@@ -16,9 +17,9 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), 
 
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
-		.color = TFT_GREEN,
-		.datum = CC_DATUM
-	});
+									 .color = TFT_GREEN,
+									 .datum = CC_DATUM
+							 });
 	connectedLabel->setPos(64, 64);
 
 	startTime = millis();
@@ -46,7 +47,7 @@ DriveScreen::~DriveScreen(){
 void DriveScreen::preDraw(){
 	bool gotFrame = feed.nextFrame([this](const DriveInfo& info, const Color* frame){
 		extractInfo(info);
-		memcpy(lastFrame.data(), frame, 160*120*2);
+		memcpy(lastFrame.data(), frame, 160 * 120 * 2);
 	});
 
 	canvas.pushImage(0, 0, 160, 120, lastFrame.data());
@@ -98,7 +99,7 @@ void DriveScreen::sendDriveDir(){
 
 	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
 	if(len < 0.1){
-		if (shouldSendZeroDrive) {
+		if(shouldSendZeroDrive){
 			comm.sendDriveDir({ 0, 0.0f });
 			shouldSendZeroDrive = false;
 		}
@@ -113,9 +114,9 @@ void DriveScreen::sendDriveDir(){
 		angle = 360.0f - angle;
 	}
 
-	static constexpr float circParts = 360.0/8.0;
+	static constexpr float circParts = 360.0 / 8.0;
 
-	float calcAngle = angle + circParts/2.0;
+	float calcAngle = angle + circParts / 2.0;
 	if(calcAngle >= 360){
 		calcAngle -= 360.0f;
 	}
@@ -175,6 +176,11 @@ void DriveScreen::processInput(const Input::Data& evt){
 		}else{
 			comm.sendHeadlights(HeadlightsMode::Off);
 			led.off(EXTLED_LIGHT);
+		}
+	}else if(evt.btn == Input::EncCam){
+		if(evt.action == Input::Data::Press){
+			isScanningEnabled = !isScanningEnabled;
+			comm.sendScanningEnable(isScanningEnabled);
 		}
 	}
 }

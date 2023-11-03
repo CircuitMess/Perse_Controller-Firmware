@@ -8,9 +8,9 @@
 
 class Comm : private Threaded {
 public:
-	struct Event{
+	struct Event {
 		CommType type;
-		union{
+		union {
 			HeadlightsMode headlights;
 			struct {
 				ArmPos armPos;
@@ -38,6 +38,7 @@ public:
 	void sendCameraRotation(CameraRotation rotation);
 	void sendFeedQuality(uint8_t quality);
 	void sendModulesEnable(bool enable);
+	void sendScanningEnable(bool enable);
 
 private:
 	TCPClient& tcp;

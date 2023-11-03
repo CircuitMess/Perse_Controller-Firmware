@@ -43,6 +43,7 @@ private:
 	uint64_t startTime;
 	static constexpr uint64_t StartHoldTime = 1000; // [ms]
 	bool holdDone = false;
+	bool isScanningEnabled = false;
 
 	LabelElement* connectedLabel;
 
