@@ -10,6 +10,8 @@
 #include "Services/Comm.h"
 #include "Services/LED.h"
 #include "UISystem/LabelElement.h"
+#include "Services/RoverState.h"
+#include "DriveScreen/Modules/ModuleElement.h"
 
 class DriveScreen : public Screen {
 public:
@@ -25,6 +27,7 @@ private:
 
 	Comm& comm;
 	LED& led;
+	RoverState& roverState;
 
 	Joystick& joy;
 	uint64_t lastDirSend = 0;
@@ -45,6 +48,8 @@ private:
 	bool holdDone = false;
 
 	LabelElement* connectedLabel;
+	ModuleElement* leftModule = nullptr;
+	ModuleElement* rightModule = nullptr;
 
 	void buildUI();
 	void setupControl();
@@ -57,6 +62,9 @@ private:
 	void checkEvents();
 	void processInput(const Input::Data& evt);
 	void processEncoders(const Encoders::Data& evt);
+	void processRoverState(const RoverState::Event& evt);
+
+	void createModule(ModuleBus bus, ModuleType type);
 
 };
 

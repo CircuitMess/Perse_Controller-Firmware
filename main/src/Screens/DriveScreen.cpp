@@ -6,8 +6,12 @@
 #include "Pins.hpp"
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
+#include "DriveScreen/Modules/GyroModule.h"
+#include "DriveScreen/Modules/DummyModule.h"
 
-DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*)Services.get(Service::Comm))), led(*((LED*)Services.get(Service::LED))), joy(*((Joystick*)Services.get(Service::Joystick))){
+DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
+										   led(*((LED*) Services.get(Service::LED))), roverState(*(RoverState*) Services.get(Service::RoverState)),
+										   joy(*((Joystick*) Services.get(Service::Joystick))){
 	lastFrame.resize(160*120, 0);
 
 	gpio_set_level((gpio_num_t) LED_PAIR, 1);
@@ -125,7 +129,13 @@ void DriveScreen::sendDriveDir(){
 }
 
 void DriveScreen::buildUI(){
+	if(roverState.getLeftModuleInsert()){
+		createModule(ModuleBus::Left, roverState.getLeftModuleType());
+	}
 
+	if(roverState.getRightModuleInsert()){
+		createModule(ModuleBus::Right, roverState.getRightModuleType());
+	}
 }
 
 void DriveScreen::setupControl(){
@@ -133,6 +143,9 @@ void DriveScreen::setupControl(){
 
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Encoders, &evts);
+	Events::listen(Facility::RoverState, &evts);
+
+	comm.sendModulesEnable(true);
 
 	if(input->getState(Input::SwLight)){
 		comm.sendHeadlights(HeadlightsMode::On);
@@ -155,6 +168,9 @@ void DriveScreen::checkEvents(){
 	}else if(evt.facility == Facility::Encoders){
 		auto data = (Encoders::Data*) evt.data;
 		processEncoders(*data);
+	}else if(evt.facility == Facility::RoverState){
+		auto data = (RoverState::Event*) evt.data;
+		processRoverState(*data);
 	}
 
 	free(evt.data);
@@ -193,5 +209,56 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 	}else if(evt.enc == Encoders::Cam){
 		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendCameraRotation(camPos);
+	}
+}
+
+void DriveScreen::processRoverState(const RoverState::Event& evt){
+	if(evt.type != RoverState::StateType::Modules) return;
+
+	if(evt.modulePlug.bus == ModuleBus::Left ){
+		if(!evt.modulePlug.insert){
+			if(leftModule){
+				delete leftModule;
+				leftModule = nullptr;
+			}
+		}else if(leftModule == nullptr){
+			createModule(ModuleBus::Left, evt.modulePlug.type);
+		}
+	}
+
+	if(evt.modulePlug.bus == ModuleBus::Right ){
+		if(!evt.modulePlug.insert){
+			if(rightModule){
+				delete rightModule;
+				rightModule = nullptr;
+			}
+		}else if(rightModule == nullptr){
+			createModule(ModuleBus::Right, evt.modulePlug.type);
+		}
+	}
+}
+
+void DriveScreen::createModule(ModuleBus bus, ModuleType type){
+	ModuleElement* module = nullptr;
+	switch(type){
+		case ModuleType::Gyro:
+			module = new GyroModule(this, bus, type);
+			break;
+		default:
+			module = new DummyModule(this, bus, type);
+			break;
+	}
+
+
+	if(bus == ModuleBus::Left){
+		leftModule = module;
+		if(leftModule != nullptr){ //TODO - remove check when all ModuleTypes are covered
+			leftModule->setPos(2, 30);
+		}
+	}else{
+		rightModule = module;
+		if(rightModule != nullptr){ //TODO - remove check when all ModuleTypes are covered
+			rightModule->setPos(126, 30);
+		}
 	}
 }
