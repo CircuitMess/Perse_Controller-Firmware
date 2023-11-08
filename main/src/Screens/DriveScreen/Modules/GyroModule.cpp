@@ -1,15 +1,20 @@
 #include "GyroModule.h"
 
-GyroModule::GyroModule(ElementContainer* parent, ModuleBus bus, ModuleType type) : ModuleElement(parent, bus, type), dataLabel(this, ""){
+GyroModule::GyroModule(ElementContainer* parent, ModuleBus bus, ModuleType type) : ModuleElement(parent, bus, type), xLabel(this, ""), yLabel(this, ""){
 
-	auto style = dataLabel.getStyle();
+	auto style = xLabel.getStyle();
 	style.datum = datum;
-	style.color = TFT_GREEN;
-	dataLabel.setStyle(style);
-	dataLabel.setText("X:\nY:");
-	dataLabel.setPos(0, 8);
+	style.color = textColor;
+	xLabel.setStyle(style);
+	xLabel.setText("X " +  std::string(gyroValLength, ' '));
+	xLabel.setPos(0, 9);
+
+	yLabel.setStyle(style);
+	yLabel.setText("Y " +  std::string(gyroValLength, ' '));
+	yLabel.setPos(0, 18);
 }
 
 void GyroModule::dataReceived(ModuleData data){
-	dataLabel.setText("X: " + std::to_string(data.gyro.x) + "\nY: " + std::to_string(data.gyro.y));
+	xLabel.setText("X " + paddedValueLeft(data.gyro.x, gyroValLength));
+	yLabel.setText("Y " + paddedValueLeft(data.gyro.y, gyroValLength));
 }

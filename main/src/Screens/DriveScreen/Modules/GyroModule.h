@@ -6,10 +6,14 @@
 class GyroModule : public ModuleElement{
 public:
 	GyroModule(ElementContainer* parent, ModuleBus bus, ModuleType type);
+	~GyroModule() override = default;
 
 private:
-	LabelElement dataLabel;
+	LabelElement xLabel;
+	LabelElement yLabel;
 	void dataReceived(ModuleData data) override;
+
+	static constexpr uint8_t gyroValLength = 4; //3 digits + sign
 };
 
 

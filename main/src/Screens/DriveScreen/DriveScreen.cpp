@@ -6,8 +6,15 @@
 #include "Pins.hpp"
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
-#include "DriveScreen/Modules/GyroModule.h"
-#include "DriveScreen/Modules/DummyModule.h"
+#include "Modules/AltPressModule.h"
+#include "Modules/CO2Module.h"
+#include "Modules/GyroModule.h"
+#include "Modules/LEDModule.h"
+#include "Modules/MotionModule.h"
+#include "Modules/PhotoresModule.h"
+#include "Modules/RGBModule.h"
+#include "Modules/TempHumModule.h"
+#include "Modules/UnkownModule.h"
 
 DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
 										   led(*((LED*) Services.get(Service::LED))), roverState(*(RoverState*) Services.get(Service::RoverState)),
@@ -215,7 +222,7 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 void DriveScreen::processRoverState(const RoverState::Event& evt){
 	if(evt.type != RoverState::StateType::Modules) return;
 
-	if(evt.modulePlug.bus == ModuleBus::Left ){
+	if(evt.modulePlug.bus == ModuleBus::Left){
 		if(!evt.modulePlug.insert){
 			if(leftModule){
 				delete leftModule;
@@ -226,7 +233,7 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 		}
 	}
 
-	if(evt.modulePlug.bus == ModuleBus::Right ){
+	if(evt.modulePlug.bus == ModuleBus::Right){
 		if(!evt.modulePlug.insert){
 			if(rightModule){
 				delete rightModule;
@@ -244,21 +251,37 @@ void DriveScreen::createModule(ModuleBus bus, ModuleType type){
 		case ModuleType::Gyro:
 			module = new GyroModule(this, bus, type);
 			break;
+		case ModuleType::TempHum:
+			module = new TempHumModule(this, bus, type);
+			break;
+		case ModuleType::AltPress:
+			module = new AltPressModule(this, bus, type);
+			break;
+		case ModuleType::LED:
+			module = new LEDModule(this, bus, type);
+			break;
+		case ModuleType::RGB:
+			module = new RGBModule(this, bus, type);
+			break;
+		case ModuleType::PhotoRes:
+			module = new PhotoresModule(this, bus, type);
+			break;
+		case ModuleType::Motion:
+			module = new MotionModule(this, bus, type);
+			break;
+		case ModuleType::CO2:
+			module = new CO2Module(this, bus, type);
+			break;
 		default:
-			module = new DummyModule(this, bus, type);
+			module = new UnkownModule(this, bus, type);
 			break;
 	}
 
-
 	if(bus == ModuleBus::Left){
 		leftModule = module;
-		if(leftModule != nullptr){ //TODO - remove check when all ModuleTypes are covered
-			leftModule->setPos(2, 30);
-		}
+		leftModule->setPos(2, 30);
 	}else{
 		rightModule = module;
-		if(rightModule != nullptr){ //TODO - remove check when all ModuleTypes are covered
-			rightModule->setPos(126, 30);
-		}
+		rightModule->setPos(126, 30);
 	}
 }

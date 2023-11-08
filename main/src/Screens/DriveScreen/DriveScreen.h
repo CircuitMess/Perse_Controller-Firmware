@@ -11,7 +11,7 @@
 #include "Services/LED.h"
 #include "UISystem/LabelElement.h"
 #include "Services/RoverState.h"
-#include "DriveScreen/Modules/ModuleElement.h"
+#include "Modules/ModuleElement.h"
 
 class DriveScreen : public Screen {
 public:
