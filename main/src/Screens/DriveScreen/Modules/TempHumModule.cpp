@@ -20,6 +20,6 @@ TempHumModule::TempHumModule(ElementContainer* parent, ModuleBus bus, ModuleType
 
 void TempHumModule::dataReceived(ModuleData data){
 	tempValueLabel.setText(paddedValueRight(data.tempHum.temp, valueLength) + 'C');
-	humLabel.setText(paddedValueRight(data.tempHum.humidity, valueLength) + '%');
+	humValueLabel.setText(paddedValueRight(data.tempHum.humidity, valueLength) + '%');
 }
 

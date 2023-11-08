@@ -9,9 +9,9 @@ MotionModule::MotionModule(ElementContainer* parent, const ModuleBus& bus, const
 }
 
 void MotionModule::dataReceived(ModuleData data){
-	if(data.gas.isOk == status) return;
+	if(data.motion.motionDetected == status) return;
 
-	status = data.gas.isOk;
+	status = data.motion.motionDetected;
 	lastMillis = millis();
 
 	if(status){
@@ -30,7 +30,7 @@ void MotionModule::loop(){
 		lastMillis = millis();
 		if(status){
 			dotCounter = (dotCounter + 1) % DotLimit;
-			statusLabel.setText(std::string(dotCounter, '.'));
+			statusLabel.setText(std::string(dotCounter, '.') + std::string(DotLimit - dotCounter, ' '));
 		}else{
 			flashStatus = !flashStatus;
 			if(flashStatus){
