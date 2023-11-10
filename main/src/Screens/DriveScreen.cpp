@@ -63,7 +63,7 @@ void DriveScreen::onLoop(){
 			const auto data = (TCPClient::Event*) evt.data;
 			if(data->status == TCPClient::Event::Status::Disconnected){
 				free(evt.data);
-				transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas); });
+				transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas, true); });
 				return;
 			}
 		}
