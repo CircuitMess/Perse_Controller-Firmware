@@ -6,13 +6,13 @@
 #include "Screens/PairScreen.h"
 
 const std::vector<std::tuple<std::string, uint16_t, uint16_t>> IntroScreen::imageInfos = {
-		{ "/spiffs/logo-cm.raw",    91,  91 },
-		{ "/spiffs/logo-geek.raw",  97,  81 },
-		{ "/spiffs/logo-space.raw", 116, 29 },
-		{ "/spiffs/logo-perse.raw", 72,  71 }
+		{ "/spiffs/intro/logo-cm.raw",    91,  91 },
+		{ "/spiffs/intro/logo-geek.raw",  97,  81 },
+		{ "/spiffs/intro/logo-space.raw", 116, 29 },
+		{ "/spiffs/intro/logo-perse.raw", 72,  71 }
 };
 
-const std::string IntroScreen::crossPath = "/spiffs/cross.raw";
+const std::string IntroScreen::crossPath = "/spiffs/intro/cross.raw";
 
 std::unique_ptr<Screen> IntroScreen::createScreen(Sprite& canvas) {
 	return std::make_unique<IntroScreen>(canvas);
