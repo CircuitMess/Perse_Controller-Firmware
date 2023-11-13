@@ -1,14 +1,16 @@
-#ifndef PERSE_ROVER_SINGLELED_H
-#define PERSE_ROVER_SINGLELED_H
+#ifndef PERSE_MISSIONCTRL_SINGLELED_H
+#define PERSE_MISSIONCTRL_SINGLELED_H
 
 #include <cstdint>
 
 class SingleLED {
 public:
 	explicit SingleLED(uint8_t limit);
+
 	virtual ~SingleLED() = default;
 
 	void setValue(uint8_t val);
+
 	uint8_t getValue() const;
 
 protected:
@@ -19,4 +21,4 @@ private:
 	uint8_t value;
 };
 
-#endif //PERSE_ROVER_SINGLELED_H
+#endif //PERSE_MISSIONCTRL_SINGLELED_H

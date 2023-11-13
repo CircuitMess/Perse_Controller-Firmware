@@ -2,9 +2,7 @@
 #include "SingleLED.h"
 #include "Util/stdafx.h"
 
-SingleLED::SingleLED(uint8_t limit) : limit(limit), value(0){
-	setValue(0);
-}
+SingleLED::SingleLED(uint8_t limit) : limit(limit), value(0){}
 
 void SingleLED::setValue(uint8_t val){
 	if(val == value){
