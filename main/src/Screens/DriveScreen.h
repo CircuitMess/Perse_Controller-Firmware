@@ -8,12 +8,11 @@
 #include "Devices/Input.h"
 #include "Util/Events.h"
 #include "Services/Comm.h"
-#include "Services/LED.h"
 #include "UISystem/LabelElement.h"
 
 class DriveScreen : public Screen {
 public:
-	DriveScreen(Sprite& canvas);
+	explicit DriveScreen(Sprite& canvas);
 	virtual ~DriveScreen();
 
 private:
@@ -24,7 +23,6 @@ private:
 	EventQueue evts;
 
 	Comm& comm;
-	LED& led;
 
 	Joystick& joy;
 	uint64_t lastDirSend = 0;

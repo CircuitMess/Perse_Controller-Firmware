@@ -4,22 +4,24 @@
 #include "Util/stdafx.h"
 #include "Util/Services.h"
 #include "Pins.hpp"
+#include "Services/LEDService.h"
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
 
-DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
-										   led(*((LED*) Services.get(Service::LED))), joy(*((Joystick*) Services.get(Service::Joystick))){
+DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*)Services.get(Service::Comm))), joy(*((Joystick*)Services.get(Service::Joystick))){
 	lastFrame.resize(160 * 120, 0);
 
-	gpio_set_level((gpio_num_t) LED_PAIR, 1);
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->on(LED::Pair);
+	}
 
 	comm.sendFeedQuality(1);
 
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
-									 .color = TFT_GREEN,
-									 .datum = CC_DATUM
-							 });
+		.color = TFT_GREEN,
+		.datum = CC_DATUM
+	});
 	connectedLabel->setPos(64, 64);
 
 	startTime = millis();
@@ -36,10 +38,11 @@ DriveScreen::~DriveScreen(){
 	Events::unlisten(&dcEvts);
 	Events::unlisten(&evts);
 
-	gpio_set_level((gpio_num_t) LED_PAIR, 0);
-
-	led.off(EXTLED_ARM);
-	led.off(EXTLED_LIGHT);
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->off(LED::Pair);
+		led->off(LED::Arm);
+		led->off(LED::Light);
+	}
 
 	joy.end();
 }
@@ -114,15 +117,15 @@ void DriveScreen::sendDriveDir(){
 		angle = 360.0f - angle;
 	}
 
-	static constexpr float circParts = 360.0 / 8.0;
+	static constexpr float circParts = 360.0f / 8.0f;
 
-	float calcAngle = angle + circParts / 2.0;
+	float calcAngle = angle + circParts / 2.0f;
 	if(calcAngle >= 360){
 		calcAngle -= 360.0f;
 	}
-	const uint8_t numer = std::floor(calcAngle / circParts);
+	const uint8_t number = std::floor(calcAngle / circParts);
 
-	comm.sendDriveDir({ numer, len });
+	comm.sendDriveDir({ number, len });
 }
 
 void DriveScreen::buildUI(){
@@ -131,18 +134,24 @@ void DriveScreen::buildUI(){
 
 void DriveScreen::setupControl(){
 	auto input = (Input*) Services.get(Service::Input);
+	LEDService* led = (LEDService*)Services.get(Service::LED);
 
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Encoders, &evts);
 
 	if(input->getState(Input::SwLight)){
 		comm.sendHeadlights(HeadlightsMode::On);
-		led.on(EXTLED_LIGHT);
+
+		if (led != nullptr) {
+			led->on(LED::Light);
+		}
 	}
 
 	armUnlocked = input->getState(Input::SwArm);
 	if(armUnlocked){
-		led.on(EXTLED_ARM);
+		if (led!= nullptr) {
+			led->on(LED::Arm);
+		}
 	}
 }
 
@@ -162,20 +171,25 @@ void DriveScreen::checkEvents(){
 }
 
 void DriveScreen::processInput(const Input::Data& evt){
+	LEDService* led = (LEDService*)Services.get(Service::LED);
+	if (led == nullptr){
+		return;
+	}
+
 	if(evt.btn == Input::SwArm){
 		armUnlocked = evt.action == Input::Data::Press;
 		if(armUnlocked){
-			led.on(EXTLED_ARM);
+			led->on(LED::Arm);
 		}else{
-			led.off(EXTLED_ARM);
+			led->off(LED::Arm);
 		}
 	}else if(evt.btn == Input::SwLight){
 		if(evt.action == Input::Data::Press){
 			comm.sendHeadlights(HeadlightsMode::On);
-			led.on(EXTLED_LIGHT);
+			led->on(LED::Light);
 		}else{
 			comm.sendHeadlights(HeadlightsMode::Off);
-			led.off(EXTLED_LIGHT);
+			led->off(LED::Light);
 		}
 	}else if(evt.btn == Input::EncCam){
 		if(evt.action == Input::Data::Press){
@@ -186,16 +200,27 @@ void DriveScreen::processInput(const Input::Data& evt){
 }
 
 void DriveScreen::processEncoders(const Encoders::Data& evt){
+	LEDService* led = (LEDService*)Services.get(Service::LED);
+	if (led == nullptr){
+		return;
+	}
+
 	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armUnlocked) return;
 
 	if(evt.enc == Encoders::Arm){
 		armPos = std::clamp(armPos + ArmDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPos(armPos);
-		led.blink(evt.dir > 0 ? EXTLED_ARM_DOWN : EXTLED_ARM_UP);
+
+		if (led != nullptr) {
+			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp);
+		}
 	}else if(evt.enc == Encoders::Pinch){
 		pinchPos = std::clamp(pinchPos + PinchDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPinch(pinchPos);
-		led.blink(evt.dir > 0 ? EXTLED_PINCH_OPEN : EXTLED_PINCH_CLOSE);
+
+		if (led != nullptr) {
+			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose);
+		}
 	}else if(evt.enc == Encoders::Cam){
 		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendCameraRotation(camPos);
