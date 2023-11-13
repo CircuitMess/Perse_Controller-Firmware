@@ -73,7 +73,7 @@ void Comm::sendModulesEnable(bool enable){
 
 void Comm::sendScanningEnable(bool enable){
 	const ControlPacket packet {
-			.type = CommType::ScanningEnable,
+			.type = CommType::ScanMarkers,
 			.data = (uint8_t)enable
 	};
 
