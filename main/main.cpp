@@ -52,9 +52,6 @@ void init(){
 	Services.set(Service::LED, led);
 
 	led->on(LED::Power);
-	led->off(LED::Pair);
-	led->off(LED::PanicLeft);
-	led->off(LED::PanicRight);
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
