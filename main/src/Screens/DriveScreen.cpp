@@ -8,10 +8,11 @@
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
 
-DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*)Services.get(Service::Comm))), joy(*((Joystick*)Services.get(Service::Joystick))){
-	lastFrame.resize(160*120, 0);
+DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
+										   joy(*((Joystick*) Services.get(Service::Joystick))){
+	lastFrame.resize(160 * 120, 0);
 
-	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->on(LED::Pair);
 	}
 
@@ -19,9 +20,9 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), 
 
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
-		.color = TFT_GREEN,
-		.datum = CC_DATUM
-	});
+									 .color = TFT_GREEN,
+									 .datum = CC_DATUM
+							 });
 	connectedLabel->setPos(64, 64);
 
 	startTime = millis();
@@ -38,7 +39,7 @@ DriveScreen::~DriveScreen(){
 	Events::unlisten(&dcEvts);
 	Events::unlisten(&evts);
 
-	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->off(LED::Pair);
 		led->off(LED::Arm);
 		led->off(LED::Light);
@@ -50,7 +51,7 @@ DriveScreen::~DriveScreen(){
 void DriveScreen::preDraw(){
 	bool gotFrame = feed.nextFrame([this](const DriveInfo& info, const Color* frame){
 		extractInfo(info);
-		memcpy(lastFrame.data(), frame, 160*120*2);
+		memcpy(lastFrame.data(), frame, 160 * 120 * 2);
 	});
 
 	canvas.pushImage(0, 0, 160, 120, lastFrame.data());
@@ -102,7 +103,7 @@ void DriveScreen::sendDriveDir(){
 
 	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
 	if(len < 0.1){
-		if (shouldSendZeroDrive) {
+		if(shouldSendZeroDrive){
 			comm.sendDriveDir({ 0, 0.0f });
 			shouldSendZeroDrive = false;
 		}
@@ -117,9 +118,9 @@ void DriveScreen::sendDriveDir(){
 		angle = 360.0f - angle;
 	}
 
-	static constexpr float circParts = 360.0/8.0;
+	static constexpr float circParts = 360.0 / 8.0;
 
-	float calcAngle = angle + circParts/2.0;
+	float calcAngle = angle + circParts / 2.0;
 	if(calcAngle >= 360){
 		calcAngle -= 360.0f;
 	}
@@ -134,7 +135,7 @@ void DriveScreen::buildUI(){
 
 void DriveScreen::setupControl(){
 	auto input = (Input*) Services.get(Service::Input);
-	LEDService* led = (LEDService*)Services.get(Service::LED);
+	LEDService* led = (LEDService*) Services.get(Service::LED);
 
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Encoders, &evts);
@@ -142,14 +143,14 @@ void DriveScreen::setupControl(){
 	if(input->getState(Input::SwLight)){
 		comm.sendHeadlights(HeadlightsMode::On);
 
-		if (led != nullptr) {
+		if(led != nullptr){
 			led->on(LED::Light);
 		}
 	}
 
 	armUnlocked = input->getState(Input::SwArm);
 	if(armUnlocked){
-		if (led!= nullptr) {
+		if(led != nullptr){
 			led->on(LED::Arm);
 		}
 	}
@@ -171,7 +172,7 @@ void DriveScreen::checkEvents(){
 }
 
 void DriveScreen::processInput(const Input::Data& evt){
-	LEDService* led = (LEDService*)Services.get(Service::LED);
+	LEDService* led = (LEDService*) Services.get(Service::LED);
 
 	if(evt.btn == Input::SwArm){
 		armUnlocked = evt.action == Input::Data::Press;
@@ -188,11 +189,54 @@ void DriveScreen::processInput(const Input::Data& evt){
 			comm.sendHeadlights(HeadlightsMode::Off);
 			led->off(LED::Light);
 		}
+	}else if(evt.btn == Input::Panic){
+		if(evt.action == Input::Data::Press){
+			if(isInPanicMode){
+				comm.sendEmergencyMode(false);
+				isInPanicMode = false;
+				panicHoldStart = 0;
+
+				LEDService* led = (LEDService*) Services.get(Service::LED);
+				if(led != nullptr){
+					led->off(LED::PanicLeft);
+					led->off(LED::PanicRight);
+				}
+			}else{
+				panicHoldStart = millis();
+
+				LEDService* led = (LEDService*) Services.get(Service::LED);
+				if(led != nullptr){
+					led->breathe(LED::PanicLeft, 2 * PanicHoldDuration);
+					led->breathe(LED::PanicRight, 2 * PanicHoldDuration);
+				}
+			}
+		}else{
+			if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
+				comm.sendEmergencyMode(true);
+				isInPanicMode = true;
+
+				LEDService* led = (LEDService*) Services.get(Service::LED);
+				if(led != nullptr){
+					led->blink(LED::PanicLeft, 0);
+					led->blink(LED::PanicRight, 0);
+				}
+			}else{
+				isInPanicMode = false;
+
+				LEDService* led = (LEDService*) Services.get(Service::LED);
+				if(led != nullptr){
+					led->off(LED::PanicLeft);
+					led->off(LED::PanicRight);
+				}
+			}
+
+			panicHoldStart = 0;
+		}
 	}
 }
 
 void DriveScreen::processEncoders(const Encoders::Data& evt){
-	LEDService* led = (LEDService*)Services.get(Service::LED);
+	LEDService* led = (LEDService*) Services.get(Service::LED);
 
 	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armUnlocked) return;
 
@@ -200,14 +244,14 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 		armPos = std::clamp(armPos + ArmDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPos(armPos);
 
-		if (led != nullptr) {
+		if(led != nullptr){
 			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp);
 		}
 	}else if(evt.enc == Encoders::Pinch){
 		pinchPos = std::clamp(pinchPos + PinchDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPinch(pinchPos);
 
-		if (led != nullptr) {
+		if(led != nullptr){
 			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose);
 		}
 	}else if(evt.enc == Encoders::Cam){

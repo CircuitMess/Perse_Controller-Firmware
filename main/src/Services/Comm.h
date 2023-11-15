@@ -38,6 +38,7 @@ public:
 	void sendCameraRotation(CameraRotation rotation);
 	void sendFeedQuality(uint8_t quality);
 	void sendModulesEnable(bool enable);
+	void sendEmergencyMode(bool state);
 
 private:
 	TCPClient& tcp;

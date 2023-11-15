@@ -109,6 +109,15 @@ void Comm::sendModulesEnable(bool enable){
 	sendPacket(packet);
 }
 
+void Comm::sendEmergencyMode(bool state){
+	const ControlPacket packet {
+			.type = CommType::Emergency,
+			.data = (uint8_t)state
+	};
+
+	sendPacket(packet);
+}
+
 Comm::Event Comm::processPacket(const ControlPacket& packet) {
 	Event event {
 		.type = packet.type,

@@ -30,6 +30,7 @@ private:
 	static constexpr int8_t ArmDirectionMultiplier = -2;
 	static constexpr int8_t PinchDirectionMultiplier = 5;
 	static constexpr int8_t CameraDirectionMultiplier = -4;
+	static constexpr uint64_t PanicHoldDuration = 1000;
 	void sendDriveDir();
 
 	void extractInfo(const DriveInfo& info);
@@ -41,6 +42,9 @@ private:
 	uint64_t startTime;
 	static constexpr uint64_t StartHoldTime = 1000; // [ms]
 	bool holdDone = false;
+
+	uint64_t panicHoldStart = 0;
+	bool isInPanicMode = false;
 
 	LabelElement* connectedLabel;
 
