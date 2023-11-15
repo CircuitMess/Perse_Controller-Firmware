@@ -57,7 +57,11 @@ void DriveScreen::preDraw(){
 
 	const bool gotFrame = feed.nextFrame([this, &driveInfo](const DriveInfo& info, const Color* frame){
 		driveInfo = info;
-		extractInfo(info);
+
+		if(frame == nullptr){
+			return;
+		}
+
 		memcpy(lastFrame.data(), frame, 160 * 120 * 2);
 	});
 
@@ -87,10 +91,6 @@ void DriveScreen::preDraw(){
 
 		canvas.drawLine(currentProjected.first, currentProjected.second, nextProjected.first, nextProjected.second, MarkerVisualizationColor);
 	}
-}
-
-void DriveScreen::extractInfo(const DriveInfo& info){
-
 }
 
 void DriveScreen::onLoop(){
@@ -209,24 +209,30 @@ void DriveScreen::checkEvents(){
 
 void DriveScreen::processInput(const Input::Data& evt){
 	LEDService* led = (LEDService*) Services.get(Service::LED);
-	if(led == nullptr){
-		return;
-	}
 
 	if(evt.btn == Input::SwArm){
 		armUnlocked = evt.action == Input::Data::Press;
-		if(armUnlocked){
-			led->on(LED::Arm);
-		}else{
-			led->off(LED::Arm);
+
+		if(led != nullptr){
+			if(armUnlocked){
+				led->on(LED::Arm);
+			}else{
+				led->off(LED::Arm);
+			}
 		}
 	}else if(evt.btn == Input::SwLight){
 		if(evt.action == Input::Data::Press){
 			comm.sendHeadlights(HeadlightsMode::On);
-			led->on(LED::Light);
+
+			if(led != nullptr){
+				led->on(LED::Light);
+			}
 		}else{
 			comm.sendHeadlights(HeadlightsMode::Off);
-			led->off(LED::Light);
+
+			if(led != nullptr){
+				led->off(LED::Light);
+			}
 		}
 	}else if(evt.btn == Input::EncCam){
 		if(evt.action == Input::Data::Press){
@@ -238,9 +244,6 @@ void DriveScreen::processInput(const Input::Data& evt){
 
 void DriveScreen::processEncoders(const Encoders::Data& evt){
 	LEDService* led = (LEDService*) Services.get(Service::LED);
-	if(led == nullptr){
-		return;
-	}
 
 	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armUnlocked) return;
 
