@@ -8,16 +8,18 @@
 #include "gtx/vector_angle.hpp"
 #include "Devices/Potentiometers.h"
 
-DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
-										   joy(*((Joystick*) Services.get(Service::Joystick))){
+DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Services.get(Service::Comm))), joy(*((Joystick*) Services.get(Service::Joystick))),
+										   dcEvts(6), evts(12){
 	lastFrame.resize(160 * 120, 0);
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->on(LED::Pair);
 	}
 
-	if(const Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
-		comm.sendFeedQuality(potentiometers->getCurrentValue(Potentiometers::FeedQuality));
+	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
+		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
+		const uint8_t quality = map(value, 0, 100, 0, 30);
+		comm.sendFeedQuality(quality);
 	}else{
 		comm.sendFeedQuality(30);
 	}
@@ -272,8 +274,8 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 		return;
 	}
 
-	const uint8_t quality = map(evt.value, 0, 100, 0, 30);
-	printf("Quality: %d\n", quality);
+	const uint8_t value = std::clamp(100 - evt.value, 0, 100);
+	const uint8_t quality = map(value, 0, 100, 0, 30);
 
 	comm.sendFeedQuality(quality);
 }

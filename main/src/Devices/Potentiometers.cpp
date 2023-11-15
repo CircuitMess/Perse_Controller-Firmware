@@ -33,16 +33,25 @@ Potentiometers::Potentiometers(ADC& adc) : SleepyThreaded(SleepTime, "Potentiome
 	start();
 }
 
-uint8_t Potentiometers::getCurrentValue(Potentiometers::Potentiometer potentiometer) const{
-	if (!adcValues.contains(potentiometer)){
+uint8_t Potentiometers::scanCurrentValue(Potentiometers::Potentiometer potentiometer){
+	if(adcValues.contains(potentiometer)){
+		return (uint8_t) adcValues.at(potentiometer);
+	}
+
+	if(!adcReaders.contains(potentiometer)){
 		return 0;
 	}
 
-	return (uint8_t) adcValues.at(potentiometer);
+	ADCReader& adcReader = adcReaders.at(potentiometer);
+
+	adcReader.sample();
+	const float percentValue = adcReader.getValue();
+
+	return percentValue;
 }
 
 void Potentiometers::sleepyLoop(){
-	for(std::pair<Potentiometer, ADCReader> adcPair: adcReaders){
+	for(std::pair<const Potentiometer, ADCReader>& adcPair: adcReaders){
 		adcPair.second.sample();
 		const float percentValue = adcPair.second.getValue();
 

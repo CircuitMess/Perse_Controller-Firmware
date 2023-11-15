@@ -19,7 +19,7 @@ public:
 
 	explicit Potentiometers(ADC& adc);
 
-	uint8_t getCurrentValue(Potentiometer potentiometer) const;
+	uint8_t scanCurrentValue(Potentiometer potentiometer);
 
 protected:
 	virtual void sleepyLoop() override;
