@@ -10,6 +10,7 @@ Display::Display() : canvas(&lgfx){
 	lgfx.setPanel(&panel);
 	lgfx.init();
 
+	canvas.setPsram(true);
 	canvas.setColorDepth(lgfx::rgb565_2Byte);
 	canvas.createSprite(128, 128);
 }
