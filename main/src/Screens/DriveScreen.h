@@ -9,6 +9,7 @@
 #include "Util/Events.h"
 #include "Services/Comm.h"
 #include "UISystem/LabelElement.h"
+#include "Devices/Potentiometers.h"
 
 class DriveScreen : public Screen {
 public:
@@ -56,7 +57,7 @@ private:
 	void checkEvents();
 	void processInput(const Input::Data& evt);
 	void processEncoders(const Encoders::Data& evt);
-
+	void processPotentiometers(const Potentiometers::Data& evt);
 };
 
 

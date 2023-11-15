@@ -3,25 +3,30 @@
 #include "Screens/PairScreen.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
-#include "Pins.hpp"
 #include "Services/LEDService.h"
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
+#include "Devices/Potentiometers.h"
 
-DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*)Services.get(Service::Comm))), joy(*((Joystick*)Services.get(Service::Joystick))){
+DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
+										   joy(*((Joystick*) Services.get(Service::Joystick))){
 	lastFrame.resize(160 * 120, 0);
 
-	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->on(LED::Pair);
 	}
 
-	comm.sendFeedQuality(1);
+	if(const Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
+		comm.sendFeedQuality(potentiometers->getCurrentValue(Potentiometers::FeedQuality));
+	}else{
+		comm.sendFeedQuality(30);
+	}
 
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
-		.color = TFT_GREEN,
-		.datum = CC_DATUM
-	});
+									 .color = TFT_GREEN,
+									 .datum = CC_DATUM
+							 });
 	connectedLabel->setPos(64, 64);
 
 	startTime = millis();
@@ -38,7 +43,7 @@ DriveScreen::~DriveScreen(){
 	Events::unlisten(&dcEvts);
 	Events::unlisten(&evts);
 
-	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->off(LED::Pair);
 		led->off(LED::Arm);
 		led->off(LED::Light);
@@ -134,22 +139,23 @@ void DriveScreen::buildUI(){
 
 void DriveScreen::setupControl(){
 	auto input = (Input*) Services.get(Service::Input);
-	LEDService* led = (LEDService*)Services.get(Service::LED);
+	LEDService* led = (LEDService*) Services.get(Service::LED);
 
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Encoders, &evts);
+	Events::listen(Facility::Potentiometers, &evts);
 
 	if(input->getState(Input::SwLight)){
 		comm.sendHeadlights(HeadlightsMode::On);
 
-		if (led != nullptr) {
+		if(led != nullptr){
 			led->on(LED::Light);
 		}
 	}
 
 	armUnlocked = input->getState(Input::SwArm);
 	if(armUnlocked){
-		if (led!= nullptr) {
+		if(led != nullptr){
 			led->on(LED::Arm);
 		}
 	}
@@ -165,14 +171,17 @@ void DriveScreen::checkEvents(){
 	}else if(evt.facility == Facility::Encoders){
 		auto data = (Encoders::Data*) evt.data;
 		processEncoders(*data);
+	}else if(evt.facility == Facility::Potentiometers){
+		auto data = (Potentiometers::Data*) evt.data;
+		processPotentiometers(*data);
 	}
 
 	free(evt.data);
 }
 
 void DriveScreen::processInput(const Input::Data& evt){
-	LEDService* led = (LEDService*)Services.get(Service::LED);
-	if (led == nullptr){
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+	if(led == nullptr){
 		return;
 	}
 
@@ -200,8 +209,8 @@ void DriveScreen::processInput(const Input::Data& evt){
 }
 
 void DriveScreen::processEncoders(const Encoders::Data& evt){
-	LEDService* led = (LEDService*)Services.get(Service::LED);
-	if (led == nullptr){
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+	if(led == nullptr){
 		return;
 	}
 
@@ -211,18 +220,26 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 		armPos = std::clamp(armPos + ArmDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPos(armPos);
 
-		if (led != nullptr) {
+		if(led != nullptr){
 			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp);
 		}
 	}else if(evt.enc == Encoders::Pinch){
 		pinchPos = std::clamp(pinchPos + PinchDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendArmPinch(pinchPos);
 
-		if (led != nullptr) {
+		if(led != nullptr){
 			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose);
 		}
 	}else if(evt.enc == Encoders::Cam){
 		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
 		comm.sendCameraRotation(camPos);
 	}
+}
+
+void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
+	if(evt.potentiometer != Potentiometers::FeedQuality){
+		return;
+	}
+
+	comm.sendFeedQuality(map(evt.value, 0, 100, 0, 30));
 }
