@@ -31,6 +31,12 @@ private:
 	static constexpr int8_t ArmDirectionMultiplier = -2;
 	static constexpr int8_t PinchDirectionMultiplier = 5;
 	static constexpr int8_t CameraDirectionMultiplier = -4;
+	static constexpr Color MarkerVisualizationColor = C_RGB(255, 0, 0);
+	static constexpr uint64_t MarkerVisualizingInterval = 50; /// [ms]
+
+	uint64_t lastMarkerVisualizationTime = 0;
+	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
+
 	void sendDriveDir();
 
 	void extractInfo(const DriveInfo& info);

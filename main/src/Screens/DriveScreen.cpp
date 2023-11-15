@@ -53,12 +53,40 @@ DriveScreen::~DriveScreen(){
 }
 
 void DriveScreen::preDraw(){
-	bool gotFrame = feed.nextFrame([this](const DriveInfo& info, const Color* frame){
+	DriveInfo driveInfo;
+
+	const bool gotFrame = feed.nextFrame([this, &driveInfo](const DriveInfo& info, const Color* frame){
+		driveInfo = info;
 		extractInfo(info);
 		memcpy(lastFrame.data(), frame, 160 * 120 * 2);
 	});
 
 	canvas.pushImage(0, 0, 160, 120, lastFrame.data());
+
+	if(!isScanningEnabled){
+		return;
+	}
+
+	if(gotFrame && (lastMarkerVisualizationTime == 0 || (millis() - lastMarkerVisualizationTime) >= MarkerVisualizingInterval)){
+		markerVisualizationData.clear();
+
+		if(!driveInfo.markerInfo.markers.empty()){
+			for(const std::pair<int16_t, int16_t>& point: driveInfo.markerInfo.markers.front().projected){
+				markerVisualizationData.emplace_back(point);
+			}
+
+			lastMarkerVisualizationTime = millis();
+		}
+	}
+
+	for(size_t j = 0; j < markerVisualizationData.size(); ++j){
+		const size_t nextIndex = (j + 1) % markerVisualizationData.size();
+
+		const std::pair<int16_t, int16_t>& currentProjected = markerVisualizationData[j];
+		const std::pair<int16_t, int16_t>& nextProjected = markerVisualizationData[nextIndex];
+
+		canvas.drawLine(currentProjected.first, currentProjected.second, nextProjected.first, nextProjected.second, MarkerVisualizationColor);
+	}
 }
 
 void DriveScreen::extractInfo(const DriveInfo& info){
@@ -241,5 +269,8 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 		return;
 	}
 
-	comm.sendFeedQuality(map(evt.value, 0, 100, 0, 30));
+	const uint8_t quality = map(evt.value, 0, 100, 0, 30);
+	printf("Quality: %d\n", quality);
+
+	comm.sendFeedQuality(quality);
 }

@@ -10,7 +10,7 @@ const std::map<Potentiometers::Potentiometer, glm::vec<2, int>> Potentiometers::
 		{ FeedQuality, { 0, 4096 }}
 };
 
-Potentiometers::Potentiometers(ADC& adc) : SleepyThreaded(SleepTime, "Potentiometers"){
+Potentiometers::Potentiometers(ADC& adc) : SleepyThreaded(SleepTime, "Potentiometers", 2 * 1024){
 	for(const std::pair<Potentiometer, gpio_num_t> mapping: PinMappings){
 		if(!LimitMappings.contains(mapping.first)){
 			continue;
