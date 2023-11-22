@@ -75,9 +75,6 @@ void Feed::decodeLoop(){
 
 	size_t available = rxBuf.readAvailable();
 	auto frame = DriveInfo::deserialize(rxBuf, size);
-	if(frame == nullptr || frame->frame.size == 0 || frame->frame.data == nullptr){
-		return;
-	}
 
 	size_t readTotal = available - rxBuf.readAvailable();
 	rxBuf.skip(size - readTotal); // skip frame if deserialize exited early
@@ -85,6 +82,10 @@ void Feed::decodeLoop(){
 	rxBuf.skip(sizeof(FrameTrailer));
 
 	lock.unlock();
+
+    if(frame == nullptr || frame->frame.size == 0 || frame->frame.data == nullptr){
+        return;
+    }
 
 	int freeImg = -1;
 	for(int i = 0; i < 3; i++){
