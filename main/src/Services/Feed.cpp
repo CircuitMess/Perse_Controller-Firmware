@@ -5,7 +5,8 @@
 
 static const char* tag = "Feed";
 
-Feed::Feed() : rxBuf(RxBufSize), dataAvailable(0), readTask([this](){ readLoop(); }, "FeedRead", 4096, 5, 1), decodeTask([this](){ decodeLoop(); }, "FeedDecode", 4096, 5, 1){
+Feed::Feed() : rxBuf(RxBufSize), dataAvailable(0), readTask([this](){ readLoop(); }, "FeedRead", 4096, 5, 1),
+			   decodeTask([this](){ decodeLoop(); }, "FeedDecode", 4096, 5, 1){
 
 	readBuf.resize(ReadBufSize);
 	for(int i = 0; i < 3; i++){
@@ -82,7 +83,9 @@ void Feed::decodeLoop(){
 
 	lock.unlock();
 
-	if(frame == nullptr || frame->frame.size == 0 || frame->frame.data == nullptr) return;
+    if(frame == nullptr || frame->frame.size == 0 || frame->frame.data == nullptr){
+        return;
+    }
 
 	int freeImg = -1;
 	for(int i = 0; i < 3; i++){

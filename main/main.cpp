@@ -16,11 +16,12 @@
 #include "Services/TCPClient.h"
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
-#include "Services/LED.h"
+#include "Services/LEDService.h"
 #include "UISystem/UIThread.h"
 #include "Screens/IntroScreen.h"
 #include "Util/Services.h"
 #include "Pins.hpp"
+#include "Devices/Potentiometers.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -41,16 +42,17 @@ void init(){
 	}
 
 	const gpio_config_t cfg = {
-			.pin_bit_mask = 1ULL << LED_PAIR,
+			.pin_bit_mask = 0,
 			.mode = GPIO_MODE_OUTPUT
 	};
 	gpio_config(&cfg);
-	gpio_set_level((gpio_num_t) LED_PAIR, 0);
 
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
-	auto led = new LED(*aw9523);
+	auto led = new LEDService(*aw9523);
 	Services.set(Service::LED, led);
+
+	led->on(LED::Power);
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
@@ -90,6 +92,9 @@ void init(){
 
 	auto uiThread = new UIThread(*display);
 	Services.set(Service::UI, uiThread);
+
+	auto potentiometers = new Potentiometers(*adc);
+	Services.set(Service::Potentiometers, potentiometers);
 
 	uiThread->startScreen(&IntroScreen::createScreen);
 
