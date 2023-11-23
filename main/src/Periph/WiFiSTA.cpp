@@ -21,7 +21,7 @@ static std::string mac2str(uint8_t ar[]){
 	return str;
 }
 
-WiFiSTA::WiFiSTA(){
+WiFiSTA::WiFiSTA() : hysteresis({0, 20, 40, 60, 80}, 1){
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 	esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, [](void* arg, esp_event_base_t base, int32_t id, void* data){
 		if(base != WIFI_EVENT) return;
@@ -177,6 +177,21 @@ void WiFiSTA::connect(){
 
 WiFiSTA::State WiFiSTA::getState(){
 	return state;
+}
+
+WiFiSTA::ConnectionStrength WiFiSTA::getConnectionStrength(){
+	hysteresis.update(-getConnectionRSSI());
+	return (WiFiSTA::ConnectionStrength)hysteresis.get();
+}
+
+int WiFiSTA::getConnectionRSSI() const{
+	if(state != Connected){
+		return -1;
+	}
+
+	int rssi = -1;
+	ESP_ERROR_CHECK(esp_wifi_sta_get_rssi(&rssi));
+	return rssi;
 }
 
 void WiFiSTA::disconnect(){
