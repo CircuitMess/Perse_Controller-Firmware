@@ -4,27 +4,35 @@
 #include <esp_sleep.h>
 #include "Periph/WiFiSTA.h"
 #include "Periph/SPIFFS.h"
-#include "Periph/I2C.h"
 #include "Periph/ADC.h"
 #include "Devices/Battery.h"
-#include "Devices/Display.h"
-#include "Devices/Backlight.h"
 #include "Devices/Input.h"
-#include "Devices/AW9523.h"
-#include "Devices/Joystick.h"
-#include "Devices/Encoders.h"
 #include "Services/TCPClient.h"
 #include "Services/Comm.h"
 #include "Services/RoverState.h"
 #include "Services/LEDService.h"
-#include "UISystem/UIThread.h"
-#include "Screens/IntroScreen.h"
+#include "Services/Settings.h"
 #include "Util/Services.h"
 #include "Pins.hpp"
+
+#ifdef CTRL_TYPE_MISSIONCTRL
+
+#include "Periph/I2C.h"
 #include "Devices/Potentiometers.h"
+#include "Devices/Display.h"
+#include "Devices/Backlight.h"
+#include "Devices/AW9523.h"
+#include "Devices/Joystick.h"
+#include "Devices/Encoders.h"
+#include "UISystem/UIThread.h"
+#include "Screens/IntroScreen.h"
+
+#endif
 
 [[noreturn]] void shutdown(){
+#ifdef CTRL_TYPE_MISSIONCTRL
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
+#endif
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO));
@@ -40,19 +48,6 @@ void init(){
 		shutdown();
 		return;
 	}
-
-	const gpio_config_t cfg = {
-			.pin_bit_mask = 0,
-			.mode = GPIO_MODE_OUTPUT
-	};
-	gpio_config(&cfg);
-
-	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-	auto aw9523 = new AW9523(*i2c, 0x5b);
-	auto led = new LEDService(*aw9523);
-	Services.set(Service::LED, led);
-
-	led->on(LED::Power);
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
@@ -80,6 +75,18 @@ void init(){
 	auto input = new Input();
 	Services.set(Service::Input, input);
 
+#ifdef CTRL_TYPE_MISSIONCTRL
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5b);
+	auto led = new LEDService(*aw9523);
+#elifdef CTRL_TYPE_BASIC
+	auto led = new LEDService();
+#endif
+	Services.set(Service::LED, led);
+	led->on(LED::Power);
+
+
+#ifdef CTRL_TYPE_MISSIONCTRL
 	auto encoders = new Encoders();
 
 	auto joy = new Joystick(*adc);
@@ -100,6 +107,8 @@ void init(){
 
 	uiThread->start();
 	bl->fadeIn();
+#endif
+
 
 	battery->begin();
 }
