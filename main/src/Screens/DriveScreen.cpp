@@ -3,20 +3,26 @@
 #include "Screens/PairScreen.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
-#include "Pins.hpp"
 #include "Services/LEDService.h"
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
+#include "Devices/Potentiometers.h"
 
-DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), dcEvts(6), evts(12), comm(*((Comm*) Services.get(Service::Comm))),
-										   joy(*((Joystick*) Services.get(Service::Joystick))){
+DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Services.get(Service::Comm))), joy(*((Joystick*) Services.get(Service::Joystick))),
+										   dcEvts(6), evts(12){
 	lastFrame.resize(160 * 120, 0);
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->on(LED::Pair);
 	}
 
-	comm.sendFeedQuality(1);
+	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
+		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
+		const uint8_t quality = map(value, 0, 100, 0, 30);
+		comm.sendFeedQuality(quality);
+	}else{
+		comm.sendFeedQuality(30);
+	}
 
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
@@ -51,16 +57,44 @@ DriveScreen::~DriveScreen(){
 }
 
 void DriveScreen::preDraw(){
-	bool gotFrame = feed.nextFrame([this](const DriveInfo& info, const Color* frame){
-		extractInfo(info);
+	DriveInfo driveInfo;
+
+	const bool gotFrame = feed.nextFrame([this, &driveInfo](const DriveInfo& info, const Color* frame){
+		driveInfo = info;
+
+		if(frame == nullptr){
+			return;
+		}
+
 		memcpy(lastFrame.data(), frame, 160 * 120 * 2);
 	});
 
 	canvas.pushImage(0, 0, 160, 120, lastFrame.data());
-}
 
-void DriveScreen::extractInfo(const DriveInfo& info){
+	if(!isScanningEnabled){
+		return;
+	}
 
+	if(gotFrame && (lastMarkerVisualizationTime == 0 || (millis() - lastMarkerVisualizationTime) >= MarkerVisualizingInterval)){
+		markerVisualizationData.clear();
+
+		if(!driveInfo.markerInfo.markers.empty()){
+			for(const std::pair<int16_t, int16_t>& point: driveInfo.markerInfo.markers.front().projected){
+				markerVisualizationData.emplace_back(point);
+			}
+
+			lastMarkerVisualizationTime = millis();
+		}
+	}
+
+	for(size_t j = 0; j < markerVisualizationData.size(); ++j){
+		const size_t nextIndex = (j + 1) % markerVisualizationData.size();
+
+		const std::pair<int16_t, int16_t>& currentProjected = markerVisualizationData[j];
+		const std::pair<int16_t, int16_t>& nextProjected = markerVisualizationData[nextIndex];
+
+		canvas.drawLine(currentProjected.first, currentProjected.second, nextProjected.first, nextProjected.second, MarkerVisualizationColor);
+	}
 }
 
 void DriveScreen::onLoop(){
@@ -124,15 +158,15 @@ void DriveScreen::sendDriveDir(){
 		angle = 360.0f - angle;
 	}
 
-	static constexpr float circParts = 360.0 / 8.0;
+	static constexpr float circParts = 360.0f / 8.0f;
 
-	float calcAngle = angle + circParts / 2.0;
+	float calcAngle = angle + circParts / 2.0f;
 	if(calcAngle >= 360){
 		calcAngle -= 360.0f;
 	}
-	const uint8_t numer = std::floor(calcAngle / circParts);
+	const uint8_t number = std::floor(calcAngle / circParts);
 
-	comm.sendDriveDir({ numer, len });
+	comm.sendDriveDir({ number, len });
 }
 
 void DriveScreen::buildUI(){
@@ -145,6 +179,7 @@ void DriveScreen::setupControl(){
 
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Encoders, &evts);
+	Events::listen(Facility::Potentiometers, &evts);
 
 	if(input->getState(Input::SwLight)){
 		comm.sendHeadlights(HeadlightsMode::On);
@@ -172,6 +207,9 @@ void DriveScreen::checkEvents(){
 	}else if(evt.facility == Facility::Encoders){
 		auto data = (Encoders::Data*) evt.data;
 		processEncoders(*data);
+	}else if(evt.facility == Facility::Potentiometers){
+		auto data = (Potentiometers::Data*) evt.data;
+		processPotentiometers(*data);
 	}
 
 	free(evt.data);
@@ -225,10 +263,13 @@ void DriveScreen::processInput(const Input::Data& evt){
 		}
 	}else if(evt.btn == Input::SwArm){
 		armUnlocked = evt.action == Input::Data::Press;
-		if(armUnlocked){
-			led->on(LED::Arm);
-		}else{
-			led->off(LED::Arm);
+
+		if(led != nullptr){
+			if(armUnlocked){
+				led->on(LED::Arm);
+			}else{
+				led->off(LED::Arm);
+			}
 		}
 	}else if(evt.btn == Input::SwLight){
 		if(evt.action == Input::Data::Press){
@@ -236,13 +277,22 @@ void DriveScreen::processInput(const Input::Data& evt){
 				comm.sendHeadlights(HeadlightsMode::On);
 			}
 
-			led->on(LED::Light);
+			if(led != nullptr){
+				led->on(LED::Light);
+			}
 		}else{
 			if(!isInPanicMode){
 				comm.sendHeadlights(HeadlightsMode::Off);
 			}
 
-			led->off(LED::Light);
+			if(led != nullptr){
+				led->off(LED::Light);
+			}
+		}
+	}else if(evt.btn == Input::EncCam){
+		if(evt.action == Input::Data::Press){
+			isScanningEnabled = !isScanningEnabled;
+			comm.sendScanningEnable(isScanningEnabled);
 		}
 	}
 }
@@ -279,4 +329,15 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 			comm.sendCameraRotation(camPos);
 		}
 	}
+}
+
+void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
+	if(evt.potentiometer != Potentiometers::FeedQuality){
+		return;
+	}
+
+	const uint8_t value = std::clamp(100 - evt.value, 0, 100);
+	const uint8_t quality = map(value, 0, 100, 0, 30);
+
+	comm.sendFeedQuality(quality);
 }

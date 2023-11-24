@@ -21,6 +21,7 @@
 #include "Screens/IntroScreen.h"
 #include "Util/Services.h"
 #include "Pins.hpp"
+#include "Devices/Potentiometers.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -91,6 +92,9 @@ void init(){
 
 	auto uiThread = new UIThread(*display);
 	Services.set(Service::UI, uiThread);
+
+	auto potentiometers = new Potentiometers(*adc);
+	Services.set(Service::Potentiometers, potentiometers);
 
 	uiThread->startScreen(&IntroScreen::createScreen);
 

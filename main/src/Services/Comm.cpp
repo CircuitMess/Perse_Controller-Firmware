@@ -62,6 +62,42 @@ void Comm::sendFeedQuality(uint8_t quality){
 	sendPacket(packet);
 }
 
+void Comm::sendModulesEnable(bool enable){
+	const ControlPacket packet {
+			.type = CommType::ModulesEnable,
+			.data = (uint8_t)enable
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendScanningEnable(bool enable){
+	const ControlPacket packet {
+			.type = CommType::ScanMarkers,
+			.data = (uint8_t)enable
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendModulesEnable(bool enable){
+	const ControlPacket packet {
+			.type = CommType::ModulesEnable,
+			.data = (uint8_t)enable
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendEmergencyMode(bool state){
+	const ControlPacket packet {
+			.type = CommType::Emergency,
+			.data = (uint8_t)state
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
@@ -98,24 +134,6 @@ void Comm::loop(){
 		while(!queue.get(event, portMAX_DELAY));
 		free(event.data);
 	}
-}
-
-void Comm::sendModulesEnable(bool enable){
-	const ControlPacket packet {
-		.type = CommType::ModulesEnable,
-		.data = (uint8_t)enable
-	};
-
-	sendPacket(packet);
-}
-
-void Comm::sendEmergencyMode(bool state){
-	const ControlPacket packet {
-			.type = CommType::Emergency,
-			.data = (uint8_t)state
-	};
-
-	sendPacket(packet);
 }
 
 Comm::Event Comm::processPacket(const ControlPacket& packet) {
