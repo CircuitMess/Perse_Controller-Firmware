@@ -16,7 +16,7 @@ elseif ("$ENV{CTRL_TYPE}" STREQUAL "Basic")
     set(IDF_TARGET esp32c3)
     add_compile_definitions("CTRL_TYPE_BASIC")
     set(SDKCONFIG "./sdkconfig.basic")
-
+    set(EXCLUDE_COMPONENTS JPEGDEC LovyanGFX)
 endif ()
 
 
