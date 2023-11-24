@@ -80,15 +80,6 @@ void Comm::sendScanningEnable(bool enable){
 	sendPacket(packet);
 }
 
-void Comm::sendModulesEnable(bool enable){
-	const ControlPacket packet {
-			.type = CommType::ModulesEnable,
-			.data = (uint8_t)enable
-	};
-
-	sendPacket(packet);
-}
-
 void Comm::sendEmergencyMode(bool state){
 	const ControlPacket packet {
 			.type = CommType::Emergency,

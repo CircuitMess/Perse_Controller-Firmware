@@ -16,14 +16,6 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 		led->on(LED::Pair);
 	}
 
-	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
-		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
-		const uint8_t quality = map(value, 0, 100, 0, 30);
-		comm.sendFeedQuality(quality);
-	}else{
-		comm.sendFeedQuality(30);
-	}
-
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
 									 .color = TFT_GREEN,
@@ -38,7 +30,15 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	joy.begin();
 
 	// TODO: setup Pinch, Arm, Cam LEDs
-	// TODO: setup headlight LED and send state
+
+	Input* input = (Input*) Services.get(Service::Input);
+	if(input == nullptr){
+		return;
+	}
+
+	armUnlocked = input->getState(Input::SwArm);
+
+	sendCurrentStates();
 }
 
 DriveScreen::~DriveScreen(){
@@ -224,8 +224,8 @@ void DriveScreen::processInput(const Input::Data& evt){
 				comm.sendEmergencyMode(false);
 				isInPanicMode = false;
 				panicHoldStart = 0;
+				sendCurrentStates();
 
-				LEDService* led = (LEDService*) Services.get(Service::LED);
 				if(led != nullptr){
 					led->off(LED::PanicLeft);
 					led->off(LED::PanicRight);
@@ -233,7 +233,6 @@ void DriveScreen::processInput(const Input::Data& evt){
 			}else{
 				panicHoldStart = millis();
 
-				LEDService* led = (LEDService*) Services.get(Service::LED);
 				if(led != nullptr){
 					led->breathe(LED::PanicLeft, 2 * PanicHoldDuration);
 					led->breathe(LED::PanicRight, 2 * PanicHoldDuration);
@@ -243,8 +242,9 @@ void DriveScreen::processInput(const Input::Data& evt){
 			if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
 				comm.sendEmergencyMode(true);
 				isInPanicMode = true;
+				comm.sendScanningEnable(false);
+				isScanningEnabled = false;
 
-				LEDService* led = (LEDService*) Services.get(Service::LED);
 				if(led != nullptr){
 					led->blink(LED::PanicLeft, 0);
 					led->blink(LED::PanicRight, 0);
@@ -252,7 +252,6 @@ void DriveScreen::processInput(const Input::Data& evt){
 			}else{
 				isInPanicMode = false;
 
-				LEDService* led = (LEDService*) Services.get(Service::LED);
 				if(led != nullptr){
 					led->off(LED::PanicLeft);
 					led->off(LED::PanicRight);
@@ -336,8 +335,43 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 		return;
 	}
 
+	if(isInPanicMode){
+		return;
+	}
+
 	const uint8_t value = std::clamp(100 - evt.value, 0, 100);
 	const uint8_t quality = map(value, 0, 100, 0, 30);
 
 	comm.sendFeedQuality(quality);
+}
+
+void DriveScreen::sendCurrentStates(){
+	Input* input = (Input*) Services.get(Service::Input);
+	if(input == nullptr){
+		return;
+	}
+
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+
+	if(input->getState(Input::Button::SwLight)){
+		comm.sendHeadlights(HeadlightsMode::On);
+
+		if(led != nullptr){
+			led->on(LED::Light);
+		}
+	}else{
+		comm.sendHeadlights(HeadlightsMode::Off);
+
+		if(led != nullptr){
+			led->off(LED::Light);
+		}
+	}
+
+	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
+		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
+		const uint8_t quality = map(value, 0, 100, 0, 30);
+		comm.sendFeedQuality(quality);
+	}else{
+		comm.sendFeedQuality(15);
+	}
 }
