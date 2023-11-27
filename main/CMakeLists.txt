@@ -26,7 +26,7 @@ list(APPEND COMMON_SOURCES ${util_srcs})
 
 
 #Type-specific sources, libs
-if (NOT DEFINED {CTRL_TYPE} OR "${CTRL_TYPE}" STREQUAL "MissionCtrl")
+if (NOT DEFINED CTRL_TYPE OR "${CTRL_TYPE}" STREQUAL "MissionCtrl")
     file(GLOB_RECURSE SOURCES "src/**.cpp" "src/**.c")
 
     set(SPIFFSPATH "../spiffs_MissionCtrl" CACHE INTERNAL "" FORCE)
