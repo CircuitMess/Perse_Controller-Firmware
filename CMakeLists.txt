@@ -6,13 +6,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-if (NOT DEFINED ENV{CTRL_TYPE} OR "$ENV{CTRL_TYPE}" STREQUAL "MissionCtrl")
+if (NOT DEFINED CTRL_TYPE OR "${CTRL_TYPE}" STREQUAL "MissionCtrl")
     set(IDF_TARGET esp32s3)
     add_compile_definitions("CTRL_TYPE_MISSIONCTRL")
     set(SDKCONFIG "./sdkconfig.missionctrl")
     add_compile_definitions("LV_TICK_CUSTOM_SYS_TIME_EXPR=(esp_timer_get_time() / 1000LL)")
 
-elseif ("$ENV{CTRL_TYPE}" STREQUAL "Basic")
+elseif ("${CTRL_TYPE}" STREQUAL "Basic")
     set(IDF_TARGET esp32c3)
     add_compile_definitions("CTRL_TYPE_BASIC")
     set(SDKCONFIG "./sdkconfig.basic")
