@@ -19,7 +19,7 @@
 #include "Modules/UnkownModule.h"
 
 DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Services.get(Service::Comm))), joy(*((Joystick*) Services.get(Service::Joystick))),
-										   dcEvts(6), evts(12){
+										   dcEvts(6), evts(12), roverState(*(RoverState*) Services.get(Service::RoverState)){
 	lastFrame.resize(160 * 120, 0);
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
@@ -51,9 +51,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	roverBatteryLabel.setPos(-getWidth(), -getHeight());
 	roverBatteryLabel.setStyle({ .color = TFT_WHITE, .datum = BL_DATUM });
 
-	if(const RoverState* roverState = (RoverState*) Services.get(Service::RoverState)){
-		roverBatteryLabel.setText(std::to_string(roverState->getBatteryPercent()));
-	}
+	roverBatteryLabel.setText(std::to_string(roverState.getBatteryPercent()));
 
 	controllerBatteryLabel.setPos(-getWidth(), -getHeight());
 	controllerBatteryLabel.setStyle({ .color = TFT_WHITE, .datum = BR_DATUM });
@@ -117,50 +115,34 @@ void DriveScreen::preDraw(){
 
 	canvas.pushImage(0, 0, 160, 120, lastFrame.data());
 
-	// TODO cache this when sending it to the rover, use that to calculate motor speeds and which arrows to light up
-	auto dir = joy.getPos();
-	dir.x *= -1;
+	leftMotorSpeedLabel.setText(std::to_string(cachedMotorSpeeds.x));
+	rightMotorSpeedLabel.setText(std::to_string(cachedMotorSpeeds.y));
 
-	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
-	if(len < 0.1){
+	if(cachedMotorSpeeds.x == 0 && cachedMotorSpeeds.y == 0){
 		arrowUp.setPath("/spiffs/drive/arrow-up.raw");
 		arrowRight.setPath("/spiffs/drive/arrow-right.raw");
 		arrowDown.setPath("/spiffs/drive/arrow-down.raw");
 		arrowLeft.setPath("/spiffs/drive/arrow-left.raw");
 	}else{
-		auto angle = glm::degrees(glm::angle(glm::normalize(dir), { 0.0, 1.0 }));
-		if(dir.x < 0){
-			angle = 360.0f - angle;
-		}
-
-		static constexpr float circParts = 360.0 / 8.0;
-
-		float calcAngle = angle + circParts / 2.0;
-		if(calcAngle >= 360){
-			calcAngle -= 360.0f;
-		}
-
-		const uint8_t number = std::floor(calcAngle / circParts);
-
-		if(number == 7 || number == 0 || number == 1){
+		if(cachedDriveDir == 7 || cachedDriveDir == 0 || cachedDriveDir == 1){
 			arrowUp.setPath("/spiffs/drive/arrow-up-active.raw");
 		}else{
 			arrowUp.setPath("/spiffs/drive/arrow-up.raw");
 		}
 
-		if(number == 1 || number == 2 || number == 3){
+		if(cachedDriveDir == 1 || cachedDriveDir == 2 || cachedDriveDir == 3){
 			arrowRight.setPath("/spiffs/drive/arrow-right-active.raw");
 		}else{
 			arrowRight.setPath("/spiffs/drive/arrow-right.raw");
 		}
 
-		if(number == 3 || number == 4 || number == 5){
+		if(cachedDriveDir == 3 || cachedDriveDir == 4 || cachedDriveDir == 5){
 			arrowDown.setPath("/spiffs/drive/arrow-down-active.raw");
 		}else{
 			arrowDown.setPath("/spiffs/drive/arrow-down.raw");
 		}
 
-		if(number == 5 || number == 6 || number == 7){
+		if(cachedDriveDir == 5 || cachedDriveDir == 6 || cachedDriveDir == 7){
 			arrowLeft.setPath("/spiffs/drive/arrow-left-active.raw");
 		}else{
 			arrowLeft.setPath("/spiffs/drive/arrow-left.raw");
@@ -256,6 +238,8 @@ void DriveScreen::sendDriveDir(){
 	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
 	if(len < 0.1){
 		if(shouldSendZeroDrive){
+			cachedMotorSpeeds = {0, 0};
+			cachedDriveDir = 0;
 			comm.sendDriveDir({ 0, 0.0f });
 			shouldSendZeroDrive = false;
 		}
@@ -279,6 +263,46 @@ void DriveScreen::sendDriveDir(){
 	const uint8_t number = std::floor(calcAngle / circParts);
 
 	comm.sendDriveDir({ number, len });
+
+	float leftSpeed = 0.0f;
+	float rightSpeed = 0.0f;
+
+	if(number == 0){
+		leftSpeed = rightSpeed = 100;
+	}
+	else if(number == 1){
+		leftSpeed = 100;
+		rightSpeed = 30;
+	}
+	else if(number == 2){
+		leftSpeed = 100;
+		rightSpeed = -100;
+	}
+	else if(number == 3){
+		leftSpeed = -100;
+		rightSpeed = -30;
+	}
+	else if(number == 4){
+		leftSpeed = rightSpeed = -100;
+	}
+	else if(number == 5){
+		leftSpeed = -30;
+		rightSpeed = -100;
+	}
+	else if(number == 6){
+		leftSpeed = -100;
+		rightSpeed = 100;
+	}
+	else if(number == 7){
+		leftSpeed = 30;
+		rightSpeed = 100;
+	}
+
+	leftSpeed = std::clamp(leftSpeed * len, -100.0f, 100.0f);
+	rightSpeed = std::clamp(rightSpeed * len, -100.0f, 100.0f);
+
+	cachedMotorSpeeds = {leftSpeed, rightSpeed};
+	cachedDriveDir = number;
 }
 
 void DriveScreen::buildUI(){
@@ -352,6 +376,8 @@ void DriveScreen::setupControl(){
 			led->on(LED::Arm);
 		}
 	}
+
+	roverBatteryLabel.setText(std::to_string(roverState.getBatteryPercent()));
 }
 
 void DriveScreen::checkEvents(){
@@ -442,8 +468,7 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 		if(evt.modulePlug.bus == ModuleBus::Left){
 			if(!evt.modulePlug.insert){
 				if(leftModule){
-					delete leftModule;
-					leftModule = nullptr;
+					leftModule.reset();
 				}
 			}else if(leftModule == nullptr){
 				createModule(ModuleBus::Left, evt.modulePlug.type);
@@ -453,14 +478,21 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 		if(evt.modulePlug.bus == ModuleBus::Right){
 			if(!evt.modulePlug.insert){
 				if(rightModule){
-					delete rightModule;
-					rightModule = nullptr;
+					rightModule.reset();
 				}
 			}else if(rightModule == nullptr){
 				createModule(ModuleBus::Right, evt.modulePlug.type);
 			}
 		}
 	}
+}
+
+void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
+	if(evt.potentiometer != Potentiometers::FeedQuality){
+		return;
+	}
+
+	comm.sendFeedQuality(30 - map(evt.value, 0, 100, 0, 30));
 }
 
 void DriveScreen::createModule(ModuleBus bus, ModuleType type){
@@ -495,11 +527,15 @@ void DriveScreen::createModule(ModuleBus bus, ModuleType type){
 			break;
 	}
 
+	if(module == nullptr){
+		return;
+	}
+
 	if(bus == ModuleBus::Left){
-		leftModule = module;
+		leftModule.reset(module);
 		leftModule->setPos(2, 30);
 	}else{
-		rightModule = module;
+		rightModule.reset(module);
 		rightModule->setPos(126, 30);
 	}
 }

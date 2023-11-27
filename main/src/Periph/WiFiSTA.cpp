@@ -190,7 +190,11 @@ int WiFiSTA::getConnectionRSSI() const{
 	}
 
 	int rssi = -1;
-	ESP_ERROR_CHECK(esp_wifi_sta_get_rssi(&rssi));
+	esp_err_t error = esp_wifi_sta_get_rssi(&rssi);
+	if(error != ESP_OK){
+		return 0;
+	}
+
 	return rssi;
 }
 

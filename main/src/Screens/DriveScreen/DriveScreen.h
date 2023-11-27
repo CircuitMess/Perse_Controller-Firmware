@@ -49,9 +49,11 @@ private:
 	bool holdDone = false;
 	bool isScanningEnabled = false;
 
-	// TODO smart pointers
-	ModuleElement* leftModule = nullptr;
-	ModuleElement* rightModule = nullptr;
+	std::unique_ptr<ModuleElement> leftModule = nullptr;
+	std::unique_ptr<ModuleElement> rightModule = nullptr;
+
+	glm::vec<2, int8_t> cachedMotorSpeeds = {0, 0};
+	uint8_t cachedDriveDir = 0;
 
 	bool armUnlocked;
 	uint8_t pinchPos = 50;
