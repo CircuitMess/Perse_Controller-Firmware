@@ -2,21 +2,41 @@
 #include "Devices/Input.h"
 #include "DriveScreen/DriveScreen.h"
 
-PairScreen::PairScreen(Sprite& canvas) : Screen(canvas), evts(6){
-	text1 = new LabelElement(this, "Hold PAIR to pair...");
-	text2 = new LabelElement(this, "");
-
-	const TextStyle style = {
-			.color = TFT_GREEN,
-			.datum = CC_DATUM
-	};
-	text1->setStyle(style);
-	text2->setStyle(style);
-
-	text1->setPos(64, 60);
-	text2->setPos(64, 70);
+PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas), evts(6),
+																  frame(this, "/spiffs/pair/frame.raw", 122, 56),
+																  controllerRover(this, "/spiffs/pair/controller_rover.raw", 122, 41),
+																  signalAnim(this, "/spiffs/pair/signal.gif"),
+																  buttonAnim(this, "/spiffs/pair/button.gif"),
+																  error(this, "/spiffs/pair/error.raw", 40, 40),
+																  description(this, TextPaths[0], 70, 54){
 
 	Events::listen(Facility::Input, &evts);
+
+	setBgColor(BackgroundColor);
+	frame.setPos(3, 63);
+	controllerRover.setPos(3, 12);
+	signalAnim.setPos(-100, -100);
+	description.setPos(54, 64);
+	buttonAnim.setLoopMode(GIF::Single);
+	signalAnim.setLoopMode(GIF::Infinite);
+
+	//shifting buttonAnim and error in and out of view
+	if(disconnectOccurred){
+		buttonAnim.setPos(-100, -100);
+		error.setPos(ErrorPos.x, ErrorPos.y);
+		description.setPath(TextPaths[2]);
+	}else{
+		buttonAnim.setPos(ButtonPos.x, ButtonPos.y);
+		error.setPos(-100, -100);
+		description.setPath(TextPaths[0]);
+	}
+
+	signalAnim.start();
+	signalAnim.stop();
+	signalAnim.reset();
+	buttonAnim.start();
+	buttonAnim.stop();
+	buttonAnim.reset();
 }
 
 PairScreen::~PairScreen(){
@@ -40,8 +60,14 @@ void PairScreen::onLoop(){
 		if(state == PairService::State::Success){
 			transition([](Sprite& canvas){ return std::make_unique<DriveScreen>(canvas); });
 		}else if(state == PairService::State::Fail){
-			text1->setText("Pair failed.");
-			text2->setText("Hold PAIR to pair...");
+			error.setPos(ErrorPos.x, ErrorPos.y);
+			buttonAnim.setPos(-100, -100);
+			signalAnim.setPos(-100, -100);
+			buttonAnim.stop();
+			buttonAnim.reset();
+			signalAnim.stop();
+			signalAnim.reset();
+			description.setPath(TextPaths[1]);
 		}
 
 		return;
@@ -53,11 +79,18 @@ void PairScreen::processInput(const Input::Data& evt){
 
 	if(evt.action == Input::Data::Press && !pair){
 		pair = std::make_unique<PairService>();
-		text1->setText("Pairing.");
-		text2->setText("Hold PAIR button.");
+		description.setPath(TextPaths[0]);
+		buttonAnim.start();
+		signalAnim.start();
+		buttonAnim.setPos(ButtonPos.x, ButtonPos.y);
+		signalAnim.setPos(SignalPos.x, SignalPos.y);
+		error.setPos(-100, -100);
 	}else if(evt.action == Input::Data::Release && pair){
 		pair.reset();
-		text1->setText("Pair aborted.");
-		text2->setText("Hold PAIR to pair...");
+		signalAnim.setPos(-100, -100);
+		buttonAnim.reset();
+		buttonAnim.stop();
+		signalAnim.reset();
+		signalAnim.stop();
 	}
 }

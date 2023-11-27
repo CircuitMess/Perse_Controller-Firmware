@@ -21,7 +21,7 @@ protected:
 	virtual void onLoop() override;
 
 private:
-	static constexpr glm::vec<3, uint8_t> backgroundColor = {38, 38, 73};
+	static constexpr Color backgroundColor = lgfx::color565(10, 6, 50);
 	static constexpr uint8_t crossMargin = 2;
 	static constexpr float pauseDuration = 0.5f;
 	static constexpr float moveDuration = 1.0f;

@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-enum class Service { Settings, Backlight, TCP, WiFi, RoverState, Comm, UI, Input, Joystick, LED };
+enum class Service { Settings, Backlight, TCP, WiFi, RoverState, Comm, UI, Input, Joystick, LED, Battery, Potentiometers };
 
 class ServiceLocator {
 public:
@@ -12,8 +12,6 @@ public:
 
 private:
 	std::unordered_map<Service, void*> services;
-
-
 };
 
 extern ServiceLocator Services;

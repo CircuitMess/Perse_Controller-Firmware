@@ -18,6 +18,12 @@ ImageElement::~ImageElement(){
 }
 
 void ImageElement::setPath(const char* path){
+	if(filePath == path){
+		return;
+	}
+
+	filePath = path;
+
 	if(!ferror(file)){
 		fclose(file);
 	}
