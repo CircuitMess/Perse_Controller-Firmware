@@ -9,31 +9,45 @@
 static const char* TAG = "LEDService";
 
 const std::map<LED, LEDService::PwnMappingInfo> LEDService::PwmMappings = {
-		{ LED::Power,      { (gpio_num_t) LED_POWER,   LEDC_CHANNEL_1, 100 }},
-		{ LED::Pair,       { (gpio_num_t) LED_PAIR,    LEDC_CHANNEL_2, 100 }},
+		{ LED::Power, { (gpio_num_t) LED_POWER, LEDC_CHANNEL_1, 100 } },
+		{ LED::Pair, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_2, 100 } },
+#ifdef CTRL_TYPE_MISSIONCTRL
 		{ LED::PanicLeft,  { (gpio_num_t) LED_PANIC_L, LEDC_CHANNEL_3, 100 }},
-		{ LED::PanicRight, { (gpio_num_t) LED_PANIC_R, LEDC_CHANNEL_4, 100 }}
+		{ LED::PanicRight, { (gpio_num_t) LED_PANIC_R, LEDC_CHANNEL_4, 100 }},
+#elifdef CTRL_TYPE_BASIC
+		{ LED::Warning, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_3, 100 } },
+		{ LED::SoundLight, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_4, 100 } },
+		{ LED::ArmPinch, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_5, 100 } },
+		{ LED::Navigation, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_0, 100 } },
+
+
+#endif
 };
 
+#ifdef CTRL_TYPE_MISSIONCTRL
 const std::map<LED, LEDService::ExpanderMappingInfo> LEDService::ExpanderMappings = {
-		{ LED::CamL4,      { EXTLED_CAM_L4,      0x10 }},
-		{ LED::CamL3,      { EXTLED_CAM_L3,      0x10 }},
-		{ LED::CamL2,      { EXTLED_CAM_L2,      0x10 }},
-		{ LED::CamL1,      { EXTLED_CAM_L1,      0x10 }},
-		{ LED::CamCenter,  { EXTLED_CAM_0,       0x10 }},
-		{ LED::CamR1,      { EXTLED_CAM_R1,      0x10 }},
-		{ LED::CamR2,      { EXTLED_CAM_R2,      0x10 }},
-		{ LED::CamR3,      { EXTLED_CAM_R3,      0x10 }},
-		{ LED::CamR4,      { EXTLED_CAM_R4,      0x10 }},
-		{ LED::Warning,    { EXTLED_WARN,        0x10 }},
-		{ LED::Arm,        { EXTLED_ARM,         0x50 }},
-		{ LED::ArmUp,      { EXTLED_ARM_UP,      0x50 }},
-		{ LED::ArmDown,    { EXTLED_ARM_DOWN,    0x50 }},
-		{ LED::Light,      { EXTLED_LIGHT,       0x10 }},
-		{ LED::PinchOpen,  { EXTLED_PINCH_OPEN,  0x50 }},
-		{ LED::PinchClose, { EXTLED_PINCH_CLOSE, 0x50 }},
+		//1 blok za svaki type
+		{ LED::CamL4,      { EXTLED_CAM_L4,      0x10 } },
+		{ LED::CamL3,      { EXTLED_CAM_L3,      0x10 } },
+		{ LED::CamL2,      { EXTLED_CAM_L2,      0x10 } },
+		{ LED::CamL1,      { EXTLED_CAM_L1,      0x10 } },
+		{ LED::CamCenter,  { EXTLED_CAM_0,       0x10 } },
+		{ LED::CamR1,      { EXTLED_CAM_R1,      0x10 } },
+		{ LED::CamR2,      { EXTLED_CAM_R2,      0x10 } },
+		{ LED::CamR3,      { EXTLED_CAM_R3,      0x10 } },
+		{ LED::CamR4,      { EXTLED_CAM_R4,      0x10 } },
+		{ LED::Warning,    { EXTLED_WARN,        0x10 } },
+		{ LED::Arm,        { EXTLED_ARM,         0x50 } },
+		{ LED::ArmUp,      { EXTLED_ARM_UP,      0x50 } },
+		{ LED::ArmDown,    { EXTLED_ARM_DOWN,    0x50 } },
+		{ LED::Light,      { EXTLED_LIGHT,       0x10 } },
+		{ LED::PinchOpen,  { EXTLED_PINCH_OPEN,  0x50 } },
+		{ LED::PinchClose, { EXTLED_PINCH_CLOSE, 0x50 } },
 };
+#endif
 
+
+#ifdef CTRL_TYPE_MISSIONCTRL
 LEDService::LEDService(AW9523& aw9523) : Threaded("LEDService"), instructionQueue(25){
 	for(LED led = (LED) 0; (uint8_t) led < (uint8_t) LED::COUNT; led = (LED) ((uint8_t) led + 1)){
 		const bool isExpander = ExpanderMappings.contains(led);
@@ -54,11 +68,26 @@ LEDService::LEDService(AW9523& aw9523) : Threaded("LEDService"), instructionQueu
 
 	start();
 }
+#elifdef CTRL_TYPE_BASIC
+
+LEDService::LEDService() : Threaded("LEDService"), instructionQueue(25){
+	for(LED led = (LED) 0; (uint8_t) led < (uint8_t) LED::COUNT; led = (LED) ((uint8_t) led + 1)){
+		if(!PwmMappings.contains(led)) continue;
+
+		PwnMappingInfo ledData = PwmMappings.at(led);
+		SingleLED* ledDevice = new SinglePwmLED(ledData.pin, ledData.channel, ledData.limit);
+		ledDevices[led] = ledDevice;
+	}
+
+	start();
+}
+
+#endif
 
 LEDService::~LEDService(){
 	ledFunctions.clear();
 
-	for(auto led: ledDevices){
+	for(auto led : ledDevices){
 		delete led.second;
 	}
 }

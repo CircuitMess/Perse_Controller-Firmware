@@ -13,7 +13,12 @@ public:
 	virtual ~Input();
 
 	enum Button {
-		Pair, Panic, Joy, EncArm, EncPinch, EncCam, SwLight, SwArm
+		Pair,
+#ifdef CTRL_TYPE_MISSIONCTRL
+		Panic, Joy, EncArm, EncPinch, EncCam, SwLight, SwArm
+#elifdef CTRL_TYPE_BASIC
+		Up, Down, Left, Right, Mode
+#endif
 	};
 	static const std::unordered_map<Button, const char*> PinLabels;
 

@@ -6,25 +6,41 @@
 
 // button index -> GPIO port
 const std::unordered_map<Input::Button, gpio_num_t> Input::PinMap{
-		{ Pair,     (gpio_num_t) BTN_PAIR },
+		{ Pair, (gpio_num_t) BTN_PAIR },
+#ifdef CTRL_TYPE_MISSIONCTRL
 		{ Panic,    (gpio_num_t) BTN_PANIC },
 		{ Joy,      (gpio_num_t) BTN_JOY },
 		{ EncArm,   (gpio_num_t) BTN_ENC_ARM },
 		{ EncPinch, (gpio_num_t) BTN_ENC_PINCH },
 		{ EncCam,   (gpio_num_t) BTN_ENC_CAM },
 		{ SwArm,    (gpio_num_t) SW_ARM },
-		{ SwLight,  (gpio_num_t) SW_LIGHT }
+		{ SwLight,  (gpio_num_t) SW_LIGHT },
+#elifdef CTRL_TYPE_BASIC
+		{ Up, (gpio_num_t) BTN_UP },
+		{ Down, (gpio_num_t) BTN_DOWN },
+		{ Left, (gpio_num_t) BTN_LEFT },
+		{ Right, (gpio_num_t) BTN_RIGHT },
+		{ Mode, (gpio_num_t) BTN_MODE },
+#endif
 };
 
 const std::unordered_map<Input::Button, const char*> Input::PinLabels{
-		{ Pair,     "Pair" },
+		{ Pair, "Pair" },
+#ifdef CTRL_TYPE_MISSIONCTRL
 		{ Panic,    "Panic" },
 		{ Joy,      "Joy" },
 		{ EncArm,   "EncArm" },
 		{ EncPinch, "EncPinch" },
 		{ EncCam,   "EncCam" },
 		{ SwArm,    "SwArm" },
-		{ SwLight,  "SwLight" }
+		{ SwLight,  "SwLight" },
+#elifdef CTRL_TYPE_BASIC
+		{ Up, "Up" },
+		{ Down, "Down" },
+		{ Left, "Left" },
+		{ Right, "Right" },
+		{ Mode, "Mode" },
+#endif
 };
 
 Input::Input() : Threaded("Input", 2048, 6){
@@ -66,7 +82,7 @@ void Input::loop(){
 }
 
 void Input::scan(){
-	for(const auto& pair: PinMap){
+	for(const auto& pair : PinMap){
 		const auto port = pair.first;
 		const auto pin = pair.second;
 

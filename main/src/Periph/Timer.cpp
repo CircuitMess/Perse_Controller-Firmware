@@ -7,7 +7,11 @@ Timer::Timer(uint32_t period, TimerCallback ISR, void* dataPtr) : ISR(ISR), data
 	esp_timer_create_args_t args = {
 			.callback = interrupt,
 			.arg = this,
+#ifdef CTRL_TYPE_MISSIONCTRL
 			.dispatch_method = ESP_TIMER_ISR,
+#elifdef CTRL_TYPE_BASIC
+			.dispatch_method = ESP_TIMER_TASK,
+#endif
 			.name = "Timer",
 			.skip_unhandled_events = true
 	};
@@ -43,7 +47,7 @@ void IRAM_ATTR Timer::setPeriod(uint32_t period){
 		return;
 	}
 
-	this->period = period*1000;
+	this->period = period * 1000;
 }
 
 void IRAM_ATTR Timer::interrupt(void* arg){
