@@ -1,6 +1,8 @@
 #Common libs:
 file(GLOB_RECURSE COMMON_LIBS "lib/glm/src/**.cpp" "lib/glm/src/**.c")
-set(COMMON_LIBS_INCL "lib/glm/glm")
+
+
+set(COMMON_LIBS_INCL "lib/glm/glm" CACHE INTERNAL "" FORCE)
 
 
 #Common sources
@@ -9,7 +11,7 @@ set(COMMON_SOURCES
         "src/Devices/Input.cpp"
         "src/Devices/SingleLED.cpp"
         "src/Devices/SinglePwmLED.cpp"
-)
+        CACHE INTERNAL "" FORCE)
 
 file(GLOB periph_srcs "src/Periph/*.cpp")
 list(REMOVE_ITEM periph_srcs "src/Periph/I2C.cpp")
@@ -27,11 +29,11 @@ list(APPEND COMMON_SOURCES ${util_srcs})
 if (NOT DEFINED ENV{CTRL_TYPE} OR "$ENV{CTRL_TYPE}" STREQUAL "MissionCtrl")
     file(GLOB_RECURSE SOURCES "src/**.cpp" "src/**.c")
 
-    SET(SPIFFSPATH "../spiffs_MissionCtrl")
+    set(SPIFFSPATH "../spiffs_MissionCtrl" CACHE INTERNAL "" FORCE)
 elseif ("$ENV{CTRL_TYPE}" STREQUAL "Basic")
 
 
-    SET(SPIFFSPATH "../spiffs_Basic")
+    set(SPIFFSPATH "../spiffs_Basic" CACHE INTERNAL "" FORCE)
 endif ()
 
 
@@ -45,9 +47,9 @@ list(REMOVE_DUPLICATES LIBS_INCL)
 
 
 if (CONFIG_CM_BUILD_FIRMWARE)
-    set(ENTRY "main.cpp")
+    set(ENTRY "main.cpp" CACHE INTERNAL "" FORCE)
 elseif (CONFIG_CM_HARDWARE_TEST)
-    set(ENTRY "../examples/HWTest.cpp")
+    set(ENTRY "../examples/HWTest.cpp" CACHE INTERNAL "" FORCE)
 endif ()
 
 idf_component_register(SRCS ${ENTRY} ${SOURCES} ${LIBS} INCLUDE_DIRS "src" ${LIBS_INCL})

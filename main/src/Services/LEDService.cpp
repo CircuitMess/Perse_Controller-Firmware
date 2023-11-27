@@ -72,6 +72,8 @@ LEDService::LEDService(AW9523& aw9523) : Threaded("LEDService"), instructionQueu
 
 LEDService::LEDService() : Threaded("LEDService"), instructionQueue(25){
 	for(LED led = (LED) 0; (uint8_t) led < (uint8_t) LED::COUNT; led = (LED) ((uint8_t) led + 1)){
+		if(!PwmMappings.contains(led)) continue;
+
 		PwnMappingInfo ledData = PwmMappings.at(led);
 		SingleLED* ledDevice = new SinglePwmLED(ledData.pin, ledData.channel, ledData.limit);
 		ledDevices[led] = ledDevice;
