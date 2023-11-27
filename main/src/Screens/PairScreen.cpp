@@ -1,6 +1,6 @@
 #include "PairScreen.h"
 #include "Devices/Input.h"
-#include "Screens/DriveScreen.h"
+#include "DriveScreen/DriveScreen.h"
 
 PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas), evts(6),
 																  frame(this, "/spiffs/pair/frame.raw", 122, 56),

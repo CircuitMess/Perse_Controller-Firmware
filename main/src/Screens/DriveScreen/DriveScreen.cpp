@@ -8,6 +8,15 @@
 #include "gtx/vector_angle.hpp"
 #include "Devices/Battery.h"
 #include "Devices/Potentiometers.h"
+#include "Modules/AltPressModule.h"
+#include "Modules/CO2Module.h"
+#include "Modules/GyroModule.h"
+#include "Modules/LEDModule.h"
+#include "Modules/MotionModule.h"
+#include "Modules/PhotoresModule.h"
+#include "Modules/RGBModule.h"
+#include "Modules/TempHumModule.h"
+#include "Modules/UnkownModule.h"
 
 DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Services.get(Service::Comm))), joy(*((Joystick*) Services.get(Service::Joystick))),
 										   dcEvts(6), evts(12){
@@ -273,6 +282,14 @@ void DriveScreen::sendDriveDir(){
 }
 
 void DriveScreen::buildUI(){
+	if(roverState.getLeftModuleInsert()){
+		createModule(ModuleBus::Left, roverState.getLeftModuleType());
+	}
+
+	if(roverState.getRightModuleInsert()){
+		createModule(ModuleBus::Right, roverState.getRightModuleType());
+	}
+
 	static constexpr int16_t CrossMargin = 20;
 	static constexpr int16_t ArrowMargin = 30;
 	static constexpr int16_t BottomOffset = 9;
@@ -317,6 +334,9 @@ void DriveScreen::setupControl(){
 	Events::listen(Facility::Encoders, &evts);
 	Events::listen(Facility::RoverState, &evts);
 	Events::listen(Facility::Potentiometers, &evts);
+	Events::listen(Facility::RoverState, &evts);
+
+	comm.sendModulesEnable(true);
 
 	if(input->getState(Input::SwLight)){
 		comm.sendHeadlights(HeadlightsMode::On);
@@ -416,20 +436,70 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 }
 
 void DriveScreen::processRoverState(const RoverState::Event& evt){
-	if(evt.type != RoverState::StateType::BatteryPercent){
-		return;
-	}
+	if(evt.type == RoverState::StateType::BatteryPercent){
+		roverBatteryLabel.setText(std::to_string(evt.batteryPercent));
+	}else if(evt.type == RoverState::StateType::Modules){
+		if(evt.modulePlug.bus == ModuleBus::Left){
+			if(!evt.modulePlug.insert){
+				if(leftModule){
+					delete leftModule;
+					leftModule = nullptr;
+				}
+			}else if(leftModule == nullptr){
+				createModule(ModuleBus::Left, evt.modulePlug.type);
+			}
+		}
 
-	roverBatteryLabel.setText(std::to_string(evt.batteryPercent));
+		if(evt.modulePlug.bus == ModuleBus::Right){
+			if(!evt.modulePlug.insert){
+				if(rightModule){
+					delete rightModule;
+					rightModule = nullptr;
+				}
+			}else if(rightModule == nullptr){
+				createModule(ModuleBus::Right, evt.modulePlug.type);
+			}
+		}
+	}
 }
 
-void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
-	if(evt.potentiometer != Potentiometers::FeedQuality){
-		return;
+void DriveScreen::createModule(ModuleBus bus, ModuleType type){
+	ModuleElement* module = nullptr;
+	switch(type){
+		case ModuleType::Gyro:
+			module = new GyroModule(this, bus, type);
+			break;
+		case ModuleType::TempHum:
+			module = new TempHumModule(this, bus, type);
+			break;
+		case ModuleType::AltPress:
+			module = new AltPressModule(this, bus, type);
+			break;
+		case ModuleType::LED:
+			module = new LEDModule(this, bus, type);
+			break;
+		case ModuleType::RGB:
+			module = new RGBModule(this, bus, type);
+			break;
+		case ModuleType::PhotoRes:
+			module = new PhotoresModule(this, bus, type);
+			break;
+		case ModuleType::Motion:
+			module = new MotionModule(this, bus, type);
+			break;
+		case ModuleType::CO2:
+			module = new CO2Module(this, bus, type);
+			break;
+		default:
+			module = new UnkownModule(this, bus, type);
+			break;
 	}
 
-	const uint8_t value = std::clamp(100 - evt.value, 0, 100);
-	const uint8_t quality = map(value, 0, 100, 0, 30);
-
-	comm.sendFeedQuality(quality);
+	if(bus == ModuleBus::Left){
+		leftModule = module;
+		leftModule->setPos(2, 30);
+	}else{
+		rightModule = module;
+		rightModule->setPos(126, 30);
+	}
 }

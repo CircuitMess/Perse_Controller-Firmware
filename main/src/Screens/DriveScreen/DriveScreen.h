@@ -12,6 +12,7 @@
 #include "UISystem/ImageElement.h"
 #include "Services/RoverState.h"
 #include "Devices/Potentiometers.h"
+#include "Modules/ModuleElement.h"
 
 class DriveScreen : public Screen {
 public:
@@ -39,12 +40,18 @@ private:
 	EventQueue dcEvts;
 	EventQueue evts;
 
+	RoverState& roverState;
+
 	uint64_t lastDirSend = 0;
 
 	bool shouldSendZeroDrive = true;
 	uint64_t startTime;
 	bool holdDone = false;
 	bool isScanningEnabled = false;
+
+	// TODO smart pointers
+	ModuleElement* leftModule = nullptr;
+	ModuleElement* rightModule = nullptr;
 
 	bool armUnlocked;
 	uint8_t pinchPos = 50;
@@ -89,6 +96,8 @@ private:
 	void processEncoders(const Encoders::Data& evt);
 	void processRoverState(const RoverState::Event& evt);
 	void processPotentiometers(const Potentiometers::Data& evt);
+	void createModule(ModuleBus bus, ModuleType type);
+
 };
 
 
