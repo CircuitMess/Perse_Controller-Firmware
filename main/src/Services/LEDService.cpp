@@ -15,10 +15,10 @@ const std::map<LED, LEDService::PwnMappingInfo> LEDService::PwmMappings = {
 		{ LED::PanicLeft,  { (gpio_num_t) LED_PANIC_L, LEDC_CHANNEL_3, 100 }},
 		{ LED::PanicRight, { (gpio_num_t) LED_PANIC_R, LEDC_CHANNEL_4, 100 }},
 #elifdef CTRL_TYPE_BASIC
-		{ LED::Warning, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_3, 100 } },
-		{ LED::SoundLight, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_4, 100 } },
-		{ LED::ArmPinch, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_5, 100 } },
-		{ LED::Navigation, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_0, 100 } },
+		{ LED::Warning, { (gpio_num_t) LED_WARN, LEDC_CHANNEL_3, 100 } },
+		{ LED::SoundLight, { (gpio_num_t) LED_SOUNDLIGHT, LEDC_CHANNEL_4, 100 } },
+		{ LED::ArmPinch, { (gpio_num_t) LED_ARMPINCH, LEDC_CHANNEL_5, 100 } },
+		{ LED::Navigation, { (gpio_num_t) LED_NAVIGATION, LEDC_CHANNEL_0, 100 } },
 
 
 #endif
@@ -75,7 +75,7 @@ LEDService::LEDService() : Threaded("LEDService"), instructionQueue(25){
 		if(!PwmMappings.contains(led)) continue;
 
 		PwnMappingInfo ledData = PwmMappings.at(led);
-		SingleLED* ledDevice = new SinglePwmLED(ledData.pin, ledData.channel, ledData.limit);
+		SingleLED* ledDevice = new SinglePwmLED(ledData.pin, ledData.channel, ledData.limit, led == LED::Power);
 		ledDevices[led] = ledDevice;
 	}
 
