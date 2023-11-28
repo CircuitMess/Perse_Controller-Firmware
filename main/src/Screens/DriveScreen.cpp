@@ -127,6 +127,21 @@ void DriveScreen::onLoop(){
 
 	sendDriveDir();
 	checkEvents();
+
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+
+	if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
+		comm.sendEmergencyMode(true);
+		isInPanicMode = true;
+		comm.sendScanningEnable(false);
+		isScanningEnabled = false;
+		panicHoldStart = 0;
+
+		if(led != nullptr){
+			led->blink(LED::PanicLeft, 0);
+			led->blink(LED::PanicRight, 0);
+		}
+	}
 }
 
 void DriveScreen::sendDriveDir(){
@@ -239,26 +254,12 @@ void DriveScreen::processInput(const Input::Data& evt){
 				}
 			}
 		}else{
-			if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
-				comm.sendEmergencyMode(true);
-				isInPanicMode = true;
-				comm.sendScanningEnable(false);
-				isScanningEnabled = false;
-
-				if(led != nullptr){
-					led->blink(LED::PanicLeft, 0);
-					led->blink(LED::PanicRight, 0);
-				}
-			}else{
-				isInPanicMode = false;
-
-				if(led != nullptr){
-					led->off(LED::PanicLeft);
-					led->off(LED::PanicRight);
-				}
-			}
-
 			panicHoldStart = 0;
+
+			if(!isInPanicMode && led != nullptr){
+				led->off(LED::PanicLeft);
+				led->off(LED::PanicRight);
+			}
 		}
 	}else if(evt.btn == Input::SwArm){
 		armUnlocked = evt.action == Input::Data::Press;
@@ -270,19 +271,17 @@ void DriveScreen::processInput(const Input::Data& evt){
 				led->off(LED::Arm);
 			}
 		}
+	}else if(isInPanicMode){
+		return;
 	}else if(evt.btn == Input::SwLight){
 		if(evt.action == Input::Data::Press){
-			if(!isInPanicMode){
-				comm.sendHeadlights(HeadlightsMode::On);
-			}
+			comm.sendHeadlights(HeadlightsMode::On);
 
 			if(led != nullptr){
 				led->on(LED::Light);
 			}
 		}else{
-			if(!isInPanicMode){
-				comm.sendHeadlights(HeadlightsMode::Off);
-			}
+			comm.sendHeadlights(HeadlightsMode::Off);
 
 			if(led != nullptr){
 				led->off(LED::Light);
@@ -301,32 +300,30 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 
 	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armUnlocked) return;
 
+	if(isInPanicMode){
+		return;
+	}
+
 	if(evt.enc == Encoders::Arm){
 		armPos = std::clamp(armPos + ArmDirectionMultiplier * evt.dir, 0, 100);
 
-		if(!isInPanicMode){
-			comm.sendArmPos(armPos);
-		}
+		comm.sendArmPos(armPos);
 
 		if(led != nullptr){
-			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp);
+			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp, 1, 10);
 		}
 	}else if(evt.enc == Encoders::Pinch){
 		pinchPos = std::clamp(pinchPos + PinchDirectionMultiplier * evt.dir, 0, 100);
 
-		if(!isInPanicMode){
-			comm.sendArmPinch(pinchPos);
-		}
+		comm.sendArmPinch(pinchPos);
 
 		if(led != nullptr){
-			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose);
+			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose, 1, 10);
 		}
 	}else if(evt.enc == Encoders::Cam){
 		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
 
-		if(!isInPanicMode){
-			comm.sendCameraRotation(camPos);
-		}
+		comm.sendCameraRotation(camPos);
 	}
 }
 
@@ -340,7 +337,7 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 	}
 
 	const uint8_t value = std::clamp(100 - evt.value, 0, 100);
-	const uint8_t quality = map(value, 0, 100, 0, 30);
+	const uint8_t quality = map(value, 0, 100, 1, 30);
 
 	comm.sendFeedQuality(quality);
 }
