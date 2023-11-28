@@ -9,19 +9,22 @@
 class Comm : private Threaded {
 public:
 	struct Event{
-		CommType type;
+		CommType type = CommType::None;
 		union{
-			HeadlightsMode headlights;
 			struct {
-				ArmPos armPos;
-				ArmPinch armPinch;
+				bool changedOnRover;
+				union {
+					ArmPos armPos;
+					ArmPinch armPinch;
+					HeadlightsMode headlights;
+					CameraRotation cameraRotation;
+				};
 			};
-			CameraRotation cameraRotation;
 			uint8_t batteryPercent;
 			ModulePlugData modulePlug;
 			ModuleData moduleData;
 		};
-		uint8_t raw;
+		uint8_t raw = 0;
 	};
 
 	Comm();

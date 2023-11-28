@@ -7,6 +7,7 @@
 #include "glm.hpp"
 #include "gtx/vector_angle.hpp"
 #include "Devices/Potentiometers.h"
+#include "Services/RoverState.h"
 
 DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Services.get(Service::Comm))), joy(*((Joystick*) Services.get(Service::Joystick))),
 										   dcEvts(6), evts(12){
@@ -26,6 +27,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	startTime = millis();
 
 	Events::listen(Facility::TCP, &dcEvts);
+	Events::listen(Facility::RoverState, &dcEvts);
 
 	joy.begin();
 
@@ -106,6 +108,28 @@ void DriveScreen::onLoop(){
 				free(evt.data);
 				transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas); });
 				return;
+			}
+		}else if(evt.facility == Facility::RoverState){
+			if(const RoverState::Event* roverEvent = (RoverState::Event*) evt.data){
+				if(roverEvent->changedOnRover){
+					switch(roverEvent->type){
+						case RoverState::StateType::ArmPinch: {
+							pinchPos = roverEvent->armPinch;
+							break;
+						}
+						case RoverState::StateType::ArmPos: {
+							armPos = roverEvent->armPos;
+							break;
+						}
+						case RoverState::StateType::CameraRotation: {
+							camPos = roverEvent->cameraRotation;
+							break;
+						}
+						default: {
+							break;
+						}
+					}
+				}
 			}
 		}
 

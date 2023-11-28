@@ -19,6 +19,7 @@ public:
 
 	struct Event {
 		StateType type = StateType::None;
+		bool changedOnRover = false;
 
 		union{
 			HeadlightsMode headlights = HeadlightsMode::Off;
