@@ -14,11 +14,14 @@ set(COMMON_SOURCES
         CACHE INTERNAL "" FORCE)
 
 file(GLOB periph_srcs "src/Periph/*.cpp")
-list(REMOVE_ITEM periph_srcs "src/Periph/I2C.cpp")
+list(REMOVE_ITEM periph_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/Periph/I2C.cpp")
 list(APPEND COMMON_SOURCES ${periph_srcs})
 
 file(GLOB services_srcs "src/Services/*.cpp")
-list(REMOVE_ITEM services_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/UDPListener.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/Feed.cpp")
+list(REMOVE_ITEM services_srcs
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/UDPListener.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/Feed.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/StateMachine.cpp")
 list(APPEND COMMON_SOURCES ${services_srcs})
 
 file(GLOB util_srcs "src/Util/*.cpp")
@@ -27,11 +30,25 @@ list(APPEND COMMON_SOURCES ${util_srcs})
 
 #Type-specific sources, libs
 if (NOT DEFINED CTRL_TYPE OR "${CTRL_TYPE}" STREQUAL "MissionCtrl")
-    file(GLOB_RECURSE SOURCES "src/**.cpp" "src/**.c")
+    set(SOURCES "" CACHE INTERNAL "" FORCE)
+
+    file(GLOB_RECURSE list "src/Devices/**.cpp" "src/Devices/**.c")
+    list(APPEND SOURCES ${list})
+    file(GLOB_RECURSE list "src/GIF/**.cpp" "src/GIF/**.c")
+    list(APPEND SOURCES ${list})
+    file(GLOB_RECURSE list "src/Periph/**.cpp" "src/Periph/**.c")
+    list(APPEND SOURCES ${list})
+    file(GLOB_RECURSE list "src/Screens/**.cpp" "src/Screens/**.c")
+    list(APPEND SOURCES ${list})
+    list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/Feed.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/UDPListener.cpp")
+    file(GLOB_RECURSE list "src/UISystem/**.cpp" "src/UISystem/**.c")
+    list(APPEND SOURCES ${list})
 
     set(SPIFFSPATH "../spiffs_MissionCtrl" CACHE INTERNAL "" FORCE)
 elseif ("${CTRL_TYPE}" STREQUAL "Basic")
-
+    file(GLOB_RECURSE SOURCES "src/States/**.cpp" "src/States/**.c")
+    list(APPEND SOURCES "src/Services/StateMachine.cpp")
 
     set(SPIFFSPATH "../spiffs_Basic" CACHE INTERNAL "" FORCE)
 endif ()
