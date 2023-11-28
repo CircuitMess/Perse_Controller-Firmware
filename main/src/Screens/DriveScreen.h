@@ -27,7 +27,8 @@ private:
 	static constexpr int8_t CameraDirectionMultiplier = -4;
 	static constexpr Color MarkerVisualizationColor = C_RGB(255, 0, 0);
 	static constexpr uint64_t MarkerVisualizingInterval = 50; /// [ms]
-	static constexpr uint64_t StartHoldTime = 1000; // [ms]
+	static constexpr uint64_t StartHoldTime = 2000; // [ms]
+	static constexpr uint64_t PanicHoldDuration = 1000; // [ms]
 
 	Comm& comm;
 	Joystick& joy;
@@ -45,6 +46,8 @@ private:
 
 	bool shouldSendZeroDrive = true;
 	uint64_t lastDirSend = 0;
+	uint64_t panicHoldStart = 0;
+	bool isInPanicMode = false;
 
 	bool armUnlocked;
 	uint8_t pinchPos = 50;
@@ -62,6 +65,7 @@ private:
 	void processInput(const Input::Data& evt);
 	void processEncoders(const Encoders::Data& evt);
 	void processPotentiometers(const Potentiometers::Data& evt);
+	void sendCurrentStates();
 };
 
 
