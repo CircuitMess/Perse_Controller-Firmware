@@ -80,6 +80,15 @@ void Comm::sendScanningEnable(bool enable){
 	sendPacket(packet);
 }
 
+void Comm::sendEmergencyMode(bool state){
+	const ControlPacket packet {
+			.type = CommType::Emergency,
+			.data = (uint8_t)state
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 

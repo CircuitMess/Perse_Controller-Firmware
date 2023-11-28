@@ -16,14 +16,6 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 		led->on(LED::Pair);
 	}
 
-	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
-		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
-		const uint8_t quality = map(value, 0, 100, 0, 30);
-		comm.sendFeedQuality(quality);
-	}else{
-		comm.sendFeedQuality(30);
-	}
-
 	connectedLabel = new LabelElement(this, "Connected");
 	connectedLabel->setStyle({
 									 .color = TFT_GREEN,
@@ -38,7 +30,15 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	joy.begin();
 
 	// TODO: setup Pinch, Arm, Cam LEDs
-	// TODO: setup headlight LED and send state
+
+	Input* input = (Input*) Services.get(Service::Input);
+	if(input == nullptr){
+		return;
+	}
+
+	armUnlocked = input->getState(Input::SwArm);
+
+	sendCurrentStates();
 }
 
 DriveScreen::~DriveScreen(){
@@ -49,6 +49,8 @@ DriveScreen::~DriveScreen(){
 		led->off(LED::Pair);
 		led->off(LED::Arm);
 		led->off(LED::Light);
+		led->off(LED::PanicRight);
+		led->off(LED::PanicLeft);
 	}
 
 	joy.end();
@@ -125,9 +127,28 @@ void DriveScreen::onLoop(){
 
 	sendDriveDir();
 	checkEvents();
+
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+
+	if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
+		comm.sendEmergencyMode(true);
+		isInPanicMode = true;
+		comm.sendScanningEnable(false);
+		isScanningEnabled = false;
+		panicHoldStart = 0;
+
+		if(led != nullptr){
+			led->blink(LED::PanicLeft, 0);
+			led->blink(LED::PanicRight, 0);
+		}
+	}
 }
 
 void DriveScreen::sendDriveDir(){
+	if(isInPanicMode){
+		return;
+	}
+
 	const auto now = millis();
 	if(lastDirSend != 0 && now - lastDirSend < DirSendInterval) return;
 	lastDirSend = now;
@@ -212,7 +233,35 @@ void DriveScreen::checkEvents(){
 void DriveScreen::processInput(const Input::Data& evt){
 	LEDService* led = (LEDService*) Services.get(Service::LED);
 
-	if(evt.btn == Input::SwArm){
+	if(evt.btn == Input::Panic){
+		if(evt.action == Input::Data::Press){
+			if(isInPanicMode){
+				comm.sendEmergencyMode(false);
+				isInPanicMode = false;
+				panicHoldStart = 0;
+				sendCurrentStates();
+
+				if(led != nullptr){
+					led->off(LED::PanicLeft);
+					led->off(LED::PanicRight);
+				}
+			}else{
+				panicHoldStart = millis();
+
+				if(led != nullptr){
+					led->breathe(LED::PanicLeft, 2 * PanicHoldDuration);
+					led->breathe(LED::PanicRight, 2 * PanicHoldDuration);
+				}
+			}
+		}else{
+			panicHoldStart = 0;
+
+			if(!isInPanicMode && led != nullptr){
+				led->off(LED::PanicLeft);
+				led->off(LED::PanicRight);
+			}
+		}
+	}else if(evt.btn == Input::SwArm){
 		armUnlocked = evt.action == Input::Data::Press;
 
 		if(led != nullptr){
@@ -222,6 +271,8 @@ void DriveScreen::processInput(const Input::Data& evt){
 				led->off(LED::Arm);
 			}
 		}
+	}else if(isInPanicMode){
+		return;
 	}else if(evt.btn == Input::SwLight){
 		if(evt.action == Input::Data::Press){
 			comm.sendHeadlights(HeadlightsMode::On);
@@ -249,22 +300,29 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 
 	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armUnlocked) return;
 
+	if(isInPanicMode){
+		return;
+	}
+
 	if(evt.enc == Encoders::Arm){
 		armPos = std::clamp(armPos + ArmDirectionMultiplier * evt.dir, 0, 100);
+
 		comm.sendArmPos(armPos);
 
 		if(led != nullptr){
-			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp);
+			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp, 1, 10);
 		}
 	}else if(evt.enc == Encoders::Pinch){
 		pinchPos = std::clamp(pinchPos + PinchDirectionMultiplier * evt.dir, 0, 100);
+
 		comm.sendArmPinch(pinchPos);
 
 		if(led != nullptr){
-			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose);
+			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose, 1, 10);
 		}
 	}else if(evt.enc == Encoders::Cam){
 		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
+
 		comm.sendCameraRotation(camPos);
 	}
 }
@@ -274,8 +332,43 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 		return;
 	}
 
+	if(isInPanicMode){
+		return;
+	}
+
 	const uint8_t value = std::clamp(100 - evt.value, 0, 100);
-	const uint8_t quality = map(value, 0, 100, 0, 30);
+	const uint8_t quality = map(value, 0, 100, 1, 30);
 
 	comm.sendFeedQuality(quality);
+}
+
+void DriveScreen::sendCurrentStates(){
+	Input* input = (Input*) Services.get(Service::Input);
+	if(input == nullptr){
+		return;
+	}
+
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+
+	if(input->getState(Input::Button::SwLight)){
+		comm.sendHeadlights(HeadlightsMode::On);
+
+		if(led != nullptr){
+			led->on(LED::Light);
+		}
+	}else{
+		comm.sendHeadlights(HeadlightsMode::Off);
+
+		if(led != nullptr){
+			led->off(LED::Light);
+		}
+	}
+
+	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
+		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
+		const uint8_t quality = map(value, 0, 100, 0, 30);
+		comm.sendFeedQuality(quality);
+	}else{
+		comm.sendFeedQuality(15);
+	}
 }
