@@ -31,6 +31,7 @@ private:
 	static constexpr Color MarkerVisualizationColor = C_RGB(255, 0, 0);
 	static constexpr uint64_t MarkerVisualizingInterval = 50; /// [ms]
 	static constexpr uint64_t StartHoldTime = 2000; // [ms]
+	static constexpr uint64_t PanicHoldDuration = 1000; // [ms]
 
 	Comm& comm;
 	Joystick& joy;
@@ -42,9 +43,11 @@ private:
 
 	RoverState& roverState;
 
-	uint64_t lastDirSend = 0;
-
 	bool shouldSendZeroDrive = true;
+	uint64_t lastDirSend = 0;
+	uint64_t panicHoldStart = 0;
+	bool isInPanicMode = false;
+
 	uint64_t startTime;
 	bool holdDone = false;
 	bool isScanningEnabled = false;
@@ -99,7 +102,7 @@ private:
 	void processRoverState(const RoverState::Event& evt);
 	void processPotentiometers(const Potentiometers::Data& evt);
 	void createModule(ModuleBus bus, ModuleType type);
-
+	void sendCurrentStates();
 };
 
 
