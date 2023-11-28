@@ -135,7 +135,7 @@ Comm::Event Comm::processPacket(const ControlPacket& packet) {
 
 	switch (packet.type){
         case CommType::Headlights: {
-			event.changedOnRover = packet.data & 0x80;
+			event.changedOnRover = (packet.data & 0x80) != 0;
 			event.headlights = (packet.data & 0x7F) > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
 			break;
 		}
@@ -144,17 +144,17 @@ Comm::Event Comm::processPacket(const ControlPacket& packet) {
 			break;
 		}
 		case CommType::ArmPosition: {
-			event.changedOnRover = packet.data & 0x80;
+			event.changedOnRover = (packet.data & 0x80) != 0;
 			event.armPos = packet.data & 0x7F;
 			break;
 		}
 		case CommType::ArmPinch: {
-			event.changedOnRover = packet.data & 0x80;
+			event.changedOnRover = (packet.data & 0x80) != 0;
 			event.armPinch = packet.data & 0x7F;
 			break;
 		}
 		case CommType::CameraRotation: {
-			event.changedOnRover = packet.data & 0x80;
+			event.changedOnRover = (packet.data & 0x80) != 0;
 			event.cameraRotation = packet.data & 0x7F;
 			break;
 		}
