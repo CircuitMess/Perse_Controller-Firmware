@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "LEDBlinkFunction.h"
 #include "Util/stdafx.h"
 
@@ -31,9 +32,9 @@ void LEDBlinkFunction::loop(){
 	}
 
 	if(ledState){
-		++elapsedCount;
 		led.setValue(0xFF);
 	}else{
+		++elapsedCount;
 		led.setValue(0);
 	}
 }
