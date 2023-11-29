@@ -28,7 +28,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
 		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
-		const uint8_t quality = map(value, 0, 100, 0, 30);
+		const uint8_t quality = map(value, 0, 100, 1, 30);
 		comm.sendFeedQuality(quality);
 	}else{
 		comm.sendFeedQuality(30);
@@ -637,7 +637,7 @@ void DriveScreen::sendCurrentStates(){
 
 	if(Potentiometers* potentiometers = (Potentiometers*) Services.get(Service::Potentiometers)){
 		const uint8_t value = std::clamp(100 - potentiometers->scanCurrentValue(Potentiometers::FeedQuality), 0, 100);
-		const uint8_t quality = map(value, 0, 100, 0, 30);
+		const uint8_t quality = map(value, 0, 100, 1, 30);
 		comm.sendFeedQuality(quality);
 	}else{
 		comm.sendFeedQuality(15);
