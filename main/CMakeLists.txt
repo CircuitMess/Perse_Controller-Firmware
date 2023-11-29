@@ -1,39 +1,79 @@
+#Target-specific sources (only used for that target)
+file(GLOB_RECURSE GIF_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/GIF/*.cpp")
+file(GLOB_RECURSE SCREENS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Screens/*.cpp")
+file(GLOB_RECURSE UI_SYSTEM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/UISystem/*.cpp")
+
+set(MISSION_CTRL_SOURCES
+        "${GIF_SOURCES}"
+        "${SCREENS_SOURCES}"
+        "${UI_SYSTEM_SOURCES}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/AW9523.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Display.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Encoders.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Joystick.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Potentiometers.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Periph/I2C.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/UDPListener.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/Feed.cpp"
+        CACHE INTERNAL "" FORCE
+)
+
+set(BASIC_CTRL_SOURCES
+        ""
+        CACHE INTERNAL "" FORCE
+)
+
 #Common libs:
-file(GLOB_RECURSE COMMON_LIBS "lib/glm/src/**.cpp" "lib/glm/src/**.c")
+file(GLOB_RECURSE COMMON_LIBS
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glm/src/**.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glm/src/**.c"
+)
 
 
-set(COMMON_LIBS_INCL "lib/glm/glm" CACHE INTERNAL "" FORCE)
+set(COMMON_LIBS_INCL
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glm/glm"
+        CACHE INTERNAL "" FORCE
+)
 
 
-#Common sources
+#Common sources:
 set(COMMON_SOURCES
-        "src/Devices/Battery.cpp"
-        "src/Devices/Input.cpp"
-        "src/Devices/SingleLED.cpp"
-        "src/Devices/SinglePwmLED.cpp"
-        CACHE INTERNAL "" FORCE)
+        ""
+        CACHE INTERNAL "" FORCE
+)
 
-file(GLOB periph_srcs "src/Periph/*.cpp")
-list(REMOVE_ITEM periph_srcs "src/Periph/I2C.cpp")
-list(APPEND COMMON_SOURCES ${periph_srcs})
+file(GLOB PERIPH_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Periph/*.cpp")
+list(REMOVE_ITEM PERIPH_SOURCES ${MISSION_CTRL_SOURCES} ${BASIC_CTRL_SOURCES})
+list(APPEND COMMON_SOURCES ${PERIPH_SOURCES})
 
-file(GLOB services_srcs "src/Services/*.cpp")
-list(REMOVE_ITEM services_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/UDPListener.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/Feed.cpp")
-list(APPEND COMMON_SOURCES ${services_srcs})
+file(GLOB SERVICES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/*.cpp")
+list(REMOVE_ITEM SERVICES_SOURCES ${MISSION_CTRL_SOURCES} ${BASIC_CTRL_SOURCES})
+list(APPEND COMMON_SOURCES ${SERVICES_SOURCES})
 
-file(GLOB util_srcs "src/Util/*.cpp")
-list(APPEND COMMON_SOURCES ${util_srcs})
+file(GLOB UTIL_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Util/*.cpp")
+list(REMOVE_ITEM UTIL_SOURCES ${MISSION_CTRL_SOURCES} ${BASIC_CTRL_SOURCES})
+list(APPEND COMMON_SOURCES ${UTIL_SOURCES})
 
+file(GLOB DEVICE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/*.cpp")
+list(REMOVE_ITEM DEVICE_SOURCES ${MISSION_CTRL_SOURCES} ${BASIC_CTRL_SOURCES})
+list(APPEND COMMON_SOURCES ${DEVICE_SOURCES})
 
 #Type-specific sources, libs
-if (NOT DEFINED CTRL_TYPE OR "${CTRL_TYPE}" STREQUAL "MissionCtrl")
-    file(GLOB_RECURSE SOURCES "src/**.cpp" "src/**.c")
+if ("${CTRL_TYPE}" STREQUAL "MissionCtrl")
+    list(APPEND SOURCES ${MISSION_CTRL_SOURCES})
 
-    set(SPIFFSPATH "../spiffs_MissionCtrl" CACHE INTERNAL "" FORCE)
+    set(SPIFFS_PATH
+            "${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_MissionCtrl"
+            CACHE INTERNAL "" FORCE
+    )
+
 elseif ("${CTRL_TYPE}" STREQUAL "Basic")
+    list(APPEND SOURCES ${BASIC_CTRL_SOURCES})
 
-
-    set(SPIFFSPATH "../spiffs_Basic" CACHE INTERNAL "" FORCE)
+    set(SPIFFS_PATH
+            "${CMAKE_CURRENT_SOURCE_DIR}../spiffs_Basic"
+            CACHE INTERNAL "" FORCE
+    )
 endif ()
 
 
@@ -45,13 +85,26 @@ list(REMOVE_DUPLICATES LIBS)
 list(APPEND LIBS_INCL ${COMMON_LIBS_INCL})
 list(REMOVE_DUPLICATES LIBS_INCL)
 
-
 if (CONFIG_CM_BUILD_FIRMWARE)
-    set(ENTRY "main.cpp" CACHE INTERNAL "" FORCE)
+    set(ENTRY
+            "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+            CACHE INTERNAL "" FORCE
+    )
+
 elseif (CONFIG_CM_HARDWARE_TEST)
-    set(ENTRY "../examples/HWTest.cpp" CACHE INTERNAL "" FORCE)
+    set(ENTRY
+            "${CMAKE_CURRENT_SOURCE_DIR}/../examples/HWTest.cpp"
+            CACHE INTERNAL "" FORCE
+    )
 endif ()
 
-idf_component_register(SRCS ${ENTRY} ${SOURCES} ${LIBS} INCLUDE_DIRS "src" ${LIBS_INCL})
+idf_component_register(SRCS
+        ${ENTRY}
+        ${SOURCES}
+        ${LIBS}
+        INCLUDE_DIRS
+        "src"
+        ${LIBS_INCL}
+)
 
-spiffs_create_partition_image(storage ${SPIFFSPATH} FLASH_IN_PROJECT)
+spiffs_create_partition_image(storage ${SPIFFS_PATH} FLASH_IN_PROJECT)
