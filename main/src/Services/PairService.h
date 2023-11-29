@@ -17,6 +17,10 @@ public:
 	};
 	State getState() const;
 
+	struct Event {
+		bool success;
+	};
+
 private:
 	WiFiSTA& wifi;
 	TCPClient& tcp;
