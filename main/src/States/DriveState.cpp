@@ -31,26 +31,27 @@ DriveState::~DriveState(){
 void DriveState::loop(){
 	Event evt{};
 	if(evts.get(evt, armMovement ? 0 : portMAX_DELAY)){
-
 		if(evt.facility == Facility::TCP){
+			if(const auto data = (TCPClient::Event*) evt.data){
+				if(data->status == TCPClient::Event::Status::Disconnected){
+					if(auto led = (LEDService*) Services.get(Service::LED)){
+						led->blink(LED::Pair, 4, 500);
+						led->blink(LED::Warning, 4, 500);
+					}
 
-			const auto data = (TCPClient::Event*) evt.data;
-			if(data->status == TCPClient::Event::Status::Disconnected){
-				free(evt.data);
-				if(auto led = (LEDService*) Services.get(Service::LED)){
-					led->blink(LED::Pair, 4, 500);
-					led->blink(LED::Warning, 4, 500);
+					if(auto stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+						stateMachine->transition<PairState>(false);
+					}
+
+					free(evt.data);
+					return;
 				}
-				if(auto stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
-					stateMachine->transition<PairState>(false);
-				}
-				return;
 			}
 		}else if(evt.facility == Facility::Input){
-
 			auto data = (Input::Data*) evt.data;
 			processInput(*data);
 		}
+
 		free(evt.data);
 	}
 
@@ -70,17 +71,21 @@ void DriveState::processInput(const Input::Data& evt){
 		changeMode(nextMode);
 	}else if(evt.btn == Input::Up || evt.btn == Input::Down || evt.btn == Input::Left || evt.btn == Input::Right){
 		switch(controlMode){
-			case ControlMode::Navigation:
+			case ControlMode::Navigation: {
 				sendDriveDir();
 				break;
-			case ControlMode::ArmPinch:
+			}
+			case ControlMode::ArmPinch: {
 				processArmInput(evt);
 				break;
-			case ControlMode::SoundLight:
+			}
+			case ControlMode::SoundLight: {
 				processSoundInput(evt);
 				break;
-			default:
+			}
+			default: {
 				break;
+			}
 		}
 	}
 }
@@ -152,16 +157,20 @@ void DriveState::sendDriveDir(){
 	auto input = (Input*) Services.get(Service::Input);
 	if(!input) return;
 
-	//TODO - možda optimizirati ovo
 	glm::vec2 dir{};
 	dir.y = (input->getState(Input::Up) * 1.0f + input->getState(Input::Down) * -1.0f);
 	dir.x = (input->getState(Input::Right) * 1.0f + input->getState(Input::Left) * -1.0f);
 
-
 	if(dir.x == 0 && dir.y == 0){
-		comm.sendDriveDir({ 0, 0 });
+		if(shouldSendZeroDrive){
+			comm.sendDriveDir({ 0, 0 });
+			shouldSendZeroDrive = false;
+		}
+
 		return;
 	}
+
+	shouldSendZeroDrive = true;
 
 	auto angle = glm::degrees(glm::angle(glm::normalize(dir), { 0.0, 1.0 }));
 	if(dir.x < 0){

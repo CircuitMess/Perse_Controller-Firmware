@@ -35,6 +35,8 @@ private:
 	uint8_t armPos = 50;
 	uint32_t armControlStartTime = 0;
 
+	bool shouldSendZeroDrive = true;
+
 	void processInput(const Input::Data& evt);
 	void changeMode(ControlMode nextMode);
 

@@ -51,9 +51,15 @@ void PairState::processInput(const Input::Data& evt){
 
 	if(evt.action == Input::Data::Press && !pair){
 		pair = std::make_unique<PairService>();
-		led->blink(LED::Pair, -1, PairBlinkInterval);
+
+		if(led != nullptr){
+			led->blink(LED::Pair, -1, PairBlinkInterval);
+		}
 	}else if(evt.action == Input::Data::Release && pair){
 		pair.reset();
-		led->off(LED::Pair);
+
+		if(led != nullptr){
+			led->off(LED::Pair);
+		}
 	}
 }
