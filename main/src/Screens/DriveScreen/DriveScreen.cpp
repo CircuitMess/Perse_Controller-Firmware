@@ -510,7 +510,7 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 		comm.sendArmPos(armPos);
 
 		if(led != nullptr){
-			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp, 1, 10);
+			led->blink(evt.dir > 0 ? LED::ArmDown : LED::ArmUp, 1, 200);
 		}
 	}else if(evt.enc == Encoders::Pinch){
 		pinchPos = std::clamp(pinchPos + PinchDirectionMultiplier * evt.dir, 0, 100);
@@ -518,7 +518,7 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 		comm.sendArmPinch(pinchPos);
 
 		if(led != nullptr){
-			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose, 1, 10);
+			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose, 1, 200);
 		}
 	}else if(evt.enc == Encoders::Cam){
 		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
