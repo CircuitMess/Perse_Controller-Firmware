@@ -27,6 +27,11 @@
 #include "UISystem/UIThread.h"
 #include "Screens/IntroScreen.h"
 
+#elifdef CTRL_TYPE_BASIC
+
+#include "Services/StateMachine.h"
+#include "States/PairState.h"
+
 #endif
 
 [[noreturn]] void shutdown(){
@@ -82,6 +87,7 @@ void init(){
 #elifdef CTRL_TYPE_BASIC
 	auto led = new LEDService();
 #endif
+
 	Services.set(Service::LED, led);
 	led->on(LED::Power);
 
@@ -107,6 +113,12 @@ void init(){
 
 	uiThread->start();
 	bl->fadeIn();
+#elifdef CTRL_TYPE_BASIC
+	auto stateMachine = new StateMachine();
+	Services.set(Service::StateMachine, stateMachine);
+
+	stateMachine->transition<PairState>();
+	stateMachine->begin();
 #endif
 
 

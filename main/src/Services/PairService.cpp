@@ -30,7 +30,7 @@ PairService::State PairService::getState() const{
 }
 
 void PairService::loop(){
-	Event event{};
+	::Event event{};
 	if(!queue.get(event, portMAX_DELAY)) return;
 
 	if(event.facility == Facility::WiFiSTA){
@@ -52,6 +52,9 @@ void PairService::processEvent(const WiFiSTA::Event& event){
 	}else{
 		state = State::Fail;
 	}
+
+	Event evt{ state == State::Success };
+	Events::post(Facility::Pair, evt);
 
 	thread.stop(0);
 }

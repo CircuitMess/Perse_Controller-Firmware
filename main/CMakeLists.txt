@@ -9,8 +9,10 @@ set(MISSION_CTRL_SOURCES
         "${UI_SYSTEM_SOURCES}"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/AW9523.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Display.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Backlight.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Encoders.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Joystick.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/SingleExpanderLED.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Devices/Potentiometers.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Periph/I2C.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/UDPListener.cpp"
@@ -19,7 +21,9 @@ set(MISSION_CTRL_SOURCES
 )
 
 set(BASIC_CTRL_SOURCES
-        ""
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Services/StateMachine.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/States/PairState.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/States/DriveState.cpp"
         CACHE INTERNAL "" FORCE
 )
 
@@ -71,7 +75,7 @@ elseif ("${CTRL_TYPE}" STREQUAL "Basic")
     list(APPEND SOURCES ${BASIC_CTRL_SOURCES})
 
     set(SPIFFS_PATH
-            "${CMAKE_CURRENT_SOURCE_DIR}../spiffs_Basic"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_Basic"
             CACHE INTERNAL "" FORCE
     )
 endif ()
