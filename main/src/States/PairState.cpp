@@ -5,6 +5,7 @@
 
 PairState::PairState() : State(), evts(10){
 	Events::listen(Facility::Input, &evts);
+	Events::listen(Facility::Pair, &evts);
 
 	if(auto* led = (LEDService*) Services.get(Service::LED)){
 		led->off(LED::Pair);
@@ -17,33 +18,28 @@ PairState::~PairState(){
 
 void PairState::loop(){
 	Event evt{};
-	if(evts.get(evt, 0)){
+	if(evts.get(evt, portMAX_DELAY)){
 		if(evt.facility == Facility::Input && evt.data != nullptr){
 			auto data = (Input::Data*) evt.data;
 			processInput(*data);
+		}else if(evt.facility == Facility::Pair && pair){
+			auto success = ((PairService::Event*) evt.data)->success;
+			pair.reset();
+
+			if(success){
+				if(auto* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+					stateMachine->transition<DriveState>();
+				}
+			}else{
+				if(auto* led = (LEDService*) Services.get(Service::LED)){
+					led->blink(LED::Pair, 4, 500);
+					led->blink(LED::Warning, 4, 500);
+				}
+			}
+
+			return;
 		}
 		free(evt.data);
-	}
-
-	if(pair && pair->getState() != PairService::State::Pairing){
-		volatile const auto state = pair->getState();
-		pair.reset();
-
-		if(state == PairService::State::Success){
-			if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
-				if(auto* led = (LEDService*) Services.get(Service::LED)){
-					led->blink(LED::Pair, 2, 500);
-				}
-				stateMachine->transition<DriveState>();
-			}
-		}else if(state == PairService::State::Fail){
-			if(auto* led = (LEDService*) Services.get(Service::LED)){
-				led->blink(LED::Pair, 4, 500);
-				led->blink(LED::Warning, 4, 500);
-			}
-		}
-
-		return;
 	}
 }
 
