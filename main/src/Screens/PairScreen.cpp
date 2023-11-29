@@ -21,16 +21,25 @@ PairScreen::PairScreen(Sprite& canvas) : Screen(canvas), evts(6){
 
 PairScreen::~PairScreen(){
 	Events::unlisten(&evts);
+
+	delete text1;
+	delete text2;
 }
 
 void PairScreen::onLoop(){
-	Event evt{};
-	if(evts.get(evt, 0)){
-		if(evt.facility == Facility::Input && evt.data != nullptr){
-			auto data = (Input::Data*) evt.data;
-			processInput(*data);
+	{
+		Event evt{};
+		if(evts.get(evt, 0)){
+			if(evt.facility == Facility::Input && evt.data != nullptr){
+				auto data = (Input::Data*) evt.data;
+
+				if(data != nullptr){
+					processInput(*data);
+				}
+			}
+
+			free(evt.data);
 		}
-		free(evt.data);
 	}
 
 	if(pair && pair->getState() != PairService::State::Pairing){
@@ -40,8 +49,13 @@ void PairScreen::onLoop(){
 		if(state == PairService::State::Success){
 			transition([](Sprite& canvas){ return std::make_unique<DriveScreen>(canvas); });
 		}else if(state == PairService::State::Fail){
-			text1->setText("Pair failed.");
-			text2->setText("Hold PAIR to pair...");
+			if(text1 != nullptr){
+				text1->setText("Pair failed.");
+			}
+
+			if(text2 != nullptr){
+				text2->setText("Hold PAIR to pair...");
+			}
 		}
 
 		return;
@@ -53,11 +67,23 @@ void PairScreen::processInput(const Input::Data& evt){
 
 	if(evt.action == Input::Data::Press && !pair){
 		pair = std::make_unique<PairService>();
-		text1->setText("Pairing.");
-		text2->setText("Hold PAIR button.");
+
+		if(text1 != nullptr){
+			text1->setText("Pairing.");
+		}
+
+		if(text2 != nullptr){
+			text2->setText("Hold PAIR button.");
+		}
 	}else if(evt.action == Input::Data::Release && pair){
 		pair.reset();
-		text1->setText("Pair aborted.");
-		text2->setText("Hold PAIR to pair...");
+
+		if(text1 != nullptr){
+			text1->setText("Pair aborted.");
+		}
+
+		if(text2 != nullptr){
+			text2->setText("Hold PAIR to pair...");
+		}
 	}
 }

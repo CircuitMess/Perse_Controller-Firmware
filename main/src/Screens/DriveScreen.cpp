@@ -98,18 +98,21 @@ void DriveScreen::preDraw(){
 }
 
 void DriveScreen::onLoop(){
-	Event evt{};
-	if(dcEvts.get(evt, 0)){
-		if(evt.facility == Facility::TCP){
-			const auto data = (TCPClient::Event*) evt.data;
-			if(data->status == TCPClient::Event::Status::Disconnected){
-				free(evt.data);
-				transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas); });
-				return;
+	{
+		Event evt{};
+		if(dcEvts.get(evt, 0)){
+			if(evt.facility == Facility::TCP){
+				if(const auto data = (TCPClient::Event*) evt.data){
+					if(data->status == TCPClient::Event::Status::Disconnected){
+						free(evt.data);
+						transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas); });
+						return;
+					}
+				}
 			}
-		}
 
-		free(evt.data);
+			free(evt.data);
+		}
 	}
 
 	if(!holdDone){
@@ -190,6 +193,10 @@ void DriveScreen::buildUI(){
 
 void DriveScreen::setupControl(){
 	auto input = (Input*) Services.get(Service::Input);
+	if(input != nullptr){
+		return;
+	}
+
 	LEDService* led = (LEDService*) Services.get(Service::LED);
 
 	Events::listen(Facility::Input, &evts);
@@ -215,6 +222,10 @@ void DriveScreen::setupControl(){
 void DriveScreen::checkEvents(){
 	Event evt{};
 	if(!evts.get(evt, 0)) return;
+
+	if(evt.data == nullptr){
+		return;
+	}
 
 	if(evt.facility == Facility::Input){
 		auto data = (Input::Data*) evt.data;

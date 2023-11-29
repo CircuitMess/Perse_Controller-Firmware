@@ -48,9 +48,9 @@ void RoverState::loop(){
 				break;
 			}
 		}
-	}
 
-	Events::post(Facility::RoverState, e);
+		Events::post(Facility::RoverState, e);
+	}
 
 	free(evt.data);
 }

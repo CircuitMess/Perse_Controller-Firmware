@@ -10,8 +10,8 @@ UIThread::~UIThread(){
 	stop();
 }
 
-void UIThread::startScreen(ScreenCreateFunc create){
-	creator = std::move(create);
+void UIThread::startScreen(const ScreenCreateFunc& create){
+	creator = create;
 }
 
 void UIThread::loop(){
@@ -19,8 +19,8 @@ void UIThread::loop(){
 		if(!creator){
 			delayMillis(FrameTime);
 			return;
-
 		}
+
 		currentScreen.reset();
 		currentScreen = creator(display.getCanvas());
 		creator = {};

@@ -13,7 +13,6 @@ public:
 	virtual ~PairScreen();
 
 private:
-
 	LabelElement* text1;
 	LabelElement* text2;
 

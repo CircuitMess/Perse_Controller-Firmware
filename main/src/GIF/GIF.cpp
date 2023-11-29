@@ -6,6 +6,10 @@ static const char* TAG = "GIF";
 GIF::GIF(){}
 
 GIF::GIF(FILE* file){
+	if(file == nullptr){
+		return;
+	}
+
 	if(ferror(file) != 0) return;
 	fseek(file, 0, SEEK_SET);
 	gif = gd_open_gif(file);
@@ -39,6 +43,10 @@ GIF& GIF::operator=(const GIF& other){
 	loopCount = 0;
 
 	FILE* file = other.gif->fd;
+	if(file == nullptr){
+		return *this;
+	}
+
 	fseek(file, 0, SEEK_SET);
 	gif = gd_open_gif(file);
 
@@ -74,7 +82,6 @@ bool GIF::nextFrame(){
 GIF::Frame GIF::getFrame() const{
 	if(gif == nullptr) return {};
 
-
 	gd_render_frame(gif, reinterpret_cast<uint8_t*>(data.get()), false);
 
 	return { getWidth(), getHeight(), (uint32_t) gif->gce.delay * 10, data };
@@ -92,10 +99,18 @@ void GIF::reset(){
 }
 
 uint16_t GIF::getWidth() const{
+	if(gif == nullptr){
+		return 0;
+	}
+
 	return gif->width;
 }
 
 uint16_t GIF::getHeight() const{
+	if(gif == nullptr){
+		return 0;
+	}
+
 	return gif->height;
 }
 
