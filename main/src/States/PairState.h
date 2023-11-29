@@ -9,7 +9,7 @@
 
 class PairState : public State {
 public:
-	explicit PairState();
+	explicit PairState(bool connectionError = false);
 	~PairState() override;
 
 protected:

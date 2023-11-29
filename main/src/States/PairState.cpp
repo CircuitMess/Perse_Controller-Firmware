@@ -3,10 +3,11 @@
 #include "DriveState.h"
 #include "Services/LEDService.h"
 
-PairState::PairState() : State(), evts(10){
+PairState::PairState(bool connectionError) : State(), evts(10){
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Pair, &evts);
 
+	if(!connectionError) return;
 	if(auto* led = (LEDService*) Services.get(Service::LED)){
 		led->off(LED::Pair);
 	}
