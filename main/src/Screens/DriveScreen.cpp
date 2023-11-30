@@ -193,7 +193,7 @@ void DriveScreen::buildUI(){
 
 void DriveScreen::setupControl(){
 	auto input = (Input*) Services.get(Service::Input);
-	if(input != nullptr){
+	if(input == nullptr){
 		return;
 	}
 
