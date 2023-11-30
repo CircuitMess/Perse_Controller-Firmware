@@ -1,16 +1,31 @@
 #include "LEDModule.h"
+#include "Devices/Input.h"
+#include "Util/Services.h"
 
 LEDModule::LEDModule(ElementContainer* parent, ModuleBus bus, ModuleType type) : ModuleElement(parent, bus, type), statusLabel(this, ""){
 	auto style = statusLabel.getStyle();
 	style.datum = datum;
 	style.color = textColor;
 	statusLabel.setStyle(style);
-	statusLabel.setText("ON");
 	statusLabel.setPos(0, 9);
-	//TODO - settanje ovoga on/off
+
+	Input* input = (Input*) Services.get(Service::Input);
+	if(input != nullptr && input->getState(Input::SwLight)){
+		statusLabel.setText("ON");
+	}else{
+		statusLabel.setText("OFF");
+	}
 }
 
 void LEDModule::dataReceived(ModuleData data){
-	// TODO on/off state receiving
+	if(data.type != ModuleType::LED){
+		return;
+	}
+
+	if(data.ledState.on){
+		statusLabel.setText("ON");
+	}else{
+		statusLabel.setText("OFF");
+	}
 }
 

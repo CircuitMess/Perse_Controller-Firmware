@@ -373,6 +373,10 @@ void DriveScreen::buildUI(){
 
 void DriveScreen::setupControl(){
 	auto input = (Input*) Services.get(Service::Input);
+	if(input == nullptr){
+		return;
+	}
+
 	LEDService* led = (LEDService*) Services.get(Service::LED);
 
 	Events::listen(Facility::Input, &evts);
