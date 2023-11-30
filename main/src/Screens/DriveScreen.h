@@ -29,6 +29,7 @@ private:
 	static constexpr uint64_t MarkerVisualizingInterval = 50; /// [ms]
 	static constexpr uint64_t StartHoldTime = 2000; // [ms]
 	static constexpr uint64_t PanicHoldDuration = 1000; // [ms]
+	static constexpr float JoystickDriveDeadzone = 0.15f;
 
 	Comm& comm;
 	Joystick& joy;

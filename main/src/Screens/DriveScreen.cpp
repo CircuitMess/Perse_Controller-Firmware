@@ -160,7 +160,7 @@ void DriveScreen::sendDriveDir(){
 	dir.x *= -1;
 
 	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
-	if(len < 0.1){
+	if(len < JoystickDriveDeadzone){
 		if(shouldSendZeroDrive){
 			comm.sendDriveDir({ 0, 0.0f });
 			shouldSendZeroDrive = false;
