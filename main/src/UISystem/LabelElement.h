@@ -15,11 +15,11 @@ public:
 	LabelElement(ElementContainer* parent, std::string text);
 	~LabelElement() override = default;
 
-	void setText(std::string text);
+	void setText(const std::string& text);
 	void draw(Sprite* canvas) override;
 
-	void setStyle(TextStyle style);
-	TextStyle getStyle();
+	void setStyle(const TextStyle& style);
+	const TextStyle& getStyle() const;
 
 	void setColor(uint16_t color);
 

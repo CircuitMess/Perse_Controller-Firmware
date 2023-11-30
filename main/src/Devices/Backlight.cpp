@@ -32,6 +32,10 @@ void Backlight::fadeIn(){
 	state = true;
 
 	const auto settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
+
 	const auto brightness = settings->get().screenBrightness;
 	const auto mapped = mapDuty(brightness);
 
@@ -49,6 +53,10 @@ void Backlight::fadeOut(){
 	state = false;
 
 	const auto settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
+
 	const auto brightness = settings->get().screenBrightness;
 	const auto mapped = mapDuty(brightness);
 

@@ -12,7 +12,7 @@ public:
 	virtual ~ElementContainer();
 
 protected:
-	void onElements(std::function<void(Element*)>);
+	void onElements(const std::function<void(Element*)>& func);
 
 private:
 	std::vector<Element*> elements;

@@ -20,6 +20,10 @@ void Screen::loop(){
 	if(transitioned) return;
 
 	onElements([](Element* el){
+		if(el == nullptr){
+			return;
+		}
+
 		el->loop();
 	});
 
@@ -34,6 +38,10 @@ void Screen::draw(){
 	preDraw();
 
 	onElements([this](Element* el){
+		if(el == nullptr){
+			return;
+		}
+
 		el->draw(&canvas);
 	});
 
@@ -44,7 +52,7 @@ void Screen::draw(){
 	}
 }
 
-void Screen::transition(ScreenCreateFunc create){
+void Screen::transition(const ScreenCreateFunc& create){
 	auto ui = (UIThread*) Services.get(Service::UI);
 	if(ui == nullptr) return;
 

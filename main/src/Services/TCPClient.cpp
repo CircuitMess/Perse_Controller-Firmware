@@ -66,7 +66,7 @@ bool TCPClient::read(uint8_t* buf, size_t count){
 		return false;
 	}
 
-	if(count == 0) return true;
+	if(count == 0 || buf == nullptr) return true;
 
 	size_t total = 0;
 	while(total < count){
@@ -97,7 +97,7 @@ bool TCPClient::write(uint8_t* data, size_t count){
 		return false;
 	}
 
-	if(count == 0) return true;
+	if(count == 0 || data == nullptr) return true;
 
 	size_t total = 0;
 	while(total < count){

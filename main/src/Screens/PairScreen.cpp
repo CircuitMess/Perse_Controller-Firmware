@@ -44,13 +44,19 @@ PairScreen::~PairScreen(){
 }
 
 void PairScreen::onLoop(){
-	Event evt{};
-	if(evts.get(evt, 0)){
-		if(evt.facility == Facility::Input && evt.data != nullptr){
-			auto data = (Input::Data*) evt.data;
-			processInput(*data);
+	{
+		Event evt{};
+		if(evts.get(evt, 0)){
+			if(evt.facility == Facility::Input && evt.data != nullptr){
+				auto data = (Input::Data*) evt.data;
+
+				if(data != nullptr){
+					processInput(*data);
+				}
+			}
+
+			free(evt.data);
 		}
-		free(evt.data);
 	}
 
 	if(pair && pair->getState() != PairService::State::Pairing){

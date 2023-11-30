@@ -48,6 +48,7 @@ void WiFiSTA::event(int32_t id, void* data){
 		initSem.release();
 	}else if(id == WIFI_EVENT_STA_CONNECTED){
 		auto event = (wifi_event_sta_connected_t*) data;
+
 		const auto mac = mac2str(event->bssid);
 		ESP_LOGI(TAG, "connected bssid %s, chan=%d", mac.c_str(), event->channel);
 
@@ -228,13 +229,15 @@ wifi_ap_record_t* WiFiSTA::findNetwork(wifi_ap_record_t* ap_info, uint32_t numRe
 		}
 	}
 
-	std::sort(networks.begin(), networks.end(), [](wifi_ap_record_t* first, wifi_ap_record_t* second) -> bool {
-		return first->rssi > second->rssi;
-	});
-
 	if (networks.empty()) {
 		return nullptr;
 	}
+
+	std::remove(networks.begin(), networks.end(), nullptr);
+
+	std::sort(networks.begin(), networks.end(), [](wifi_ap_record_t* first, wifi_ap_record_t* second) -> bool {
+		return first->rssi > second->rssi;
+	});
 
 	return networks.front();
 }

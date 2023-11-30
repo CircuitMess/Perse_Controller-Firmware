@@ -35,7 +35,7 @@ int UDPListener::read(uint8_t* buf, size_t count){
 		return false;
 	}
 
-	if(count == 0) return 0;
+	if(count == 0 || buf == nullptr) return 0;
 
 	int bytes = ::recv(sock, buf, count, 0);
 

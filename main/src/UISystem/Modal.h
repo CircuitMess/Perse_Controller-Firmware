@@ -7,7 +7,7 @@ class Screen;
 
 class Modal : public ElementContainer{
 public:
-	Modal(Screen* screen);
+	explicit Modal(Screen* screen);
 	~Modal() override;
 
 	void loop();
