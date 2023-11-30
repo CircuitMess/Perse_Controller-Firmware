@@ -205,7 +205,7 @@ void DriveScreen::onLoop(){
 				if(const auto data = (TCPClient::Event*) evt.data){
 					if(data->status == TCPClient::Event::Status::Disconnected){
 						free(evt.data);
-						transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas); });
+						transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas, true); });
 						return;
 					}
 				}
@@ -260,7 +260,7 @@ void DriveScreen::sendDriveDir(){
 	dir.x *= -1;
 
 	const auto len = std::clamp(glm::length(dir), 0.0f, 1.0f);
-	if(len < 0.1){
+	if(len < JoystickDriveDeadzone){
 		if(shouldSendZeroDrive){
 			cachedMotorSpeeds = {0, 0};
 			cachedDriveDir = 0;
