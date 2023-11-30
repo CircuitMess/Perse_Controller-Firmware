@@ -16,6 +16,10 @@ DriveState::DriveState() : comm(*((Comm*) Services.get(Service::Comm))), evts(12
 
 	Events::listen(Facility::TCP, &evts);
 	Events::listen(Facility::Input, &evts);
+
+	// Turn off feed for basic controller, this way there will be no unnecessary network clutter
+	comm.sendFeedQuality(0);
+	comm.sendScanningEnable(false);
 }
 
 DriveState::~DriveState(){
