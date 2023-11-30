@@ -27,9 +27,15 @@ ImageElement::~ImageElement(){
 }
 
 void ImageElement::setPath(const char* path){
+	if(filePath == path){
+		return;
+	}
+
 	if(path == nullptr){
 		return;
 	}
+
+	filePath = path;
 
 	if(file != nullptr && !ferror(file)){
 		fclose(file);
@@ -50,7 +56,7 @@ void ImageElement::draw(Sprite* canvas){
 	if(canvas == nullptr){
 		return;
 	}
-	
+
 	drawFile(*canvas, file, x, y, width, height, 1, TFT_TRANSPARENT);
 }
 

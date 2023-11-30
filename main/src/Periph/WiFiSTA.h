@@ -6,6 +6,7 @@
 #include <semaphore>
 #include <esp_wifi_types.h>
 #include "Util/Threaded.h"
+#include "Util/Hysteresis.h"
 
 class WiFiSTA {
 public:
@@ -31,12 +32,26 @@ public:
 	enum State { Connected, Connecting, Disconnected, Scanning, ConnAbort };
 	State getState();
 
+	enum ConnectionStrength {
+		None = 4,
+		VeryLow = 3,
+		Low = 2,
+		Medium = 1,
+		High = 0
+	};
+
+	ConnectionStrength getConnectionStrength();
+
 private:
+	int getConnectionRSSI() const;
+
 	esp_event_handler_instance_t evtHandler;
 	void event(int32_t id, void* data);
 
 	State state = Disconnected;
 	std::binary_semaphore initSem{ 0 };
+
+	Hysteresis hysteresis;
 
 	static constexpr int ConnectRetries = 2;
 	int connectTries;

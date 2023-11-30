@@ -16,33 +16,28 @@ GIFSprite::~GIFSprite(){
 
 void GIFSprite::loop(uint micros){
 	if(!gif) return;
+	if(!running) return;
 
 	frameCounter += micros;
 
-	if(frameCounter / 1000 >= gif.frameDuration() * 10){
-		reset();
-		loopCount = gif.getLoopCount();
-		gif.nextFrame();
-
-		if(loopDoneCallback){
-			loopDoneCallback(loopCount);
-		}
-
-		return;
-	}
-
 	while(frameCounter / 1000 >= gif.frameDuration()){
 		frameCounter -= gif.frameDuration() * 1000;
-		gif.nextFrame();
+		bool done = false;
+		if(!gif.nextFrame()){
+			stop();
+			done = true;
+		}
 
 		if(gif.getLoopCount() > loopCount){
 			loopCount = gif.getLoopCount();
 
 			if(loopDoneCallback){
 				loopDoneCallback(loopCount);
-				return;
 			}
+			return;
 		}
+
+		if(done) return;
 	}
 }
 
@@ -61,10 +56,11 @@ void GIFSprite::stop(){
 void GIFSprite::reset(){
 	if(!gif) return;
 
-	gif.reset();
-
 	frameCounter = 0;
 	loopCount = 0;
+
+	gif.reset();
+	gif.nextFrame();
 }
 
 uint16_t GIFSprite::getWidth() const{
