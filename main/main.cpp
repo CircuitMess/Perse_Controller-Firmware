@@ -31,6 +31,7 @@
 
 #include "Services/StateMachine.h"
 #include "States/PairState.h"
+#include "Services/BatteryLowService.h"
 
 #endif
 
@@ -119,6 +120,8 @@ void init(){
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
+
+	auto lowBatteryService = new BatteryLowService();
 #endif
 
 
