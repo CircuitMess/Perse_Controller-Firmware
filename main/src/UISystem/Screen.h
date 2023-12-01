@@ -11,7 +11,7 @@ class Modal;
 class Screen : public ElementContainer{
 	friend Modal;
 public:
-	Screen(Sprite& canvas);
+	explicit Screen(Sprite& canvas);
 	~Screen() override;
 
 	void loop();
@@ -25,7 +25,7 @@ protected:
 	virtual void preDraw(){}
 	virtual void postDraw(){}
 
-	void transition(ScreenCreateFunc create);
+	void transition(const ScreenCreateFunc& create);
 
 	Sprite& canvas;
 

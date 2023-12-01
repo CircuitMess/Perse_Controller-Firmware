@@ -10,10 +10,10 @@ typedef std::function<std::unique_ptr<Screen>(Sprite& canvas)> ScreenCreateFunc;
 
 class UIThread : public Threaded {
 public:
-	UIThread(Display& display);
+	explicit UIThread(Display& display);
 	~UIThread() override;
 
-	void startScreen(ScreenCreateFunc create);
+	void startScreen(const ScreenCreateFunc& create);
 
 protected:
 	void loop() override;

@@ -36,6 +36,8 @@ void init(){
 	auto adc = new ADC(ADC_UNIT_1);
 
 	auto battery = new Battery(*adc);
+	Services.set(Service::Battery, battery);
+
 	if(battery->isShutdown()){
 		shutdown();
 		return;

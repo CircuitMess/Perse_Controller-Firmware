@@ -2,6 +2,7 @@
 #define PERSE_MISSIONCTRL_IMAGEELEMENT_H
 
 #include "Element.h"
+#include <string>
 
 class ImageElement : public Element {
 public:
@@ -15,6 +16,7 @@ public:
 	uint16_t getHeight() const;
 
 private:
+	std::string filePath;
 	FILE* file;
 	uint16_t width, height;
 

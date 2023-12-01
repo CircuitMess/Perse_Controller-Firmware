@@ -6,13 +6,13 @@
 #include "Screens/PairScreen.h"
 
 const std::vector<std::tuple<std::string, uint16_t, uint16_t>> IntroScreen::imageInfos = {
-		{"/spiffs/logo-cm.raw", 91, 91},
-		{"/spiffs/logo-geek.raw", 97, 81},
-		{"/spiffs/logo-space.raw", 116, 29},
-		{"/spiffs/logo-artemis.raw", 105, 14}
+		{ "/spiffs/intro/logo-cm.raw",    91,  91 },
+		{ "/spiffs/intro/logo-geek.raw",  97,  81 },
+		{ "/spiffs/intro/logo-space.raw", 116, 29 },
+		{ "/spiffs/intro/logo-perse.raw", 72,  71 }
 };
 
-const std::string IntroScreen::crossPath = "/spiffs/cross.raw";
+const std::string IntroScreen::crossPath = "/spiffs/intro/cross.raw";
 
 std::unique_ptr<Screen> IntroScreen::createScreen(Sprite& canvas) {
 	return std::make_unique<IntroScreen>(canvas);
@@ -25,13 +25,13 @@ IntroScreen::IntroScreen(Sprite& canvas) : Screen(canvas), lastLoopTime(micros()
 			createMovingImage(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple));
 	}
 
-	setBgColor(C_RGB(backgroundColor.x, backgroundColor.y, backgroundColor.z));
+	setBgColor(backgroundColor);
 }
 
 IntroScreen::~IntroScreen() = default;
 
 void IntroScreen::preDraw() {
-	setBgColor(C_RGB(backgroundColor.x, backgroundColor.y, backgroundColor.z));
+	setBgColor(backgroundColor);
 }
 
 void IntroScreen::onLoop() {

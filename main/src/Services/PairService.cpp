@@ -33,10 +33,15 @@ void PairService::loop(){
 	Event event{};
 	if(!queue.get(event, portMAX_DELAY)) return;
 
+	if(event.data == nullptr){
+		return;
+	}
+
 	if(event.facility == Facility::WiFiSTA){
 		auto& data = *((WiFiSTA::Event*) event.data);
 		processEvent(data);
 	}
+
 	free(event.data);
 }
 

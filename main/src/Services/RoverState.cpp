@@ -45,6 +45,20 @@ void RoverState::loop(){
 				batteryPercent = event->batteryPercent;
 				e.type = StateType::BatteryPercent;
 				e.batteryPercent = batteryPercent;
+				break;
+			}
+			case (CommType::ModulePlug) : {
+				if(event->modulePlug.bus == ModuleBus::Left){
+					leftModuleInsert = event->modulePlug.insert;
+					leftModuleType = event->modulePlug.type;
+				}else if(event->modulePlug.bus == ModuleBus::Right){
+					rightModuleInsert = event->modulePlug.insert;
+					rightModuleType = event->modulePlug.type;
+				}
+
+				e.type = StateType::Modules;
+				e.modulePlug = event->modulePlug;
+				break;
 			}
 			default: {
 				break;

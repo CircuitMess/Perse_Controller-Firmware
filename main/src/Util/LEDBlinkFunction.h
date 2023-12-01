@@ -16,7 +16,7 @@ private:
 	uint32_t count;
 	uint32_t period;
 	uint64_t startTime;
-	uint32_t elapsedCount = 1;
+	uint32_t elapsedCount = 0;
 };
 
 #endif //PERSE_MISSIONCTRL_LEDBLINKFUNCTION_H

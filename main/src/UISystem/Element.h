@@ -7,7 +7,7 @@ class ElementContainer;
 
 class Element {
 public:
-	Element(ElementContainer* parent);
+	explicit Element(ElementContainer* parent);
 	virtual ~Element();
 
 	virtual void draw(Sprite* canvas) = 0;
