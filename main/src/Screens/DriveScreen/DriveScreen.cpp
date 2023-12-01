@@ -495,6 +495,12 @@ void DriveScreen::processInput(const Input::Data& evt){
 			isScanningEnabled = !isScanningEnabled;
 			comm.sendScanningEnable(isScanningEnabled);
 		}
+	}else if(evt.btn == Input::EncArm){
+		armPos = 50;
+		comm.sendArmPos(armPos);
+	}else if(evt.btn == Input::EncPinch){
+		pinchPos = 50;
+		comm.sendArmPinch(pinchPos);
 	}
 }
 
