@@ -1,4 +1,5 @@
 #include "Comm.h"
+#include <RoverStateUtil.h>
 #include "Util/Services.h"
 
 Comm::Comm() : Threaded("Comm", 4 * 1024), tcp(*(TCPClient*) Services.get(Service::TCP)), queue(10){
@@ -135,8 +136,9 @@ Comm::Event Comm::processPacket(const ControlPacket& packet) {
 
 	switch (packet.type){
         case CommType::Headlights: {
-			event.changedOnRover = (packet.data & 0x80) != 0;
-			event.headlights = (packet.data & 0x7F) > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
+			uint8_t value;
+			event.changedOnRover = decodeRoverState(packet.data, value);
+			event.headlights = value > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
 			break;
 		}
 		case CommType::Battery: {
@@ -144,18 +146,15 @@ Comm::Event Comm::processPacket(const ControlPacket& packet) {
 			break;
 		}
 		case CommType::ArmPosition: {
-			event.changedOnRover = (packet.data & 0x80) != 0;
-			event.armPos = packet.data & 0x7F;
+			event.changedOnRover = decodeRoverState(packet.data, (uint8_t&) event.armPos);
 			break;
 		}
 		case CommType::ArmPinch: {
-			event.changedOnRover = (packet.data & 0x80) != 0;
-			event.armPinch = packet.data & 0x7F;
+			event.changedOnRover = decodeRoverState(packet.data, (uint8_t&) event.armPinch);
 			break;
 		}
 		case CommType::CameraRotation: {
-			event.changedOnRover = (packet.data & 0x80) != 0;
-			event.cameraRotation = packet.data & 0x7F;
+			event.changedOnRover = decodeRoverState(packet.data, event.cameraRotation);
 			break;
 		}
 		case CommType::ModulePlug: {
