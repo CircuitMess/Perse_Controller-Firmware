@@ -1,4 +1,5 @@
 #include "Comm.h"
+#include <RoverStateUtil.h>
 #include "Util/Services.h"
 
 Comm::Comm() : Threaded("Comm", 4 * 1024), tcp(*(TCPClient*) Services.get(Service::TCP)), queue(10){
@@ -135,7 +136,9 @@ Comm::Event Comm::processPacket(const ControlPacket& packet) {
 
 	switch (packet.type){
         case CommType::Headlights: {
-			event.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
+			uint8_t value;
+			event.changedOnRover = decodeRoverState(packet.data, value);
+			event.headlights = value > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
 			break;
 		}
 		case CommType::Battery: {
@@ -143,15 +146,15 @@ Comm::Event Comm::processPacket(const ControlPacket& packet) {
 			break;
 		}
 		case CommType::ArmPosition: {
-			event.armPos = packet.data;
+			event.changedOnRover = decodeRoverState(packet.data, (uint8_t&) event.armPos);
 			break;
 		}
 		case CommType::ArmPinch: {
-			event.armPinch = packet.data;
+			event.changedOnRover = decodeRoverState(packet.data, (uint8_t&) event.armPinch);
 			break;
 		}
 		case CommType::CameraRotation: {
-			event.cameraRotation = packet.data;
+			event.changedOnRover = decodeRoverState(packet.data, event.cameraRotation);
 			break;
 		}
 		case CommType::ModulePlug: {

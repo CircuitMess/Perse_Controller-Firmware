@@ -14,6 +14,8 @@ void RoverState::loop(){
 	Event e{};
 
 	if (Comm::Event* event = (Comm::Event*)evt.data) {
+		e.changedOnRover = event->changedOnRover;
+
 		switch (event->type) {
 			case (CommType::Headlights): {
 				headlightsState = event->headlights;
