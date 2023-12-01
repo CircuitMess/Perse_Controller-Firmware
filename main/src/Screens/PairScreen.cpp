@@ -1,6 +1,7 @@
 #include "PairScreen.h"
 #include "Devices/Input.h"
 #include "DriveScreen/DriveScreen.h"
+#include "Util/Services.h"
 
 PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas), evts(6),
 																  frame(this, "/spiffs/pair/frame.raw", 122, 56),
@@ -37,6 +38,21 @@ PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas)
 	buttonAnim.start();
 	buttonAnim.stop();
 	buttonAnim.reset();
+
+	Input* input = (Input*) Services.get(Service::Input);
+	if(input == nullptr){
+		return;
+	}
+
+	if(input->getState(Input::Button::Pair)){
+		pair = std::make_unique<PairService>();
+		description.setPath(TextPaths[0]);
+		buttonAnim.start();
+		signalAnim.start();
+		buttonAnim.setPos(ButtonPos.x, ButtonPos.y);
+		signalAnim.setPos(SignalPos.x, SignalPos.y);
+		error.setPos(-100, -100);
+	}
 }
 
 PairScreen::~PairScreen(){
