@@ -501,6 +501,10 @@ void DriveScreen::processInput(const Input::Data& evt){
 	}else if(evt.btn == Input::EncPinch){
 		pinchPos = 50;
 		comm.sendArmPinch(pinchPos);
+	}else if(evt.btn == Input::Joy && evt.action == Input::Data::Press){
+		audio = !audio;
+		comm.sendAudio(audio);
+		//TODO - hide/show mute icon
 	}
 }
 

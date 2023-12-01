@@ -90,6 +90,15 @@ void Comm::sendEmergencyMode(bool state){
 	sendPacket(packet);
 }
 
+void Comm::sendAudio(bool audio){
+	const ControlPacket packet{
+			.type = CommType::Audio,
+			.data = (uint8_t) audio
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
