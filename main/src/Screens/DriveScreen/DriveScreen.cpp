@@ -626,7 +626,7 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
     }else if(evt.type == RoverState::StateType::ArmPinch){
         pinchPos = evt.armPinch;
     }else if(evt.type == RoverState::StateType::CameraRotation){
-        camPos = evt.cameraRotation;
+        setCamPosValue(evt.cameraRotation);
     }
 }
 
