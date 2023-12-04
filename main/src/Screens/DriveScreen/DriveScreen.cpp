@@ -247,6 +247,44 @@ void DriveScreen::onLoop(){
 	}
 }
 
+void DriveScreen::setCamPosValue(uint8_t pos){
+	static const std::map<LED, int> ledOnLimits = {
+			{LED::CamL4, -40},
+			{LED::CamL3, -30},
+			{LED::CamL2, -20},
+			{LED::CamL1, -10},
+			{LED::CamCenter, 0},
+			{LED::CamR1, 10},
+			{LED::CamR2, 20},
+			{LED::CamR3, 30},
+			{LED::CamR4, 40},
+	};
+
+	camPos = pos;
+
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+	if(led == nullptr){
+		return;
+	}
+
+	const int deltaFromCenter = camPos - 50;
+
+	for(LED camLed = LED::CamL4; camLed <= LED::CamR4; camLed = (LED) ((uint8_t) camLed + 1)){
+		if(!ledOnLimits.contains(camLed)){
+			led->off(camLed);
+			continue;
+		}
+
+		const int limit = ledOnLimits.at(camLed);
+
+		if((limit <= 0 && std::abs(deltaFromCenter) >= std::abs(limit)) || (limit > 0 && deltaFromCenter >= limit)){
+			led->on(camLed);
+		}else{
+			led->off(camLed);
+		}
+	}
+}
+
 void DriveScreen::sendDriveDir(){
 	if(isInPanicMode){
 		return;
@@ -530,7 +568,7 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose, 1, 200);
 		}
 	}else if(evt.enc == Encoders::Cam){
-		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
+		setCamPosValue(std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100));
 
 		comm.sendCameraRotation(camPos);
 	}
