@@ -18,6 +18,9 @@ public:
 private:
 	EventQueue evts;
 
+	uint32_t startTime = 0;
+	bool disconnectMessageActive = false;
+
 	ImageElement frame;
 	ImageElement controllerRover;
 	AnimElement signalAnim;
@@ -37,6 +40,7 @@ private:
 	static constexpr glm::vec<2, uint16_t> ButtonPos = { 10, 70 };
 	static constexpr glm::vec<2, uint16_t> ErrorPos = { 9, 72 };
 	static constexpr glm::vec<2, uint16_t> SignalPos = {49, 22};
+	static constexpr uint32_t DisconnectMessageDuration = 3000; // [ms]
 };
 
 

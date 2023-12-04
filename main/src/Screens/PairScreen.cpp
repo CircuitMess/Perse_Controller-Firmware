@@ -2,8 +2,9 @@
 #include "Devices/Input.h"
 #include "DriveScreen/DriveScreen.h"
 #include "Util/Services.h"
+#include "Util/stdafx.h"
 
-PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas), evts(6),
+PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas), evts(6), disconnectMessageActive(disconnectOccurred),
 																  frame(this, "/spiffs/pair/frame.raw", 122, 56),
 																  controllerRover(this, "/spiffs/pair/controller_rover.raw", 122, 41),
 																  signalAnim(this, "/spiffs/pair/signal.gif"),
@@ -26,6 +27,7 @@ PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas)
 		buttonAnim.setPos(-100, -100);
 		error.setPos(ErrorPos.x, ErrorPos.y);
 		description.setPath(TextPaths[2]);
+		startTime = millis();
 	}else{
 		buttonAnim.setPos(ButtonPos.x, ButtonPos.y);
 		error.setPos(-100, -100);
@@ -47,6 +49,7 @@ PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas)
 	if(input->getState(Input::Button::Pair)){
 		pair = std::make_unique<PairService>();
 		description.setPath(TextPaths[0]);
+		this->disconnectMessageActive = false;
 		buttonAnim.start();
 		signalAnim.start();
 		buttonAnim.setPos(ButtonPos.x, ButtonPos.y);
@@ -60,6 +63,13 @@ PairScreen::~PairScreen(){
 }
 
 void PairScreen::onLoop(){
+	if(disconnectMessageActive && millis() - startTime >= DisconnectMessageDuration){
+		description.setPath(TextPaths[0]);
+		buttonAnim.setPos(ButtonPos.x, ButtonPos.y);
+		error.setPos(-100, -100);
+		disconnectMessageActive = false;
+	}
+
 	{
 		Event evt{};
 		if(evts.get(evt, 0)){
@@ -102,6 +112,7 @@ void PairScreen::processInput(const Input::Data& evt){
 	if(evt.action == Input::Data::Press && !pair){
 		pair = std::make_unique<PairService>();
 		description.setPath(TextPaths[0]);
+		disconnectMessageActive = false;
 		buttonAnim.start();
 		signalAnim.start();
 		buttonAnim.setPos(ButtonPos.x, ButtonPos.y);

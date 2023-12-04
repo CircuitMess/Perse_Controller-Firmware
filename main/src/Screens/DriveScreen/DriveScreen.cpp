@@ -34,6 +34,20 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 		cross.setPos(-getWidth(), -getHeight());
 	}
 
+	TextStyle busStyle = { &lgfx::fonts::Font0, TFT_CYAN, 1, TL_DATUM };
+	busA.setPos(-getWidth(), -getHeight());
+	busA.setStyle(busStyle);
+	busB.setPos(-getWidth(), -getHeight());
+	busStyle.datum = TR_DATUM;
+	busB.setStyle(busStyle);
+
+	TextStyle busStatusStyle = { &lgfx::fonts::Font0, TFT_PINK, 1, TL_DATUM };
+	busAStatus.setPos(-getWidth(), -getHeight());
+	busAStatus.setStyle(busStatusStyle);
+	busBStatus.setPos(-getWidth(), -getHeight());
+	busStatusStyle.datum = TR_DATUM;
+	busBStatus.setStyle(busStatusStyle);
+
 	arrowUp.setPos(-getWidth(), -getHeight());
 	arrowDown.setPos(-getWidth(), -getHeight());
 	arrowLeft.setPos(-getWidth(), -getHeight());
@@ -368,6 +382,10 @@ void DriveScreen::sendDriveDir(){
 }
 
 void DriveScreen::buildUI(){
+	busA.setPos(2, 2);
+	busB.setPos(getWidth() - 2, 2);
+	busAStatus.setPos(2, 13);
+	busBStatus.setPos(getWidth() - 2, 13);
 	if(roverState.getLeftModuleInsert()){
 		createModule(ModuleBus::Left, roverState.getLeftModuleType());
 	}
@@ -581,7 +599,7 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 		if(evt.modulePlug.bus == ModuleBus::Left){
 			if(!evt.modulePlug.insert){
 				if(leftModule){
-					leftModule.reset();
+					deleteModule(ModuleBus::Left);
 				}
 			}else if(leftModule == nullptr){
 				createModule(ModuleBus::Left, evt.modulePlug.type);
@@ -591,7 +609,7 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 		if(evt.modulePlug.bus == ModuleBus::Right){
 			if(!evt.modulePlug.insert){
 				if(rightModule){
-					rightModule.reset();
+					deleteModule(ModuleBus::Right);
 				}
 			}else if(rightModule == nullptr){
 				createModule(ModuleBus::Right, evt.modulePlug.type);
@@ -654,9 +672,25 @@ void DriveScreen::createModule(ModuleBus bus, ModuleType type){
 	if(bus == ModuleBus::Left){
 		leftModule.reset(module);
 		leftModule->setPos(2, 30);
+		busAStatus.setText("ON");
+		busAStatus.setColor(TFT_GREENYELLOW);
 	}else{
 		rightModule.reset(module);
 		rightModule->setPos(126, 30);
+		busBStatus.setText("ON");
+		busBStatus.setColor(TFT_GREENYELLOW);
+	}
+}
+
+void DriveScreen::deleteModule(ModuleBus bus){
+	if(bus == ModuleBus::Left){
+		leftModule.reset();
+		busAStatus.setText("OFF");
+		busAStatus.setColor(TFT_PINK);
+	}else{
+		rightModule.reset();
+		busBStatus.setText("OFF");
+		busBStatus.setColor(TFT_PINK);
 	}
 }
 
