@@ -616,6 +616,18 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 			}
 		}
 	}
+
+    if(!evt.changedOnRover){
+        return;
+    }
+
+    if(evt.type == RoverState::StateType::ArmPos){
+        armPos = evt.armPos;
+    }else if(evt.type == RoverState::StateType::ArmPinch){
+        pinchPos = evt.armPinch;
+    }else if(evt.type == RoverState::StateType::CameraRotation){
+        camPos = evt.cameraRotation;
+    }
 }
 
 void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
