@@ -15,7 +15,8 @@ public:
 		ArmPos,
 		CameraRotation,
 		BatteryPercent,
-		Modules
+		Modules,
+        Feed
 	};
 
 	struct Event {
@@ -29,6 +30,7 @@ public:
 			CameraRotation cameraRotation;
 			uint8_t batteryPercent;
 			ModulePlugData modulePlug;
+            bool noFeed;
 		};
 	};
 
@@ -43,6 +45,7 @@ public:
 	inline ModuleType getLeftModuleType() const { return leftModuleType; }
 	inline bool getRightModuleInsert() const { return rightModuleInsert; }
 	inline ModuleType getRightModuleType() const { return rightModuleType; }
+    inline bool getNoFeed() const { return noFeed; }
 
 private:
 	void loop() override;
@@ -60,6 +63,7 @@ private:
 	std::atomic<ModuleType> leftModuleType;
 	std::atomic<bool> rightModuleInsert;
 	std::atomic<ModuleType> rightModuleType;
+    std::atomic<bool> noFeed;
 };
 
 

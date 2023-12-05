@@ -2,7 +2,7 @@
 #include "Comm.h"
 
 RoverState::RoverState() : Threaded("RoverState", 2048), evts(12),
-						   headlightsState(HeadlightsMode::Off), armPinch(50), armPos(50), cameraRotation(50), batteryPercent(0) {
+						   headlightsState(HeadlightsMode::Off), armPinch(50), armPos(50), cameraRotation(50), batteryPercent(0), noFeed(false) {
 	Events::listen(Facility::Comm, &evts);
 	start();
 }
@@ -13,7 +13,7 @@ void RoverState::loop(){
 
 	Event e{};
 
-	if (Comm::Event* event = (Comm::Event*)evt.data) {
+	if (const Comm::Event* event = (Comm::Event*)evt.data) {
 		e.changedOnRover = event->changedOnRover;
 
 		switch (event->type) {
@@ -47,7 +47,7 @@ void RoverState::loop(){
 				e.batteryPercent = batteryPercent;
 				break;
 			}
-			case (CommType::ModulePlug) : {
+			case (CommType::ModulePlug): {
 				if(event->modulePlug.bus == ModuleBus::Left){
 					leftModuleInsert = event->modulePlug.insert;
 					leftModuleType = event->modulePlug.type;
@@ -60,6 +60,12 @@ void RoverState::loop(){
 				e.modulePlug = event->modulePlug;
 				break;
 			}
+            case (CommType::NoFeed): {
+                noFeed = event->noFeed;
+                e.type = StateType::Feed;
+                e.noFeed = noFeed;
+                break;
+            }
 			default: {
 				break;
 			}

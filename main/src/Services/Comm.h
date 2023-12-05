@@ -18,6 +18,7 @@ public:
 					ArmPinch armPinch;
 					HeadlightsMode headlights;
 					CameraRotation cameraRotation;
+                    bool noFeed;
 				};
 			};
 			uint8_t batteryPercent;

@@ -94,6 +94,8 @@ private:
 	LabelElement rssiElement = LabelElement(this, "RSSI");
 	LabelElement ctrlElement = LabelElement(this, "CTRL");
 
+    LabelElement noFeedElement = LabelElement(this, "");
+
 	uint64_t lastMarkerVisualizationTime = 0;
 	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
 
