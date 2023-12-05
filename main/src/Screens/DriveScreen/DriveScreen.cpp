@@ -48,9 +48,9 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	busStatusStyle.datum = TR_DATUM;
 	busBStatus.setStyle(busStatusStyle);
 
-    TextStyle noFeedStyle = {&lgfx::fonts::Font0, TFT_RED, 1, CC_DATUM};
-    noFeedElement.setStyle(noFeedStyle);
-    noFeedElement.setPos(getWidth() / 2, getHeight() / 2);
+	TextStyle noFeedStyle = {&lgfx::fonts::Font0, TFT_RED, 1, CC_DATUM};
+	noFeedElement.setStyle(noFeedStyle);
+	noFeedElement.setPos(getWidth() / 2, getHeight() / 2);
 
 	arrowUp.setPos(-getWidth(), -getHeight());
 	arrowDown.setPos(-getWidth(), -getHeight());
@@ -360,11 +360,11 @@ void DriveScreen::buildUI(){
 		createModule(ModuleBus::Right, roverState.getRightModuleType());
 	}
 
-    if(roverState.getNoFeed()){
-        noFeedElement.setText("NO FEED");
-    }else{
-        noFeedElement.setText("");
-    }
+	if(roverState.getNoFeed()){
+		noFeedElement.setText("NO FEED");
+	}else{
+		noFeedElement.setText("");
+	}
 
 	static constexpr int16_t CrossMargin = 20;
 	static constexpr int16_t ArrowMargin = 30;
@@ -588,12 +588,12 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 			}
 		}
 	}else if(evt.type == RoverState::StateType::Feed){
-        if(evt.noFeed){
-            noFeedElement.setText("NO FEED");
-        }else{
-            noFeedElement.setText("");
-        }
-    }
+		if(evt.noFeed){
+			noFeedElement.setText("NO FEED");
+		}else{
+			noFeedElement.setText("");
+		}
+	}
 
     if(!evt.changedOnRover){
         return;

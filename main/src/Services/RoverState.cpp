@@ -60,12 +60,12 @@ void RoverState::loop(){
 				e.modulePlug = event->modulePlug;
 				break;
 			}
-            case (CommType::NoFeed): {
-                noFeed = event->noFeed;
-                e.type = StateType::Feed;
-                e.noFeed = noFeed;
-                break;
-            }
+			case (CommType::NoFeed): {
+				noFeed = event->noFeed;
+				e.type = StateType::Feed;
+				e.noFeed = noFeed;
+				break;
+			}
 			default: {
 				break;
 			}
