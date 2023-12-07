@@ -50,7 +50,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	TextStyle noFeedStyle = {&lgfx::fonts::Font0, TFT_RED, 1, CC_DATUM};
 	noFeedElement.setStyle(noFeedStyle);
-	noFeedElement.setPos(getWidth() / 2, getHeight() / 2);
+	noFeedElement.setPos(getWidth() / 2, getHeight() / 2 - 9);
 
 	arrowUp.setPos(-getWidth(), -getHeight());
 	arrowDown.setPos(-getWidth(), -getHeight());
