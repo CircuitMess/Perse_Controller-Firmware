@@ -24,6 +24,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->on(LED::Pair);
+		led->on(LED::CamCenter);
 	}
 
 	if(connectedSign != nullptr){
@@ -263,15 +264,15 @@ void DriveScreen::onLoop(){
 
 void DriveScreen::setCamPosValue(uint8_t pos){
 	static const std::map<LED, int> ledOnLimits = {
-			{LED::CamL4, -40},
-			{LED::CamL3, -30},
-			{LED::CamL2, -20},
-			{LED::CamL1, -10},
+			{LED::CamL4, 40},
+			{LED::CamL3, 30},
+			{LED::CamL2, 20},
+			{LED::CamL1, 10},
 			{LED::CamCenter, 0},
-			{LED::CamR1, 10},
-			{LED::CamR2, 20},
-			{LED::CamR3, 30},
-			{LED::CamR4, 40},
+			{LED::CamR1, -10},
+			{LED::CamR2, -20},
+			{LED::CamR3, -30},
+			{LED::CamR4, -40},
 	};
 
 	camPos = pos;
