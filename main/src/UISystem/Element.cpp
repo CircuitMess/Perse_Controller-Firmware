@@ -2,10 +2,18 @@
 #include "ElementContainer.h"
 
 Element::Element(ElementContainer* parent) : parent(parent){
+	if(parent == nullptr){
+		return;
+	}
+
 	parent->elements.push_back(this);
 }
 
 Element::~Element(){
+	if(parent == nullptr){
+		return;
+	}
+	
 	parent->elements.erase(std::remove(parent->elements.begin(), parent->elements.end(), this), parent->elements.end());
 }
 

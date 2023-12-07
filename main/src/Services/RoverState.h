@@ -14,11 +14,13 @@ public:
 		ArmPinch,
 		ArmPos,
 		CameraRotation,
-		BatteryPercent
+		BatteryPercent,
+		Modules
 	};
 
 	struct Event {
 		StateType type = StateType::None;
+		bool changedOnRover = false;
 
 		union{
 			HeadlightsMode headlights = HeadlightsMode::Off;
@@ -26,6 +28,7 @@ public:
 			ArmPinch armPinch;
 			CameraRotation cameraRotation;
 			uint8_t batteryPercent;
+			ModulePlugData modulePlug;
 		};
 	};
 
@@ -36,6 +39,10 @@ public:
 	inline ArmPos getArmPositionState() const { return armPos; }
 	inline CameraRotation getCameraRotationState() const { return cameraRotation; }
 	inline uint8_t getBatteryPercent() const { return batteryPercent; }
+	inline bool getLeftModuleInsert() const { return leftModuleInsert; }
+	inline ModuleType getLeftModuleType() const { return leftModuleType; }
+	inline bool getRightModuleInsert() const { return rightModuleInsert; }
+	inline ModuleType getRightModuleType() const { return rightModuleType; }
 
 private:
 	void loop() override;
@@ -49,6 +56,10 @@ private:
 	std::atomic<ArmPos> armPos;
 	std::atomic<CameraRotation> cameraRotation;
 	std::atomic<uint8_t> batteryPercent;
+	std::atomic<bool> leftModuleInsert;
+	std::atomic<ModuleType> leftModuleType;
+	std::atomic<bool> rightModuleInsert;
+	std::atomic<ModuleType> rightModuleType;
 };
 
 

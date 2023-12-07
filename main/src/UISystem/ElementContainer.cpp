@@ -8,8 +8,12 @@ ElementContainer::~ElementContainer(){
 	}
 }
 
-void ElementContainer::onElements(std::function<void(Element*)> func){
+void ElementContainer::onElements(const std::function<void(Element*)>& func){
 	for(auto el : elements){
+		if(el == nullptr){
+			continue;
+		}
+
 		func(el);
 	}
 }

@@ -69,7 +69,7 @@ float Joystick::getY() const{
 }
 
 glm::vec2 Joystick::getPos() const{
-	return glm::vec2(getX(), getY());
+	return {getX(), getY()};
 }
 
 void Joystick::loop(){

@@ -2,11 +2,15 @@
 
 LabelElement::LabelElement(ElementContainer* parent, std::string text) : Element(parent), text(std::move(text)){}
 
-void LabelElement::setText(std::string text){
-	this->text = std::move(text);
+void LabelElement::setText(const std::string& text){
+	this->text = text;
 }
 
 void LabelElement::draw(Sprite* canvas){
+	if(canvas == nullptr){
+		return;
+	}
+
 	canvas->setFont(style.font);
 	canvas->setTextDatum(style.datum);
 	canvas->setTextColor(style.color);
@@ -15,11 +19,11 @@ void LabelElement::draw(Sprite* canvas){
 	canvas->drawString(text.c_str(), x, y);
 }
 
-void LabelElement::setStyle(TextStyle style){
+void LabelElement::setStyle(const TextStyle& style){
 	this->style = style;
 }
 
-TextStyle LabelElement::getStyle(){
+const TextStyle& LabelElement::getStyle() const{
 	return style;
 }
 

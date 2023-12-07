@@ -94,9 +94,14 @@ gd_open_gif(FILE* fd){
 	if(gif->bgindex)
 		memset(gif->frame, gif->bgindex, gif->width * gif->height);
 	bgcolor = &gif->palette->colors[gif->bgindex * 3];
-	if(bgcolor[0] || bgcolor[1] || bgcolor[2])
+	if(bgcolor[0] || bgcolor[1] || bgcolor[2]){
 		for(i = 0; i < gif->width * gif->height; i++)
 			memcpy(&gif->canvas[i * 3], bgcolor, 3);
+	}else{
+		uint8_t c[3]{ 0, 0x24, 0 };
+		for(i = 0; i < gif->width * gif->height; i++)
+			memcpy(&gif->canvas[i * 3], c, 3);
+	}
 	gif->anim_start = ftell(fd);
 	goto ok;
 	fail:
@@ -404,22 +409,23 @@ read_image(gd_GIF* gif){
 static void
 render_frame_rect(gd_GIF* gif, uint8_t* buffer, bool monochrome){
 	int i, j, k;
-	uint8_t index, * color;
+	uint8_t index, * color, * bgcolor = &gif->palette->colors[gif->bgindex * 3];
 	i = gif->fy * gif->width + gif->fx;
 	for(j = 0; j < gif->fh; j++){
 		for(k = 0; k < gif->fw; k++){
 			index = gif->frame[(gif->fy + j) * gif->width + gif->fx + k];
-			color = &gif->palette->colors[index * 3];
+			uint8_t c[3]{ 0, 0x24, 0 };
+			if(index == gif->bgindex && !(bgcolor[0] || bgcolor[1] || bgcolor[2])){
+				color = c;
+			}else{
+				color = &gif->palette->colors[index * 3];
+			}
 			if(!gif->gce.transparency || index != gif->gce.tindex){
 				if(monochrome){
 					memcpy(&buffer[(i + k)], color, 1);
 				}else{
 					memcpy(&buffer[(i + k) * 3], color, 3);
 				}
-			}else if(!monochrome){
-				uint8_t c[3]{ 0, 0x24, 0 };
-				color = c;
-				memcpy(&buffer[(i + k) * 3], color, 3);
 			}
 		}
 		i += gif->width;
@@ -430,9 +436,14 @@ static void
 dispose(gd_GIF* gif){
 	int i, j, k;
 	uint8_t* bgcolor;
+	uint8_t c[3]{ 0, 0x24, 0 };
+
 	switch(gif->gce.disposal){
 		case 2: /* Restore to background color. */
 			bgcolor = &gif->palette->colors[gif->bgindex * 3];
+			if(!(bgcolor[0] || bgcolor[1] || bgcolor[2])){
+				bgcolor = c;
+			}
 			i = gif->fy * gif->width + gif->fx;
 			for(j = 0; j < gif->fh; j++){
 				for(k = 0; k < gif->fw; k++)
@@ -472,12 +483,6 @@ gd_render_frame(gd_GIF* gif, uint8_t* buffer, bool monochrome){
 	if(monochrome){
 		memcpy(buffer, gif->canvas, gif->width * gif->height);
 	}else{
-		for(int i = 0; i < gif->width * gif->height; i++){
-			uint8_t* pixel = &gif->canvas[i * 3];
-			pixel[0] = pixel[2] = 0;
-			pixel[1] = 0x24;
-		}
-
 		memcpy(buffer, gif->canvas, gif->width * gif->height * 3);
 	}
 	render_frame_rect(gif, buffer, monochrome);
@@ -491,6 +496,19 @@ gd_is_bgcolor(gd_GIF* gif, uint8_t color[3]){
 void
 gd_rewind(gd_GIF* gif){
 	fseek(gif->fd, gif->anim_start, SEEK_SET);
+
+	uint8_t* bgcolor;
+	memset(gif->frame, gif->bgindex, gif->width * gif->height);
+	bgcolor = &gif->palette->colors[gif->bgindex * 3];
+	if(bgcolor[0] || bgcolor[1] || bgcolor[2]){
+		for(int i = 0; i < gif->width * gif->height; i++)
+			memcpy(&gif->canvas[i * 3], bgcolor, 3);
+
+	}else{
+		uint8_t c[3]{ 0, 0x24, 0 };
+		for(int i = 0; i < gif->width * gif->height; i++)
+			memcpy(&gif->canvas[i * 3], c, 3);
+	}
 }
 
 void

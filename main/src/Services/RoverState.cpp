@@ -14,6 +14,8 @@ void RoverState::loop(){
 	Event e{};
 
 	if (Comm::Event* event = (Comm::Event*)evt.data) {
+		e.changedOnRover = event->changedOnRover;
+
 		switch (event->type) {
 			case (CommType::Headlights): {
 				headlightsState = event->headlights;
@@ -43,14 +45,28 @@ void RoverState::loop(){
 				batteryPercent = event->batteryPercent;
 				e.type = StateType::BatteryPercent;
 				e.batteryPercent = batteryPercent;
+				break;
+			}
+			case (CommType::ModulePlug) : {
+				if(event->modulePlug.bus == ModuleBus::Left){
+					leftModuleInsert = event->modulePlug.insert;
+					leftModuleType = event->modulePlug.type;
+				}else if(event->modulePlug.bus == ModuleBus::Right){
+					rightModuleInsert = event->modulePlug.insert;
+					rightModuleType = event->modulePlug.type;
+				}
+
+				e.type = StateType::Modules;
+				e.modulePlug = event->modulePlug;
+				break;
 			}
 			default: {
 				break;
 			}
 		}
-	}
 
-	Events::post(Facility::RoverState, e);
+		Events::post(Facility::RoverState, e);
+	}
 
 	free(evt.data);
 }
