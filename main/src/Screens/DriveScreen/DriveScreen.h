@@ -20,8 +20,10 @@ public:
 	virtual ~DriveScreen();
 
 protected:
-	void preDraw() override;
-	void onLoop() override;
+	virtual void preDraw() override;
+	virtual void onLoop() override;
+
+	void setCamPosValue(uint8_t pos);
 
 private:
 	static constexpr uint64_t DirSendInterval = 50; // [ms]
