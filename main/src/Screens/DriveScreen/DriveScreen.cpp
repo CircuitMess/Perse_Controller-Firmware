@@ -293,10 +293,10 @@ void DriveScreen::setCamPosValue(uint8_t pos){
 		const int limit = ledOnLimits.at(camLed);
 
 		if((SIGN(limit) == SIGN(deltaFromCenter) || limit == 0) && std::abs(deltaFromCenter) >= std::abs(limit)){
-            led->on(camLed);
-        }else{
-            led->off(camLed);
-        }
+			led->on(camLed);
+		}else{
+			led->off(camLed);
+		}
 	}
 }
 
