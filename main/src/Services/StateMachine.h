@@ -25,9 +25,6 @@ public:
 	template <typename T, typename... Args>
 	State* transition(Args&& ... args);
 
-	using Threaded::stop;
-	using Threaded::running;
-
 protected:
 	virtual void loop() override;
 
