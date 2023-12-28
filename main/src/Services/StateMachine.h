@@ -11,12 +11,14 @@ public:
 	virtual ~State() = default;
 
 	virtual void loop(){}
+
+	virtual void unblock(){}
 };
 
 class StateMachine : private Threaded {
 public:
 	StateMachine();
-	virtual ~StateMachine() = default;
+	virtual ~StateMachine();
 
 	void begin();
 
@@ -24,6 +26,7 @@ public:
 	State* transition(Args&& ... args);
 
 	using Threaded::stop;
+	using Threaded::running;
 
 protected:
 	virtual void loop() override;

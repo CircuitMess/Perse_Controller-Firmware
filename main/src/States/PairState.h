@@ -22,6 +22,8 @@ private:
 	void processInput(const Input::Data& evt);
 
 	static constexpr uint32_t PairBlinkInterval = 350;
+
+	void unblock() override;
 };
 
 #endif //PERSE_CTRL_PAIRSTATE_H

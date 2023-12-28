@@ -204,3 +204,7 @@ void DriveState::sendArmControl(){
 		comm.sendArmPinch(pinchPos);
 	}
 }
+
+void DriveState::unblock(){
+	evts.unblock();
+}

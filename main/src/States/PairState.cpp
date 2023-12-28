@@ -63,3 +63,7 @@ void PairState::processInput(const Input::Data& evt){
 		}
 	}
 }
+
+void PairState::unblock(){
+	evts.unblock();
+}

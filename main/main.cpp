@@ -125,13 +125,16 @@ void init(){
 	stateMachine->begin();
 
 	auto lowBatteryService = new BatteryLowService();
+	Services.set(Service::LowBattservice, lowBatteryService);
 #endif
 
-	battery->setShutdownCallback([&tcp, &wifi](){
+	battery->setShutdownCallback([](){
+		auto tcp = (TCPClient*) Services.get(Service::TCP);
 		tcp->disconnect();
+		auto wifi = (WiFiSTA*) Services.get(Service::WiFi);
 		wifi->disconnect();
 		while(wifi->getState() != WiFiSTA::Disconnected){
-			delayMillis(10);
+			delayMillis(1);
 		}
 
 #ifdef CTRL_TYPE_MISSIONCTRL
@@ -141,14 +144,26 @@ void init(){
 		auto bl = (Backlight*) Services.get(Service::Backlight);
 		bl->fadeOut();
 #elifdef CTRL_TYPE_BASIC
+		auto lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattservice);
+		delete lowBatteryService;
+
 		auto stateMachine = (StateMachine*) Services.get(Service::StateMachine);
-		stateMachine->stop();
+		delete stateMachine;
 #endif
 
 		auto led = (LEDService*) Services.get(Service::LED);
 		for(int i = 0; i < (uint8_t) LED::COUNT; i++){
 			led->off((LED) i);
 		}
+
+		//necessary since LED_ARMPINCH (GPIO8) is internally pulled-up in deep sleep
+		gpio_config_t conf{
+				1 << LED_ARMPINCH, GPIO_MODE_OUTPUT, GPIO_PULLUP_DISABLE, GPIO_PULLDOWN_ENABLE, GPIO_INTR_DISABLE
+		};
+		gpio_config(&conf);
+		gpio_set_level((gpio_num_t) LED_ARMPINCH, 0);
+		gpio_hold_en((gpio_num_t) LED_ARMPINCH);
+		gpio_deep_sleep_hold_en();
 
 		shutdown();
 	});
