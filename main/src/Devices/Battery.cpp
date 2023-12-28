@@ -54,6 +54,9 @@ bool Battery::isShutdown() const {
 
 void Battery::setShutdownCallback(std::function<void()> callback){
 	shutdownCallback = std::move(callback);
+	if(!shutdownCallback || !shutdown) return;
+
+	shutdownCallback();
 }
 
 void Battery::sleepyLoop() {
@@ -87,6 +90,7 @@ void Battery::sample(bool fresh/* = false*/) {
 	if (getLevel() == Critical) {
 		stop(0);
 		shutdown = true;
+		if(!shutdownCallback) return;
 		shutdownCallback();
 		return;
 	}

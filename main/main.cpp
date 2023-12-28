@@ -156,6 +156,10 @@ void init(){
 			led->off((LED) i);
 		}
 
+		//delay to ensure queued LED off instructions are processed
+		delayMillis(1000);
+
+#ifdef CTRL_TYPE_BASIC
 		//necessary since LED_ARMPINCH (GPIO8) is internally pulled-up in deep sleep
 		gpio_config_t conf{
 				1 << LED_ARMPINCH, GPIO_MODE_OUTPUT, GPIO_PULLUP_DISABLE, GPIO_PULLDOWN_ENABLE, GPIO_INTR_DISABLE
@@ -164,7 +168,7 @@ void init(){
 		gpio_set_level((gpio_num_t) LED_ARMPINCH, 0);
 		gpio_hold_en((gpio_num_t) LED_ARMPINCH);
 		gpio_deep_sleep_hold_en();
-
+#endif
 		shutdown();
 	});
 
