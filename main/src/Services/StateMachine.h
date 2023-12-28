@@ -23,6 +23,8 @@ public:
 	template <typename T, typename... Args>
 	State* transition(Args&& ... args);
 
+	using Threaded::stop;
+
 protected:
 	virtual void loop() override;
 

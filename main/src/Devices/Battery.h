@@ -34,6 +34,8 @@ public:
 
 	bool isShutdown() const;
 
+	void setShutdownCallback(std::function<void()> callback);
+
 private:
 	static constexpr uint32_t MeasureIntverval = 100;
 	static constexpr esp_efuse_desc_t AdcLow = {EFUSE_BLK3, 0, 8 };
@@ -44,6 +46,8 @@ private:
 	ADCReader adc;
 	Hysteresis hysteresis;
 	bool shutdown = false;
+
+	std::function<void()> shutdownCallback = {};
 
 private:
 	void sleepyLoop() override;

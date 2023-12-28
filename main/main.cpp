@@ -14,6 +14,7 @@
 #include "Services/Settings.h"
 #include "Util/Services.h"
 #include "Pins.hpp"
+#include "Util/stdafx.h"
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 
@@ -126,6 +127,31 @@ void init(){
 	auto lowBatteryService = new BatteryLowService();
 #endif
 
+	battery->setShutdownCallback([&tcp, &wifi](){
+		tcp->disconnect();
+		wifi->disconnect();
+		while(wifi->getState() != WiFiSTA::Disconnected){
+			delayMillis(10);
+		}
+
+#ifdef CTRL_TYPE_MISSIONCTRL
+		auto uiThread = (UIThread*) Services.get(Service::UI);
+		uiThread->stop();
+
+		auto bl = (Backlight*) Services.get(Service::Backlight);
+		bl->fadeOut();
+#elifdef CTRL_TYPE_BASIC
+		auto stateMachine = (StateMachine*) Services.get(Service::StateMachine);
+		stateMachine->stop();
+#endif
+
+		auto led = (LEDService*) Services.get(Service::LED);
+		for(int i = 0; i < (uint8_t) LED::COUNT; i++){
+			led->off((LED) i);
+		}
+
+		shutdown();
+	});
 
 	battery->begin();
 }
