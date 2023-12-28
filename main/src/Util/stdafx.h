@@ -28,4 +28,6 @@ void ramReport();
 void stackRep(const char* where = nullptr);
 void heapRep(const char* where = nullptr);
 
+#define SIGN(x) ((x) >= 0 ? 1 : 0)
+
 #endif //CLOCKSTAR_FIRMWARE_STDAFX_H

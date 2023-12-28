@@ -20,8 +20,10 @@ public:
 	virtual ~DriveScreen();
 
 protected:
-	void preDraw() override;
-	void onLoop() override;
+	virtual void preDraw() override;
+	virtual void onLoop() override;
+
+	void setCamPosValue(uint8_t pos);
 
 private:
 	static constexpr uint64_t DirSendInterval = 50; // [ms]
@@ -93,6 +95,8 @@ private:
 	LabelElement rvrElement = LabelElement(this, "RVR");
 	LabelElement rssiElement = LabelElement(this, "RSSI");
 	LabelElement ctrlElement = LabelElement(this, "CTRL");
+
+	LabelElement noFeedElement = LabelElement(this, "");
 
 	uint64_t lastMarkerVisualizationTime = 0;
 	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
