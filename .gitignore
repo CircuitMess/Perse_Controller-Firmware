@@ -4,7 +4,8 @@ cmake-build-debug
 build
 
 sdkconfig*
-!sdkconfig
+!sdkconfig.basic
+!sdkconfig.missionctrl
 
 spiffs.bin
 dependencies.lock
