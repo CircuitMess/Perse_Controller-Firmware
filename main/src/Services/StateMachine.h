@@ -18,7 +18,7 @@ public:
 class StateMachine : private Threaded {
 public:
 	StateMachine();
-	virtual ~StateMachine();
+	virtual ~StateMachine() override;
 
 	void begin();
 
