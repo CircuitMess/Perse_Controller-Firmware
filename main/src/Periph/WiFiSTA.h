@@ -13,7 +13,7 @@ public:
 	WiFiSTA();
 
 	struct Event {
-		enum { Connect, Disconnect } action;
+		enum { Connect, Disconnect, Probe } action;
 		union {
 			struct {
 				uint8_t bssid[6];
@@ -26,6 +26,7 @@ public:
 		};
 	};
 
+	bool hasCachedSSID() const;
 	void connect();
 	void disconnect();
 
@@ -50,6 +51,9 @@ private:
 
 	State state = Disconnected;
 	std::binary_semaphore initSem{ 0 };
+
+	std::string cachedSSID;
+	bool attemptedCachedSSID = false;
 
 	Hysteresis hysteresis;
 

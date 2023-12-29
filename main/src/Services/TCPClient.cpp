@@ -9,7 +9,7 @@ TCPClient::TCPClient(){
 
 }
 
-bool TCPClient::isConnected(){
+bool TCPClient::isConnected() const{
 	return sock != -1;
 }
 

@@ -20,6 +20,13 @@
 
 DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Services.get(Service::Comm))), joy(*((Joystick*) Services.get(Service::Joystick))),
 										   dcEvts(6), evts(12), roverState(*(RoverState*) Services.get(Service::RoverState)){
+	if(const TCPClient* tcp = (TCPClient*) Services.get(Service::TCP)){
+		if(!tcp->isConnected()){
+			transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas, true); });
+			return;
+		}
+	}
+
 	lastFrame.resize(160 * 120, 0);
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
@@ -91,8 +98,6 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	Events::listen(Facility::TCP, &dcEvts);
 
 	joy.begin();
-
-	// TODO: setup Pinch, Arm, Cam LEDs
 
 	Input* input = (Input*) Services.get(Service::Input);
 	if(input == nullptr){

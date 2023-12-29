@@ -41,6 +41,10 @@ WiFiSTA::WiFiSTA() : hysteresis({0, 20, 40, 60, 80}, 1){
 	initSem.acquire();
 }
 
+bool WiFiSTA::hasCachedSSID() const{
+	return !cachedSSID.empty() && !attemptedCachedSSID;
+}
+
 void WiFiSTA::event(int32_t id, void* data){
 	ESP_LOGD(TAG, "Evt %ld", id);
 
@@ -67,6 +71,10 @@ void WiFiSTA::event(int32_t id, void* data){
 
 		state = Connected;
 
+		if(hasCachedSSID()){
+			return;
+		}
+
 		Event evt { .action = Event::Connect, .connect = { .success = true } };
 		memcpy(evt.connect.bssid, event->bssid, 6);
 		Events::post(Facility::WiFiSTA, evt);
@@ -75,6 +83,15 @@ void WiFiSTA::event(int32_t id, void* data){
 		auto event = (wifi_event_sta_disconnected_t*) data;
 		const auto mac = mac2str(event->bssid);
 		ESP_LOGI(TAG, "disconnected bssid %s, reason=%d", mac.c_str(), event->reason);
+
+		if(hasCachedSSID() && event->reason == WIFI_REASON_SA_QUERY_TIMEOUT){
+			Event evt{ .action = Event::Probe, .connect = { .success = false } };
+			Events::post(Facility::WiFiSTA, evt);
+
+			state = Disconnected;
+			connect();
+			return;
+		}
 
 		if(state == Connecting){
 			if(++connectTries <= ConnectRetries){
@@ -108,13 +125,36 @@ void WiFiSTA::event(int32_t id, void* data){
 			return;
 		}else if(state != Scanning) return;
 
-		wifi_ap_record_t ap_info[ScanListSize];
-		memset(ap_info, 0, sizeof(ap_info));
-		auto number = ScanListSize;
-		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
-		auto ret = findNetwork(ap_info, number);
+		if(attemptedCachedSSID){
+			cachedSSID = "";
+			attemptedCachedSSID = false;
+		}
 
-		if(ret == nullptr){
+		std::string netSSID = cachedSSID;
+
+		if(netSSID.empty()){
+			wifi_ap_record_t ap_info[ScanListSize];
+			memset(ap_info, 0, sizeof(ap_info));
+
+			auto number = ScanListSize;
+			ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
+
+			auto ret = findNetwork(ap_info, number);
+
+			if(ret == nullptr){
+				state = Disconnected;
+				Event evt{ .action = Event::Connect, .connect = { .success = false } };
+				Events::post(Facility::WiFiSTA, evt);
+				return;
+			}
+
+			netSSID = cachedSSID = std::string((const char*) ret->ssid);
+			attemptedCachedSSID = false;
+		}else{
+			attemptedCachedSSID = true;
+		}
+
+		if(netSSID.empty()){
 			state = Disconnected;
 			Event evt{ .action = Event::Connect, .connect = { .success = false } };
 			Events::post(Facility::WiFiSTA, evt);
@@ -129,10 +169,9 @@ void WiFiSTA::event(int32_t id, void* data){
 						.password = "RoverRover"
 				}
 		};
-		memcpy(cfg_sta.sta.ssid, ret->ssid, 32);
-		cfg_sta.sta.ssid[31] = 0;
-		ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg_sta));
 
+		strcpy((char*) cfg_sta.sta.ssid, netSSID.c_str());
+		ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg_sta));
 		esp_wifi_connect();
 	}
 }
