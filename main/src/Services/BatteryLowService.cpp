@@ -8,6 +8,19 @@
 BatteryLowService::BatteryLowService() : Threaded("BattLowService", 2 * 1024), queue(6){
 	Events::listen(Facility::Battery, &queue);
 	Events::listen(Facility::RoverState, &queue);
+
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		if(const Battery* battery = (Battery*) Services.get(Service::Battery)){
+			const Battery::Level level = battery->getLevel();
+
+			if(level == Battery::Low){
+				led->breathe(LED::Power);
+			}else if(level == Battery::VeryLow){
+				led->blink(LED::Power, 0, CriticalBlinkPeriod);
+			}
+		}
+	}
+
 	start();
 }
 
@@ -18,6 +31,7 @@ BatteryLowService::~BatteryLowService(){
 	while(running()){
 		delayMillis(1);
 	}
+
 	Events::unlisten(&queue);
 }
 
