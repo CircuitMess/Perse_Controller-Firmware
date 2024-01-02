@@ -1,5 +1,6 @@
 #include "Battery.h"
 #include <cmath>
+#include <utility>
 #include "Pins.hpp"
 #include "Util/Events.h"
 #include "Util/stdafx.h"
@@ -51,6 +52,13 @@ bool Battery::isShutdown() const {
 	return shutdown;
 }
 
+void Battery::setShutdownCallback(std::function<void()> callback){
+	shutdownCallback = std::move(callback);
+	if(!shutdownCallback || !shutdown) return;
+
+	shutdownCallback();
+}
+
 void Battery::sleepyLoop() {
 	if (shutdown) {
 		return;
@@ -82,6 +90,8 @@ void Battery::sample(bool fresh/* = false*/) {
 	if (getLevel() == Critical) {
 		stop(0);
 		shutdown = true;
+		if(!shutdownCallback) return;
+		shutdownCallback();
 		return;
 	}
 }

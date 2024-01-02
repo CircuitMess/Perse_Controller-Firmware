@@ -3,6 +3,7 @@
 #include "LEDService.h"
 #include "Util/Services.h"
 #include "Devices/Battery.h"
+#include "Util/stdafx.h"
 
 BatteryLowService::BatteryLowService() : Threaded("BattLowService", 2 * 1024), queue(6){
 	Events::listen(Facility::Battery, &queue);
@@ -11,8 +12,13 @@ BatteryLowService::BatteryLowService() : Threaded("BattLowService", 2 * 1024), q
 }
 
 BatteryLowService::~BatteryLowService(){
+	stop(0);
+	queue.unblock();
+
+	while(running()){
+		delayMillis(1);
+	}
 	Events::unlisten(&queue);
-	stop();
 }
 
 void BatteryLowService::loop(){

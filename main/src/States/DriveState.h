@@ -44,6 +44,8 @@ private:
 	void processSoundInput(const Input::Data& evt);
 	void sendDriveDir();
 	void sendArmControl();
+
+	void unblock() override;
 };
 
 
