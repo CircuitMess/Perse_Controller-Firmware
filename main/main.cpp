@@ -125,41 +125,52 @@ void init(){
 	stateMachine->begin();
 
 	auto lowBatteryService = new BatteryLowService();
-	Services.set(Service::LowBattservice, lowBatteryService);
+	Services.set(Service::LowBattery, lowBatteryService);
 #endif
 
 	battery->setShutdownCallback([](){
-		auto tcp = (TCPClient*) Services.get(Service::TCP);
-		tcp->disconnect();
-		auto wifi = (WiFiSTA*) Services.get(Service::WiFi);
-		wifi->disconnect();
-		while(wifi->getState() != WiFiSTA::Disconnected){
-			delayMillis(1);
+		if(TCPClient* tcp = (TCPClient*) Services.get(Service::TCP)){
+			tcp->disconnect();
 		}
 
-#ifdef CTRL_TYPE_MISSIONCTRL
-		auto uiThread = (UIThread*) Services.get(Service::UI);
-		uiThread->stop();
+		if(WiFiSTA* wifi = (WiFiSTA*) Services.get(Service::WiFi)){
+			wifi->disconnect();
+			while(wifi->getState() != WiFiSTA::Disconnected){
+				delayMillis(1);
+			}
+		}
 
-		auto bl = (Backlight*) Services.get(Service::Backlight);
-		bl->fadeOut();
-#elifdef CTRL_TYPE_BASIC
-		auto lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattservice);
-		delete lowBatteryService;
+	#ifdef CTRL_TYPE_MISSIONCTRL
+		if(UIThread* uiThread = (UIThread*) Services.get(Service::UI)){
+			uiThread->stop();
+		}
 
-		auto stateMachine = (StateMachine*) Services.get(Service::StateMachine);
-		delete stateMachine;
-#endif
+		if(Backlight* bl = (Backlight*) Services.get(Service::Backlight)){
+			bl->fadeOut();
+		}
 
-		auto led = (LEDService*) Services.get(Service::LED);
-		for(int i = 0; i < (uint8_t) LED::COUNT; i++){
-			led->off((LED) i);
+	#elifdef CTRL_TYPE_BASIC
+		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattservice)){
+			Services.set(Service::LowBattery, nullptr);
+			delete lowBatteryService;
+		}
+
+		if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+			Services.set(Service::StateMachine, nullptr);
+			delete stateMachine;
+		}
+	#endif
+
+		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+			for(int i = 0; i < (uint8_t) LED::COUNT; i++){
+				led->off((LED) i);
+			}
 		}
 
 		//delay to ensure queued LED off instructions are processed
 		delayMillis(1000);
 
-#ifdef CTRL_TYPE_BASIC
+	#ifdef CTRL_TYPE_BASIC
 		//necessary since LED_ARMPINCH (GPIO8) is internally pulled-up in deep sleep
 		gpio_config_t conf{
 				1 << LED_ARMPINCH, GPIO_MODE_OUTPUT, GPIO_PULLUP_DISABLE, GPIO_PULLDOWN_ENABLE, GPIO_INTR_DISABLE
@@ -168,7 +179,8 @@ void init(){
 		gpio_set_level((gpio_num_t) LED_ARMPINCH, 0);
 		gpio_hold_en((gpio_num_t) LED_ARMPINCH);
 		gpio_deep_sleep_hold_en();
-#endif
+	#endif
+
 		shutdown();
 	});
 

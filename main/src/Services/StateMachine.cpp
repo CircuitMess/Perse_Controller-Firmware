@@ -20,9 +20,11 @@ StateMachine::~StateMachine(){
 
 	stop(0);
 	currentState->unblock();
+
 	while(running()){
 		delayMillis(1);
 	}
+
 	delete currentState;
 	currentState = nullptr;
 }

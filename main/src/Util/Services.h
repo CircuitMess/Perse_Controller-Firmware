@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-enum class Service { Settings, Backlight, TCP, WiFi, RoverState, Comm, UI, Input, Joystick, LED, Battery, Potentiometers, StateMachine, LowBattservice };
+enum class Service { Settings, Backlight, TCP, WiFi, RoverState, Comm, UI, Input, Joystick, LED, Battery, Potentiometers, StateMachine, LowBattery };
 
 class ServiceLocator {
 public:
