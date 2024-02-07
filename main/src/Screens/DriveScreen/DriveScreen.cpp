@@ -1,6 +1,6 @@
 #include "DriveScreen.h"
 #include "Services/TCPClient.h"
-#include "Screens/PairScreen.h"
+#include "Screens/Pair/PairScreen.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
 #include "Services/LEDService.h"
@@ -86,9 +86,12 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	ctrlElement.setPos(-getWidth(), -getHeight());
 	ctrlElement.setStyle({ .color = TFT_WHITE, .datum = BR_DATUM });
 
+	shutdownIcon.setPos(-getWidth(), -getHeight());
+
 	startTime = millis();
 
 	Events::listen(Facility::TCP, &dcEvts);
+	Events::listen(Facility::Battery, &dcEvts);
 
 	joy.begin();
 
@@ -227,6 +230,14 @@ void DriveScreen::onLoop(){
 						transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas, true); });
 						return;
 					}
+				}
+			}
+			if(evt.facility == Facility::Battery && evt.data != nullptr){
+				auto data = (Battery::Event*) evt.data;
+				if(data->level == Battery::Critical){
+					shutdown();
+					free(evt.data);
+					return;
 				}
 			}
 
@@ -752,4 +763,16 @@ void DriveScreen::sendCurrentStates(){
 	}else{
 		comm.sendFeedQuality(15);
 	}
+}
+
+void DriveScreen::shutdown(){
+	arrowUp.setPos(-getWidth(), -getHeight());
+	arrowDown.setPos(-getWidth(), -getHeight());
+	arrowLeft.setPos(-getWidth(), -getHeight());
+	arrowRight.setPos(-getWidth(), -getHeight());
+
+	shutdownIcon.setPos((int16_t) ((this->getWidth() - shutdownIcon.getWidth()) / 2.0),
+						(int16_t) ((this->getHeight() - shutdownIcon.getHeight()) / 2.0));
+	Events::unlisten(&dcEvts);
+	Events::unlisten(&evts);
 }

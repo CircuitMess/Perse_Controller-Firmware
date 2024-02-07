@@ -88,6 +88,9 @@ void Battery::sample(bool fresh/* = false*/) {
 	}
 
 	if (getLevel() == Critical) {
+#ifdef CTRL_TYPE_MISSIONCTRL
+        delayMillis(BattPopupTime); //wait for BattPopup to show
+#endif
 		stop(0);
 		shutdown = true;
 		if(!shutdownCallback) return;

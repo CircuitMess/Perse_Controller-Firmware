@@ -62,7 +62,7 @@ private:
 	LabelElement busAStatus = LabelElement(this, "OFF");
 	LabelElement busBStatus = LabelElement(this, "OFF");
 
-	glm::vec<2, int8_t> cachedMotorSpeeds = {0, 0};
+	glm::vec<2, int8_t> cachedMotorSpeeds = { 0, 0 };
 	uint8_t cachedDriveDir = 0;
 
 	bool armUnlocked;
@@ -101,6 +101,9 @@ private:
 	uint64_t lastMarkerVisualizationTime = 0;
 	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
 
+	static constexpr const char* IconPath = "/spiffs/battery/shutdown.raw";
+	ImageElement shutdownIcon = ImageElement(this, IconPath, 91, 48);
+
 private:
 	void sendDriveDir();
 	void buildUI();
@@ -113,6 +116,8 @@ private:
 	void createModule(ModuleBus bus, ModuleType type);
 	void deleteModule(ModuleBus bus);
 	void sendCurrentStates();
+
+	void shutdown();
 };
 
 

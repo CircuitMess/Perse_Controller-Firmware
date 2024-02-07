@@ -1,8 +1,10 @@
 #include "PairScreen.h"
 #include "Devices/Input.h"
-#include "DriveScreen/DriveScreen.h"
+#include "Screens/DriveScreen/DriveScreen.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
+#include "Devices/Battery.h"
+#include "ShutdownScreen.h"
 
 PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas), evts(6), disconnectMessageActive(disconnectOccurred),
 																  frame(this, "/spiffs/pair/frame.raw", 122, 56),
@@ -13,6 +15,7 @@ PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas)
 																  description(this, TextPaths[0], 70, 54){
 
 	Events::listen(Facility::Input, &evts);
+	Events::listen(Facility::Battery, &evts);
 
 	setBgColor(BackgroundColor);
 	frame.setPos(3, 63);
@@ -78,6 +81,14 @@ void PairScreen::onLoop(){
 
 				if(data != nullptr){
 					processInput(*data);
+				}
+			}else if(evt.facility == Facility::Battery && evt.data != nullptr){
+				auto data = (Battery::Event*) evt.data;
+				if(data->level == Battery::Critical){
+					transition([](Sprite& canvas){ return std::make_unique<ShutdownScreen>(canvas); });
+					Events::unlisten(&evts);
+					free(evt.data);
+					return;
 				}
 			}
 
