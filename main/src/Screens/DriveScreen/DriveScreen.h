@@ -101,6 +101,12 @@ private:
 	uint64_t lastMarkerVisualizationTime = 0;
 	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
 
+	LabelElement scanningLabel = LabelElement(this, ScanText);
+	static constexpr const char* ScanText = "SCN";
+	static constexpr uint32_t ScanBlinkTime = 500; //[ms]
+	uint32_t scanBlinkMillis = 0;
+	bool scanBlink = true;
+
 private:
 	void sendDriveDir();
 	void buildUI();
