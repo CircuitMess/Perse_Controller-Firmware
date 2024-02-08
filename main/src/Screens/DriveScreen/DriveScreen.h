@@ -20,8 +20,10 @@ public:
 	virtual ~DriveScreen();
 
 protected:
-	void preDraw() override;
-	void onLoop() override;
+	virtual void preDraw() override;
+	virtual void onLoop() override;
+
+	void setCamPosValue(uint8_t pos);
 
 private:
 	static constexpr uint64_t DirSendInterval = 50; // [ms]
@@ -55,6 +57,10 @@ private:
 
 	std::unique_ptr<ModuleElement> leftModule = nullptr;
 	std::unique_ptr<ModuleElement> rightModule = nullptr;
+	LabelElement busA = LabelElement(this, "BUS_A");
+	LabelElement busB = LabelElement(this, "BUS_B");
+	LabelElement busAStatus = LabelElement(this, "OFF");
+	LabelElement busBStatus = LabelElement(this, "OFF");
 
 	glm::vec<2, int8_t> cachedMotorSpeeds = {0, 0};
 	uint8_t cachedDriveDir = 0;
@@ -92,6 +98,8 @@ private:
 	LabelElement rssiElement = LabelElement(this, "RSSI");
 	LabelElement ctrlElement = LabelElement(this, "CTRL");
 
+	LabelElement noFeedElement = LabelElement(this, "");
+
 	uint64_t lastMarkerVisualizationTime = 0;
 	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
 
@@ -105,6 +113,7 @@ private:
 	void processRoverState(const RoverState::Event& evt);
 	void processPotentiometers(const Potentiometers::Data& evt);
 	void createModule(ModuleBus bus, ModuleType type);
+	void deleteModule(ModuleBus bus);
 	void sendCurrentStates();
 };
 

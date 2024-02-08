@@ -1,6 +1,8 @@
 #ifndef PERSE_BASICCTRL_PINS_H
 #define PERSE_BASICCTRL_PINS_H
 
+#ifdef CTRL_TYPE_MISSIONCTRL
+
 #define PIN_BATT 9
 #define PIN_BL 39
 #define PIN_QUAL 8
@@ -54,5 +56,23 @@
 #define EXTLED_ARM_DOWN 0
 #define EXTLED_PINCH_OPEN 8
 #define EXTLED_PINCH_CLOSE 10
+
+#elifdef CTRL_TYPE_BASIC
+
+#define LED_POWER 2
+#define PIN_BATT 3
+#define BTN_UP 0
+#define BTN_RIGHT 1
+#define BTN_LEFT 10
+#define BTN_DOWN 4
+#define LED_PAIR 5
+#define LED_WARN 6
+#define LED_SOUNDLIGHT 7
+#define LED_ARMPINCH 8
+#define LED_NAVIGATION 9
+#define BTN_MODE 20
+#define BTN_PAIR 21
+
+#endif
 
 #endif //PERSE_BASICCTRL_PINS_H

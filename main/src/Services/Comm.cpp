@@ -170,6 +170,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet) {
 			event.modulePlug = CommData::decodeModulePlug(packet.data);
 			break;
 		}
+		case CommType::NoFeed: {
+			event.noFeed = (bool) packet.data;
+			break;
+		}
 		default: {
 			break;
 		}

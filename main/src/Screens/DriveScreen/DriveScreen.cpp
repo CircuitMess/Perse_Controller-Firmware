@@ -24,6 +24,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->on(LED::Pair);
+		led->on(LED::CamCenter);
 	}
 
 	if(connectedSign != nullptr){
@@ -33,6 +34,24 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	for(ImageElement& cross: crosses){
 		cross.setPos(-getWidth(), -getHeight());
 	}
+
+	TextStyle busStyle = { &lgfx::fonts::Font0, TFT_CYAN, 1, TL_DATUM };
+	busA.setPos(-getWidth(), -getHeight());
+	busA.setStyle(busStyle);
+	busB.setPos(-getWidth(), -getHeight());
+	busStyle.datum = TR_DATUM;
+	busB.setStyle(busStyle);
+
+	TextStyle busStatusStyle = { &lgfx::fonts::Font0, TFT_PINK, 1, TL_DATUM };
+	busAStatus.setPos(-getWidth(), -getHeight());
+	busAStatus.setStyle(busStatusStyle);
+	busBStatus.setPos(-getWidth(), -getHeight());
+	busStatusStyle.datum = TR_DATUM;
+	busBStatus.setStyle(busStatusStyle);
+
+	TextStyle noFeedStyle = {&lgfx::fonts::Font0, TFT_RED, 1, CC_DATUM};
+	noFeedElement.setStyle(noFeedStyle);
+	noFeedElement.setPos(getWidth() / 2, getHeight() / 2 - 9);
 
 	arrowUp.setPos(-getWidth(), -getHeight());
 	arrowDown.setPos(-getWidth(), -getHeight());
@@ -247,6 +266,44 @@ void DriveScreen::onLoop(){
 	}
 }
 
+void DriveScreen::setCamPosValue(uint8_t pos){
+	static const std::map<LED, int> ledOnLimits = {
+			{LED::CamL4, 40},
+			{LED::CamL3, 30},
+			{LED::CamL2, 20},
+			{LED::CamL1, 10},
+			{LED::CamCenter, 0},
+			{LED::CamR1, -10},
+			{LED::CamR2, -20},
+			{LED::CamR3, -30},
+			{LED::CamR4, -40},
+	};
+
+	camPos = pos;
+
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+	if(led == nullptr){
+		return;
+	}
+
+	const int deltaFromCenter = camPos - 50;
+
+	for(LED camLed = LED::CamL4; camLed <= LED::CamR4; camLed = (LED) ((uint8_t) camLed + 1)){
+		if(!ledOnLimits.contains(camLed)){
+			led->off(camLed);
+			continue;
+		}
+
+		const int limit = ledOnLimits.at(camLed);
+
+		if((SIGN(limit) == SIGN(deltaFromCenter) || limit == 0) && std::abs(deltaFromCenter) >= std::abs(limit)){
+			led->on(camLed);
+		}else{
+			led->off(camLed);
+		}
+	}
+}
+
 void DriveScreen::sendDriveDir(){
 	if(isInPanicMode){
 		return;
@@ -330,12 +387,22 @@ void DriveScreen::sendDriveDir(){
 }
 
 void DriveScreen::buildUI(){
+	busA.setPos(2, 2);
+	busB.setPos(getWidth() - 2, 2);
+	busAStatus.setPos(2, 13);
+	busBStatus.setPos(getWidth() - 2, 13);
 	if(roverState.getLeftModuleInsert()){
 		createModule(ModuleBus::Left, roverState.getLeftModuleType());
 	}
 
 	if(roverState.getRightModuleInsert()){
 		createModule(ModuleBus::Right, roverState.getRightModuleType());
+	}
+
+	if(roverState.getNoFeed()){
+		noFeedElement.setText("NO FEED");
+	}else{
+		noFeedElement.setText("");
 	}
 
 	static constexpr int16_t CrossMargin = 20;
@@ -534,7 +601,7 @@ void DriveScreen::processEncoders(const Encoders::Data& evt){
 			led->blink(evt.dir > 0 ? LED::PinchOpen : LED::PinchClose, 1, 200);
 		}
 	}else if(evt.enc == Encoders::Cam){
-		camPos = std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100);
+		setCamPosValue(std::clamp(camPos + CameraDirectionMultiplier * evt.dir, 0, 100));
 
 		comm.sendCameraRotation(camPos);
 	}
@@ -547,7 +614,7 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 		if(evt.modulePlug.bus == ModuleBus::Left){
 			if(!evt.modulePlug.insert){
 				if(leftModule){
-					leftModule.reset();
+					deleteModule(ModuleBus::Left);
 				}
 			}else if(leftModule == nullptr){
 				createModule(ModuleBus::Left, evt.modulePlug.type);
@@ -557,13 +624,31 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
 		if(evt.modulePlug.bus == ModuleBus::Right){
 			if(!evt.modulePlug.insert){
 				if(rightModule){
-					rightModule.reset();
+					deleteModule(ModuleBus::Right);
 				}
 			}else if(rightModule == nullptr){
 				createModule(ModuleBus::Right, evt.modulePlug.type);
 			}
 		}
+	}else if(evt.type == RoverState::StateType::Feed){
+		if(evt.noFeed){
+			noFeedElement.setText("NO FEED");
+		}else{
+			noFeedElement.setText("");
+		}
 	}
+
+    if(!evt.changedOnRover){
+        return;
+    }
+
+    if(evt.type == RoverState::StateType::ArmPos){
+        armPos = evt.armPos;
+    }else if(evt.type == RoverState::StateType::ArmPinch){
+        pinchPos = evt.armPinch;
+    }else if(evt.type == RoverState::StateType::CameraRotation){
+        setCamPosValue(evt.cameraRotation);
+    }
 }
 
 void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
@@ -620,9 +705,25 @@ void DriveScreen::createModule(ModuleBus bus, ModuleType type){
 	if(bus == ModuleBus::Left){
 		leftModule.reset(module);
 		leftModule->setPos(2, 30);
+		busAStatus.setText("ON");
+		busAStatus.setColor(TFT_GREENYELLOW);
 	}else{
 		rightModule.reset(module);
 		rightModule->setPos(126, 30);
+		busBStatus.setText("ON");
+		busBStatus.setColor(TFT_GREENYELLOW);
+	}
+}
+
+void DriveScreen::deleteModule(ModuleBus bus){
+	if(bus == ModuleBus::Left){
+		leftModule.reset();
+		busAStatus.setText("OFF");
+		busAStatus.setColor(TFT_PINK);
+	}else{
+		rightModule.reset();
+		busBStatus.setText("OFF");
+		busBStatus.setColor(TFT_PINK);
 	}
 }
 
