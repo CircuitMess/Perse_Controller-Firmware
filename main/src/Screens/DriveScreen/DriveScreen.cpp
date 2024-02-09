@@ -42,6 +42,9 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	busStyle.datum = TR_DATUM;
 	busB.setStyle(busStyle);
 
+	scanningLabel.setStyle({ .color = TFT_WHITE, .datum = TC_DATUM, .shadingStyle = { TFT_BLACK, 1 }});
+	scanningLabel.setPos(-getWidth(), -getHeight());
+
 	TextStyle busStatusStyle = { &lgfx::fonts::Font0, TFT_PINK, 1, TL_DATUM };
 	busAStatus.setPos(-getWidth(), -getHeight());
 	busAStatus.setStyle(busStatusStyle);
@@ -85,6 +88,18 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	ctrlElement.setPos(-getWidth(), -getHeight());
 	ctrlElement.setStyle({ .color = TFT_WHITE, .datum = BR_DATUM });
+
+	panicBar.setPos(-getWidth(), -getHeight());
+	panicBar.setLoopMode(GIF::Single);
+	panicBar.start();
+	panicBar.stop();
+	panicBar.reset();
+	panicText.setPos(-getWidth(), -getHeight());
+	const TextStyle panicStyle = { .color = lgfx::color565(250, 180, 11), .datum = TC_DATUM, .shadingStyle = { TFT_BLACK, 1 }};
+	panicDescription1.setPos(-getWidth(), -getHeight());
+	panicDescription1.setStyle(panicStyle);
+	panicDescription2.setPos(-getWidth(), -getHeight());
+	panicDescription2.setStyle(panicStyle);
 
 	shutdownIcon.setPos(-getWidth(), -getHeight());
 
@@ -261,18 +276,29 @@ void DriveScreen::onLoop(){
 	sendDriveDir();
 	checkEvents();
 
-	LEDService* led = (LEDService*) Services.get(Service::LED);
 
 	if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
-		comm.sendEmergencyMode(true);
-		isInPanicMode = true;
-		comm.sendScanningEnable(false);
-		isScanningEnabled = false;
-		panicHoldStart = 0;
+		startPanic();
+	}
 
-		if(led != nullptr){
-			led->blink(LED::PanicLeft, 0);
-			led->blink(LED::PanicRight, 0);
+	if(isInPanicMode && millis() - panicTextMillis >= PanicTextBlinkDuration){
+		panicTextBlink = !panicTextBlink;
+		panicTextMillis = millis();
+
+		if(panicTextBlink){
+			panicText.setPos((int16_t) ((getWidth() - panicText.getWidth()) / 2.0), 38);
+		}else{
+			panicText.setPos(-getWidth(), -getHeight());
+		}
+	}
+
+	if(isScanningEnabled && millis() - scanBlinkMillis >= ScanBlinkTime){
+		scanBlinkMillis = millis();
+		scanBlink = !scanBlink;
+		if(scanBlink){
+			scanningLabel.setText(ScanText);
+		}else{
+			scanningLabel.setText("");
 		}
 	}
 }
@@ -517,30 +543,12 @@ void DriveScreen::processInput(const Input::Data& evt){
 	if(evt.btn == Input::Panic){
 		if(evt.action == Input::Data::Press){
 			if(isInPanicMode){
-				comm.sendEmergencyMode(false);
-				isInPanicMode = false;
-				panicHoldStart = 0;
-				sendCurrentStates();
-
-				if(led != nullptr){
-					led->off(LED::PanicLeft);
-					led->off(LED::PanicRight);
-				}
+				stopPanic();
 			}else{
-				panicHoldStart = millis();
-
-				if(led != nullptr){
-					led->breathe(LED::PanicLeft, 2 * PanicHoldDuration);
-					led->breathe(LED::PanicRight, 2 * PanicHoldDuration);
-				}
+				startHoldingPanic();
 			}
 		}else{
-			panicHoldStart = 0;
-
-			if(!isInPanicMode && led != nullptr){
-				led->off(LED::PanicLeft);
-				led->off(LED::PanicRight);
-			}
+			stopHoldingPanic();
 		}
 	}else if(evt.btn == Input::SwArm){
 		armUnlocked = evt.action == Input::Data::Press;
@@ -572,6 +580,14 @@ void DriveScreen::processInput(const Input::Data& evt){
 		if(evt.action == Input::Data::Press){
 			isScanningEnabled = !isScanningEnabled;
 			comm.sendScanningEnable(isScanningEnabled);
+			if(isScanningEnabled){
+				scanningLabel.setPos((int16_t) (getWidth() / 2), 2);
+				scanningLabel.setText(ScanText);
+				scanBlinkMillis = millis();
+				scanBlink = true;
+			}else{
+				scanningLabel.setPos(-getWidth(), -getHeight());
+			}
 		}
 	}else if(evt.btn == Input::EncArm){
 		armPos = 50;
@@ -579,6 +595,10 @@ void DriveScreen::processInput(const Input::Data& evt){
 	}else if(evt.btn == Input::EncPinch){
 		pinchPos = 50;
 		comm.sendArmPinch(pinchPos);
+	}else if(evt.btn == Input::Joy && evt.action == Input::Data::Press){
+		audio = !audio;
+		comm.sendAudio(audio);
+		//TODO - hide/show mute icon
 	}
 }
 
@@ -764,6 +784,89 @@ void DriveScreen::sendCurrentStates(){
 		comm.sendFeedQuality(15);
 	}
 }
+
+
+void DriveScreen::startHoldingPanic(){
+	panicHoldStart = millis();
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	if(led != nullptr){
+		led->breathe(LED::PanicLeft, 2 * PanicHoldDuration);
+		led->breathe(LED::PanicRight, 2 * PanicHoldDuration);
+	}
+
+	panicBar.setPos(9, 54);
+	panicBar.start();
+
+	arrowUp.setPos(-getWidth(), -getHeight());
+	arrowDown.setPos(-getWidth(), -getHeight());
+	arrowLeft.setPos(-getWidth(), -getHeight());
+	arrowRight.setPos(-getWidth(), -getHeight());
+	leftMotorSpeedLabel.setPos(-getWidth(), -getHeight());
+	rightMotorSpeedLabel.setPos(-getWidth(), -getHeight());
+
+}
+
+void DriveScreen::stopHoldingPanic(){
+	panicHoldStart = 0;
+
+	if(isInPanicMode) return;
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	if(led != nullptr){
+		led->off(LED::PanicLeft);
+		led->off(LED::PanicRight);
+	}
+
+	panicBar.setPos(-getWidth(), -getHeight());
+	panicBar.reset();
+	panicBar.stop();
+	buildUI();
+}
+
+void DriveScreen::startPanic(){
+	comm.sendEmergencyMode(true);
+	isInPanicMode = true;
+	comm.sendScanningEnable(false);
+	isScanningEnabled = false;
+	panicHoldStart = 0;
+	scanningLabel.setPos(-getWidth(), -getHeight());
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	if(led != nullptr){
+		led->blink(LED::PanicLeft, 0);
+		led->blink(LED::PanicRight, 0);
+	}
+
+	panicText.setPos((int16_t) ((getWidth() - panicText.getWidth()) / 2.0), 38);
+	panicDescription1.setPos((int16_t) (getWidth() / 2), 69);
+	panicDescription2.setPos((int16_t) (getWidth() / 2), 78);
+	panicTextMillis = millis();
+	panicTextBlink = true;
+}
+
+void DriveScreen::stopPanic(){
+	comm.sendEmergencyMode(false);
+	isInPanicMode = false;
+	panicHoldStart = 0;
+	sendCurrentStates();
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	if(led != nullptr){
+		led->off(LED::PanicLeft);
+		led->off(LED::PanicRight);
+	}
+
+	panicBar.reset();
+	panicBar.stop();
+	panicBar.setPos(-getWidth(), -getHeight());
+	panicText.setPos(-getWidth(), -getHeight());
+	panicDescription1.setPos(-getWidth(), -getHeight());
+	panicDescription2.setPos(-getWidth(), -getHeight());
+
+	buildUI();
+}
+
 
 void DriveScreen::shutdown(){
 	arrowUp.setPos(-getWidth(), -getHeight());

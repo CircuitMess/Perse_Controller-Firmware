@@ -3,11 +3,17 @@
 
 #include "Element.h"
 
+struct ShadingStyle {
+	uint16_t color;
+	uint16_t width;
+};
+
 struct TextStyle {
 	const lgfx::IFont* font;
 	uint16_t color;
 	uint16_t scale;
 	lgfx::textdatum_t datum;
+	ShadingStyle shadingStyle;
 };
 
 class LabelElement : public Element {
@@ -27,7 +33,7 @@ private:
 	TextStyle style = DefaultStyle;
 	std::string text = "Text";
 
-	static constexpr TextStyle DefaultStyle = { &lgfx::fonts::Font0, TFT_BLACK, 1, textdatum_t::top_left };
+	static constexpr TextStyle DefaultStyle = { &lgfx::fonts::Font0, TFT_BLACK, 1, textdatum_t::top_left, { TFT_BLACK, 0 }};
 };
 
 
