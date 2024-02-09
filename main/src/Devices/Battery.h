@@ -43,6 +43,8 @@ private:
 	static constexpr esp_efuse_desc_t AdcHigh = {EFUSE_BLK3, 8, 8 };
 	static constexpr const esp_efuse_desc_t* EfuseAdcHigh[] = {&AdcHigh, nullptr };
 
+	static constexpr uint32_t BattPopupTime = 4000; //4 seconds
+
 	ADCReader adc;
 	Hysteresis hysteresis;
 	bool shutdown = false;

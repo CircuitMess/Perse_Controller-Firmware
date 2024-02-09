@@ -3,7 +3,7 @@
 #include "Color.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
-#include "Screens/PairScreen.h"
+#include "Screens/Pair/PairScreen.h"
 
 const std::vector<std::tuple<std::string, uint16_t, uint16_t>> IntroScreen::imageInfos = {
 		{ "/spiffs/intro/logo-cm.raw",    91,  91 },

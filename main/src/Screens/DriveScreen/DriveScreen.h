@@ -63,7 +63,7 @@ private:
 	LabelElement busAStatus = LabelElement(this, "OFF");
 	LabelElement busBStatus = LabelElement(this, "OFF");
 
-	glm::vec<2, int8_t> cachedMotorSpeeds = {0, 0};
+	glm::vec<2, int8_t> cachedMotorSpeeds = { 0, 0 };
 	uint8_t cachedDriveDir = 0;
 
 	bool armUnlocked;
@@ -118,6 +118,9 @@ private:
 	uint32_t scanBlinkMillis = 0;
 	bool scanBlink = true;
 
+	static constexpr const char* IconPath = "/spiffs/battery/shutdown.raw";
+	ImageElement shutdownIcon = ImageElement(this, IconPath, 91, 48);
+
 private:
 	void sendDriveDir();
 	void buildUI();
@@ -135,6 +138,8 @@ private:
 	void stopHoldingPanic();
 	void startPanic();
 	void stopPanic();
+
+	void shutdown();
 };
 
 
