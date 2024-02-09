@@ -112,6 +112,12 @@ private:
 	bool panicTextBlink = true;
 	uint32_t panicTextMillis = 0;
 
+	LabelElement scanningLabel = LabelElement(this, ScanText);
+	static constexpr const char* ScanText = "SCN";
+	static constexpr uint32_t ScanBlinkTime = 500; //[ms]
+	uint32_t scanBlinkMillis = 0;
+	bool scanBlink = true;
+
 private:
 	void sendDriveDir();
 	void buildUI();

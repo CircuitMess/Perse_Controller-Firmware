@@ -42,6 +42,9 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	busStyle.datum = TR_DATUM;
 	busB.setStyle(busStyle);
 
+	scanningLabel.setStyle({ .color = TFT_WHITE, .datum = TC_DATUM, .shadingStyle = { TFT_BLACK, 1 }});
+	scanningLabel.setPos(-getWidth(), -getHeight());
+
 	TextStyle busStatusStyle = { &lgfx::fonts::Font0, TFT_PINK, 1, TL_DATUM };
 	busAStatus.setPos(-getWidth(), -getHeight());
 	busAStatus.setStyle(busStatusStyle);
@@ -275,6 +278,16 @@ void DriveScreen::onLoop(){
 			panicText.setPos((int16_t) ((getWidth() - panicText.getWidth()) / 2.0), 38);
 		}else{
 			panicText.setPos(-getWidth(), -getHeight());
+		}
+	}
+
+	if(isScanningEnabled && millis() - scanBlinkMillis >= ScanBlinkTime){
+		scanBlinkMillis = millis();
+		scanBlink = !scanBlink;
+		if(scanBlink){
+			scanningLabel.setText(ScanText);
+		}else{
+			scanningLabel.setText("");
 		}
 	}
 }
@@ -556,6 +569,14 @@ void DriveScreen::processInput(const Input::Data& evt){
 		if(evt.action == Input::Data::Press){
 			isScanningEnabled = !isScanningEnabled;
 			comm.sendScanningEnable(isScanningEnabled);
+			if(isScanningEnabled){
+				scanningLabel.setPos((int16_t) (getWidth() / 2), 2);
+				scanningLabel.setText(ScanText);
+				scanBlinkMillis = millis();
+				scanBlink = true;
+			}else{
+				scanningLabel.setPos(-getWidth(), -getHeight());
+			}
 		}
 	}else if(evt.btn == Input::EncArm){
 		armPos = 50;
@@ -798,6 +819,7 @@ void DriveScreen::startPanic(){
 	comm.sendScanningEnable(false);
 	isScanningEnabled = false;
 	panicHoldStart = 0;
+	scanningLabel.setPos(-getWidth(), -getHeight());
 
 	auto led = (LEDService*) Services.get(Service::LED);
 	if(led != nullptr){
