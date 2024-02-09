@@ -70,6 +70,8 @@ private:
 	uint8_t armPos = 50;
 	uint8_t camPos = 50;
 
+	bool audio = true;
+
 	ImageElement* connectedSign = new ImageElement(this, "/spiffs/drive/connected.raw", 103, 51);
 
 	ImageElement arrowUp = ImageElement(this, "/spiffs/drive/arrow-up.raw", 13, 8);
