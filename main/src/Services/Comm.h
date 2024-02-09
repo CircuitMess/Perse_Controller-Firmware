@@ -44,6 +44,7 @@ public:
 	void sendModulesEnable(bool enable);
 	void sendScanningEnable(bool enable);
 	void sendEmergencyMode(bool state);
+	void sendAudio(bool audio);
 
 private:
 	TCPClient& tcp;

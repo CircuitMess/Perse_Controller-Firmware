@@ -10,6 +10,7 @@
 #include "Services/Comm.h"
 #include "UISystem/LabelElement.h"
 #include "UISystem/ImageElement.h"
+#include "UISystem/AnimElement.h"
 #include "Services/RoverState.h"
 #include "Devices/Potentiometers.h"
 #include "Modules/ModuleElement.h"
@@ -33,7 +34,7 @@ private:
 	static constexpr Color MarkerVisualizationColor = C_RGB(255, 0, 0);
 	static constexpr uint64_t MarkerVisualizingInterval = 50; /// [ms]
 	static constexpr uint64_t StartHoldTime = 2000; // [ms]
-	static constexpr uint64_t PanicHoldDuration = 1000; // [ms]
+	static constexpr uint64_t PanicHoldDuration = 2000; // [ms]
 	static constexpr float JoystickDriveDeadzone = 0.15f;
 
 	Comm& comm;
@@ -70,6 +71,8 @@ private:
 	uint8_t armPos = 50;
 	uint8_t camPos = 50;
 
+	bool audio = true;
+
 	ImageElement* connectedSign = new ImageElement(this, "/spiffs/drive/connected.raw", 103, 51);
 
 	ImageElement arrowUp = ImageElement(this, "/spiffs/drive/arrow-up.raw", 13, 8);
@@ -101,6 +104,14 @@ private:
 	uint64_t lastMarkerVisualizationTime = 0;
 	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
 
+	ImageElement panicText = ImageElement(this, "/spiffs/drive/panicText.raw", 74, 13);
+	AnimElement panicBar = AnimElement(this, "/spiffs/drive/panicBar.gif");
+	LabelElement panicDescription1 = LabelElement(this, "Press EMERGENCY");
+	LabelElement panicDescription2 = LabelElement(this, "to resume operation");
+	static constexpr uint32_t PanicTextBlinkDuration = 500; //[ms]
+	bool panicTextBlink = true;
+	uint32_t panicTextMillis = 0;
+
 	LabelElement scanningLabel = LabelElement(this, ScanText);
 	static constexpr const char* ScanText = "SCN";
 	static constexpr uint32_t ScanBlinkTime = 500; //[ms]
@@ -119,6 +130,11 @@ private:
 	void createModule(ModuleBus bus, ModuleType type);
 	void deleteModule(ModuleBus bus);
 	void sendCurrentStates();
+
+	void startHoldingPanic();
+	void stopHoldingPanic();
+	void startPanic();
+	void stopPanic();
 };
 
 
