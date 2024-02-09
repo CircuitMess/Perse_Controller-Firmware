@@ -869,6 +869,10 @@ void DriveScreen::stopPanic(){
 
 
 void DriveScreen::shutdown(){
+	if(isInPanicMode){
+		stopPanic();
+	}
+
 	arrowUp.setPos(-getWidth(), -getHeight());
 	arrowDown.setPos(-getWidth(), -getHeight());
 	arrowLeft.setPos(-getWidth(), -getHeight());
