@@ -15,7 +15,7 @@ public:
 
 	TCPClient();
 
-	bool isConnected();
+	bool isConnected() const;
 
 	bool connect();
 	void disconnect();

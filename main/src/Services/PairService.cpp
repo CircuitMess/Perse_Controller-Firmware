@@ -46,9 +46,17 @@ void PairService::loop(){
 }
 
 void PairService::processEvent(const WiFiSTA::Event& event){
+	if(event.action == WiFiSTA::Event::Disconnect && tcp.isConnected()){
+		tcp.disconnect();
+	}
+
 	if(event.action != WiFiSTA::Event::Connect) return;
 
 	if(event.connect.success){
+		if(tcp.isConnected()){
+			tcp.disconnect();
+		}
+
 		bool res = tcp.connect();
 		if(!res){
 			wifi.disconnect();
