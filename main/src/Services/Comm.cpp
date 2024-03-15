@@ -99,6 +99,15 @@ void Comm::sendAudio(bool audio){
 	sendPacket(packet);
 }
 
+void Comm::sendArmEnabled(bool enabled){
+	const ControlPacket packet{
+			.type = CommType::ArmControl,
+			.data = (uint8_t) enabled
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 

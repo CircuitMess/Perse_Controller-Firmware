@@ -122,7 +122,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 		return;
 	}
 
-	armUnlocked = input->getState(Input::SwArm);
+	armEnabled = input->getState(Input::SwArm);
 
 	sendCurrentStates();
 }
@@ -507,8 +507,8 @@ void DriveScreen::setupControl(){
 		}
 	}
 
-	armUnlocked = input->getState(Input::SwArm);
-	if(armUnlocked){
+	armEnabled = input->getState(Input::SwArm);
+	if(armEnabled){
 		if(led != nullptr){
 			led->on(LED::Arm);
 		}
@@ -556,10 +556,11 @@ void DriveScreen::processInput(const Input::Data& evt){
 			stopHoldingPanic();
 		}
 	}else if(evt.btn == Input::SwArm){
-		armUnlocked = evt.action == Input::Data::Press;
+		armEnabled = evt.action == Input::Data::Press;
+		comm.sendArmEnabled(armEnabled);
 
 		if(led != nullptr){
-			if(armUnlocked){
+			if(armEnabled){
 				led->on(LED::Arm);
 			}else{
 				led->off(LED::Arm);
@@ -610,7 +611,7 @@ void DriveScreen::processInput(const Input::Data& evt){
 void DriveScreen::processEncoders(const Encoders::Data& evt){
 	LEDService* led = (LEDService*) Services.get(Service::LED);
 
-	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armUnlocked) return;
+	if((evt.enc == Encoders::Pinch || evt.enc == Encoders::Arm) && !armEnabled) return;
 
 	if(isInPanicMode){
 		return;

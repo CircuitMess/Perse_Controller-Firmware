@@ -66,7 +66,7 @@ private:
 	glm::vec<2, int8_t> cachedMotorSpeeds = { 0, 0 };
 	uint8_t cachedDriveDir = 0;
 
-	bool armUnlocked;
+	bool armEnabled;
 	uint8_t pinchPos = 50;
 	uint8_t armPos = 50;
 	uint8_t camPos = 50;

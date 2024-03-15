@@ -45,6 +45,7 @@ public:
 	void sendScanningEnable(bool enable);
 	void sendEmergencyMode(bool state);
 	void sendAudio(bool audio);
+	void sendArmEnabled(bool enabled);
 
 private:
 	TCPClient& tcp;
