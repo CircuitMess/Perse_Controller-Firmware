@@ -1,6 +1,7 @@
 #ifndef PERSE_CTRL_DRIVESTATE_H
 #define PERSE_CTRL_DRIVESTATE_H
 
+#include <CommData.h>
 #include "Services/StateMachine.h"
 #include "Services/Comm.h"
 #include "Devices/Input.h"
@@ -34,6 +35,8 @@ private:
 	uint8_t pinchPos = 50;
 	uint8_t armPos = 50;
 	uint32_t armControlStartTime = 0;
+
+	ConnectionStrength lastSentStr = ConnectionStrength::None;
 
 	bool shouldSendZeroDrive = true;
 

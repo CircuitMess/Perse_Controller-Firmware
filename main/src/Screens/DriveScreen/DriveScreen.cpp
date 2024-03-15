@@ -798,7 +798,6 @@ void DriveScreen::sendCurrentStates(){
 	comm.sendArmEnabled(armEnabled);
 }
 
-
 void DriveScreen::startHoldingPanic(){
 	panicHoldStart = millis();
 
@@ -817,7 +816,6 @@ void DriveScreen::startHoldingPanic(){
 	arrowRight.setPos(-getWidth(), -getHeight());
 	leftMotorSpeedLabel.setPos(-getWidth(), -getHeight());
 	rightMotorSpeedLabel.setPos(-getWidth(), -getHeight());
-
 }
 
 void DriveScreen::stopHoldingPanic(){
@@ -879,7 +877,6 @@ void DriveScreen::stopPanic(){
 
 	buildUI();
 }
-
 
 void DriveScreen::shutdown(){
 	if(isInPanicMode){

@@ -3,6 +3,7 @@
 #include "Util/stdafx.h"
 #include "Services/LEDService.h"
 #include "PairState.h"
+#include "Periph/WiFiSTA.h"
 #include "vec2.hpp"
 #include "geometric.hpp"
 #include "gtx/vector_angle.hpp"
@@ -20,6 +21,7 @@ DriveState::DriveState() : comm(*((Comm*) Services.get(Service::Comm))), evts(12
 	// Turn off feed for basic controller, this way there will be no unnecessary network clutter
 	comm.sendFeedQuality(0);
 	comm.sendScanningEnable(false);
+	comm.sendArmEnabled(armMovement);
 }
 
 DriveState::~DriveState(){
@@ -63,6 +65,15 @@ void DriveState::loop(){
 		if(millis() - armControlStartTime >= ArmControlInterval){
 			armControlStartTime = millis();
 			sendArmControl();
+		}
+	}
+
+	if(WiFiSTA* wifi = (WiFiSTA*) Services.get(Service::WiFi)){
+		const ConnectionStrength str = wifi->getConnectionStrength();
+
+		if(str != lastSentStr){
+			comm.sendConnectionStrength(str);
+			lastSentStr = str;
 		}
 	}
 }
@@ -134,6 +145,8 @@ void DriveState::processArmInput(const Input::Data& evt){
 	}else{
 		armMovement = false;
 	}
+
+	comm.sendArmEnabled(armMovement);
 }
 
 void DriveState::processSoundInput(const Input::Data& evt){
@@ -141,10 +154,10 @@ void DriveState::processSoundInput(const Input::Data& evt){
 
 	switch(evt.btn){
 		case Input::Up:
-			//TODO - enable sound
+			comm.sendAudio(true);
 			break;
 		case Input::Down:
-			//TODO - disable sound
+			comm.sendAudio(false);
 			break;
 		case Input::Left:
 			comm.sendHeadlights(HeadlightsMode::Off);
