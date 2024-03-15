@@ -46,6 +46,7 @@ public:
 	void sendEmergencyMode(bool state);
 	void sendAudio(bool audio);
 	void sendArmEnabled(bool enabled);
+	void sendControllerBatteryCritical(bool value);
 
 private:
 	TCPClient& tcp;

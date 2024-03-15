@@ -108,6 +108,15 @@ void Comm::sendArmEnabled(bool enabled){
 	sendPacket(packet);
 }
 
+void Comm::sendControllerBatteryCritical(bool value){
+	const ControlPacket packet{
+			.type = CommType::ControllerBatteryCritical,
+			.data = (uint8_t) value
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 

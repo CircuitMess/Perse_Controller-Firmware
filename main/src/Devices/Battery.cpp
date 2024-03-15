@@ -4,6 +4,8 @@
 #include "Pins.hpp"
 #include "Util/Events.h"
 #include "Util/stdafx.h"
+#include "Services/Comm.h"
+#include "Util/Services.h"
 
 #define MAX_READ 3787	// 4.5V
 #define MIN_READ 2873	// 3.6V
@@ -87,7 +89,17 @@ void Battery::sample(bool fresh/* = false*/) {
 		Events::post(Facility::Battery, Battery::Event{.action = Event::LevelChange, .level = getLevel()});
 	}
 
+	if(fresh){
+		if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+			comm->sendControllerBatteryCritical(getLevel() == Critical);
+		}
+	}
+
 	if (getLevel() == Critical) {
+		if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+			comm->sendControllerBatteryCritical(true);
+		}
+
 #ifdef CTRL_TYPE_MISSIONCTRL
         delayMillis(BattPopupTime); //wait for BattPopup to show
 #endif
