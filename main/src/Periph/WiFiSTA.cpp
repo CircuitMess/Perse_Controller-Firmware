@@ -219,9 +219,9 @@ WiFiSTA::State WiFiSTA::getState(){
 	return state;
 }
 
-WiFiSTA::ConnectionStrength WiFiSTA::getConnectionStrength(){
+ConnectionStrength WiFiSTA::getConnectionStrength(){
 	hysteresis.update(-getConnectionRSSI());
-	return (WiFiSTA::ConnectionStrength)hysteresis.get();
+	return (ConnectionStrength)hysteresis.get();
 }
 
 int WiFiSTA::getConnectionRSSI() const{

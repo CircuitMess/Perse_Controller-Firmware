@@ -47,6 +47,7 @@ public:
 	void sendAudio(bool audio);
 	void sendArmEnabled(bool enabled);
 	void sendControllerBatteryCritical(bool value);
+	void sendConnectionStrength(ConnectionStrength strength);
 
 private:
 	TCPClient& tcp;

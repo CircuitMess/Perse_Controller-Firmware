@@ -118,6 +118,8 @@ private:
 	uint32_t scanBlinkMillis = 0;
 	bool scanBlink = true;
 
+	ConnectionStrength lastSentStr = ConnectionStrength::None;
+
 	static constexpr const char* IconPath = "/spiffs/battery/shutdown.raw";
 	ImageElement shutdownIcon = ImageElement(this, IconPath, 91, 48);
 

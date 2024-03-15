@@ -5,6 +5,7 @@
 #include <esp_netif_types.h>
 #include <semaphore>
 #include <esp_wifi_types.h>
+#include <CommData.h>
 #include "Util/Threaded.h"
 #include "Util/Hysteresis.h"
 
@@ -32,14 +33,6 @@ public:
 
 	enum State { Connected, Connecting, Disconnected, Scanning, ConnAbort };
 	State getState();
-
-	enum ConnectionStrength {
-		None = 4,
-		VeryLow = 3,
-		Low = 2,
-		Medium = 1,
-		High = 0
-	};
 
 	ConnectionStrength getConnectionStrength();
 

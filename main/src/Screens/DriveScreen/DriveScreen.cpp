@@ -198,17 +198,22 @@ void DriveScreen::preDraw(){
 	}
 
 	if(WiFiSTA* wifi = (WiFiSTA*) Services.get(Service::WiFi)){
-		WiFiSTA::ConnectionStrength str = wifi->getConnectionStrength();
+		const ConnectionStrength str = wifi->getConnectionStrength();
 
-		if(str == WiFiSTA::None){
+		if(str != lastSentStr){
+			comm.sendConnectionStrength(str);
+			lastSentStr = str;
+		}
+
+		if(str == ConnectionStrength::None){
 			wifiSignalIcon.setPath("/spiffs/drive/signal5.raw");
-		}else if(str == WiFiSTA::VeryLow){
+		}else if(str == ConnectionStrength::VeryLow){
 			wifiSignalIcon.setPath("/spiffs/drive/signal1.raw");
-		}else if(str == WiFiSTA::Low){
+		}else if(str == ConnectionStrength::Low){
 			wifiSignalIcon.setPath("/spiffs/drive/signal2.raw");
-		}else if(str == WiFiSTA::Medium){
+		}else if(str == ConnectionStrength::Medium){
 			wifiSignalIcon.setPath("/spiffs/drive/signal3.raw");
-		}else if(str == WiFiSTA::High){
+		}else if(str == ConnectionStrength::High){
 			wifiSignalIcon.setPath("/spiffs/drive/signal4.raw");
 		}
 	}

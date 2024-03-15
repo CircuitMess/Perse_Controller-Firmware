@@ -117,6 +117,15 @@ void Comm::sendControllerBatteryCritical(bool value){
 	sendPacket(packet);
 }
 
+void Comm::sendConnectionStrength(ConnectionStrength strength){
+	const ControlPacket packet{
+			.type = CommType::ConnectionStrength,
+			.data = (uint8_t) strength
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
