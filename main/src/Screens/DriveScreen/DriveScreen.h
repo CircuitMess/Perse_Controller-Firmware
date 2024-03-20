@@ -123,6 +123,8 @@ private:
 	static constexpr const char* IconPath = "/spiffs/battery/shutdown.raw";
 	ImageElement shutdownIcon = ImageElement(this, IconPath, 91, 48);
 
+	ImageElement muteIcon = ImageElement(this, "/spiffs/drive/mute.raw", 15, 15);
+
 private:
 	void sendDriveDir();
 	void buildUI();

@@ -110,6 +110,8 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	shutdownIcon.setPos(-getWidth(), -getHeight());
 
+	muteIcon.setPos(-getWidth(), -getHeight());
+
 	startTime = millis();
 
 	Events::listen(Facility::TCP, &dcEvts);
@@ -609,7 +611,11 @@ void DriveScreen::processInput(const Input::Data& evt){
 	}else if(evt.btn == Input::Joy && evt.action == Input::Data::Press){
 		audio = !audio;
 		comm.sendAudio(audio);
-		//TODO - hide/show mute icon
+		if(audio){
+			muteIcon.setPos(-getWidth(), -getHeight());
+		}else{
+			muteIcon.setPos(30, getHeight() - 9 - 15);
+		}
 	}
 }
 
