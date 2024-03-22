@@ -7,6 +7,7 @@ AltPressModule::AltPressModule(ElementContainer* parent, ModuleBus bus, ModuleTy
 	auto style = altLabel.getStyle();
 	style.datum = datum;
 	style.color = textColor;
+	style.shadingStyle = { TFT_BLACK, 1 };
 	altLabel.setStyle(style);
 	altLabel.setText(std::string(altValLength, ' ') + 'M');
 	altLabel.setPos(0, 9);

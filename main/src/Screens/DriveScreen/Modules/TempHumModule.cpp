@@ -5,6 +5,8 @@ TempHumModule::TempHumModule(ElementContainer* parent, ModuleBus bus, ModuleType
 	auto style = tempValueLabel.getStyle();
 	style.datum = datum;
 	style.color = textColor;
+	style.shadingStyle = { TFT_BLACK, 1 };
+
 	tempValueLabel.setStyle(style);
 	tempValueLabel.setText(std::string(valueLength, ' ') + 'C');
 	tempValueLabel.setPos(0, 9);

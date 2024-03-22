@@ -4,6 +4,7 @@ MotionModule::MotionModule(ElementContainer* parent, const ModuleBus& bus, const
 	auto style = statusLabel.getStyle();
 	style.datum = datum;
 	style.color = textColor;
+	style.shadingStyle = { TFT_BLACK, 1 };
 	statusLabel.setStyle(style);
 	statusLabel.setPos(0, 9);
 }

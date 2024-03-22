@@ -5,6 +5,7 @@ GyroModule::GyroModule(ElementContainer* parent, ModuleBus bus, ModuleType type)
 	auto style = xLabel.getStyle();
 	style.datum = datum;
 	style.color = textColor;
+	style.shadingStyle = { TFT_BLACK, 1 };
 	xLabel.setStyle(style);
 	xLabel.setText("X " +  std::string(gyroValLength, ' '));
 	xLabel.setPos(0, 9);

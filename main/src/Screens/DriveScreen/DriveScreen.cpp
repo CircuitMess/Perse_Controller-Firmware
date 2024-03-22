@@ -42,7 +42,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 		cross.setPos(-getWidth(), -getHeight());
 	}
 
-	TextStyle busStyle = { &lgfx::fonts::Font0, TFT_CYAN, 1, TL_DATUM };
+	TextStyle busStyle = { &lgfx::fonts::Font0, TFT_CYAN, 1, TL_DATUM, { TFT_BLACK, 1 }};
 	busA.setPos(-getWidth(), -getHeight());
 	busA.setStyle(busStyle);
 	busB.setPos(-getWidth(), -getHeight());
@@ -52,7 +52,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	scanningLabel.setStyle({ .color = TFT_WHITE, .datum = TC_DATUM, .shadingStyle = { TFT_BLACK, 1 }});
 	scanningLabel.setPos(-getWidth(), -getHeight());
 
-	TextStyle busStatusStyle = { &lgfx::fonts::Font0, TFT_PINK, 1, TL_DATUM };
+	TextStyle busStatusStyle = { &lgfx::fonts::Font0, TFT_PINK, 1, TL_DATUM, { TFT_BLACK, 1 } };
 	busAStatus.setPos(-getWidth(), -getHeight());
 	busAStatus.setStyle(busStatusStyle);
 	busBStatus.setPos(-getWidth(), -getHeight());
@@ -70,22 +70,22 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	wifiSignalIcon.setPos(-getWidth(), -getHeight());
 
 	roverBatteryLabel.setPos(-getWidth(), -getHeight());
-	roverBatteryLabel.setStyle({ .color = TFT_WHITE, .datum = BL_DATUM });
+	roverBatteryLabel.setStyle({ .color = TFT_WHITE, .datum = BL_DATUM, .shadingStyle = { TFT_BLACK, 1 }});
 
 	roverBatteryLabel.setText(std::to_string(roverState.getBatteryPercent()));
 
 	controllerBatteryLabel.setPos(-getWidth(), -getHeight());
-	controllerBatteryLabel.setStyle({ .color = TFT_WHITE, .datum = BR_DATUM });
+	controllerBatteryLabel.setStyle({ .color = TFT_WHITE, .datum = BR_DATUM, .shadingStyle={ TFT_BLACK, 1 }});
 
 	if(const Battery* battery = (Battery*) Services.get(Service::Battery)){
 		controllerBatteryLabel.setText(std::to_string(battery->getPerc()));
 	}
 
 	leftMotorSpeedLabel.setPos(-getWidth(), -getHeight());
-	leftMotorSpeedLabel.setStyle({ .color = TFT_PURPLE, .datum = TL_DATUM });
+	leftMotorSpeedLabel.setStyle({ .color = lgfx::color565(200, 127, 255), .datum = TL_DATUM,  .shadingStyle={ TFT_BLACK, 1 } });
 
 	rightMotorSpeedLabel.setPos(-getWidth(), -getHeight());
-	rightMotorSpeedLabel.setStyle({ .color = TFT_YELLOW, .datum = TR_DATUM });
+	rightMotorSpeedLabel.setStyle({ .color = TFT_YELLOW, .datum = TR_DATUM,  .shadingStyle={ TFT_BLACK, 1 }});
 
 	rvrElement.setPos(-getWidth(), -getHeight());
 	rvrElement.setStyle({ .color = TFT_WHITE, .datum = BL_DATUM });
