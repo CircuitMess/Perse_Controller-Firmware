@@ -5,6 +5,7 @@ PhotoresModule::PhotoresModule(ElementContainer* parent, ModuleBus bus, ModuleTy
 	auto style = percentLabel.getStyle();
 	style.datum = datum;
 	style.color = textColor;
+	style.shadingStyle = { TFT_BLACK, 1 };
 	percentLabel.setStyle(style);
 	percentLabel.setText(std::string(valLength, ' ') + '%');
 	percentLabel.setPos(0, 9);

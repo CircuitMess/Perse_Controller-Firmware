@@ -3,6 +3,7 @@
 CO2Module::CO2Module(ElementContainer* parent, ModuleBus bus, ModuleType type) : ModuleElement(parent, bus, type), statusLabel(this, ""){
 	auto style = statusLabel.getStyle();
 	style.datum = datum;
+	style.shadingStyle = { TFT_BLACK, 1 };
 	statusLabel.setStyle(style);
 	statusLabel.setPos(0, 9);
 }

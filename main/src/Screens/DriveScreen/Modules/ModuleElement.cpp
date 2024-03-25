@@ -20,6 +20,7 @@ ModuleElement::ModuleElement(ElementContainer* parent, ModuleBus bus, ModuleType
 	auto style = nameLabel.getStyle();
 	style.datum = datum;
 	style.color = TFT_GREEN;
+	style.shadingStyle = { TFT_BLACK, 1 };
 	nameLabel.setStyle(style);
 	nameLabel.setText(moduleNames.at(type));
 }

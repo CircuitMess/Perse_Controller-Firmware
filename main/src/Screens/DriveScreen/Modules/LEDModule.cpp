@@ -6,6 +6,7 @@ LEDModule::LEDModule(ElementContainer* parent, ModuleBus bus, ModuleType type) :
 	auto style = statusLabel.getStyle();
 	style.datum = datum;
 	style.color = textColor;
+	style.shadingStyle = { TFT_BLACK, 1 };
 	statusLabel.setStyle(style);
 	statusLabel.setPos(0, 9);
 
