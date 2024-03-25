@@ -139,6 +139,9 @@ DriveScreen::~DriveScreen(){
 		led->off(LED::Light);
 		led->off(LED::PanicRight);
 		led->off(LED::PanicLeft);
+		for(LED camLed = LED::CamL4; camLed <= LED::CamR4; camLed = (LED) ((uint8_t) camLed + 1)){
+			led->off(camLed);
+		}
 	}
 
 	joy.end();
@@ -287,7 +290,6 @@ void DriveScreen::onLoop(){
 
 	sendDriveDir();
 	checkEvents();
-
 
 	if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
 		startPanic();

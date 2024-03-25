@@ -71,13 +71,10 @@ if ("${CTRL_TYPE}" STREQUAL "MissionCtrl")
             CACHE INTERNAL "" FORCE
     )
 
+    spiffs_create_partition_image(storage ${SPIFFS_PATH} FLASH_IN_PROJECT)
+
 elseif ("${CTRL_TYPE}" STREQUAL "Basic")
     list(APPEND SOURCES ${BASIC_CTRL_SOURCES})
-
-    set(SPIFFS_PATH
-            "${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_Basic"
-            CACHE INTERNAL "" FORCE
-    )
 endif ()
 
 
@@ -110,5 +107,3 @@ idf_component_register(SRCS
         "src"
         ${LIBS_INCL}
 )
-
-spiffs_create_partition_image(storage ${SPIFFS_PATH} FLASH_IN_PROJECT)

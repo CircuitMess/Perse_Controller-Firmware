@@ -150,7 +150,7 @@ void init(){
 		}
 
 	#elifdef CTRL_TYPE_BASIC
-		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattservice)){
+		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattery)){
 			Services.set(Service::LowBattery, nullptr);
 			delete lowBatteryService;
 		}

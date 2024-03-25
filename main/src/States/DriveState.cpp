@@ -21,7 +21,6 @@ DriveState::DriveState() : comm(*((Comm*) Services.get(Service::Comm))), evts(12
 	// Turn off feed for basic controller, this way there will be no unnecessary network clutter
 	comm.sendFeedQuality(0);
 	comm.sendScanningEnable(false);
-	comm.sendArmEnabled(armMovement);
 }
 
 DriveState::~DriveState(){
@@ -106,6 +105,9 @@ void DriveState::processInput(const Input::Data& evt){
 }
 
 void DriveState::changeMode(DriveState::ControlMode nextMode){
+	if(controlMode == ControlMode::ArmPinch){
+		comm.sendArmEnabled(false);
+	}
 	controlMode = nextMode;
 
 	auto led = (LEDService*) Services.get(Service::LED);
@@ -124,6 +126,7 @@ void DriveState::changeMode(DriveState::ControlMode nextMode){
 			break;
 		case ControlMode::ArmPinch:
 			led->on(LED::ArmPinch);
+			comm.sendArmEnabled(true);
 			break;
 		default:
 			break;
@@ -145,8 +148,6 @@ void DriveState::processArmInput(const Input::Data& evt){
 	}else{
 		armMovement = false;
 	}
-
-	comm.sendArmEnabled(armMovement);
 }
 
 void DriveState::processSoundInput(const Input::Data& evt){
