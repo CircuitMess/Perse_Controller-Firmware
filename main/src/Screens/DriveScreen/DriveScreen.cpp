@@ -291,7 +291,6 @@ void DriveScreen::onLoop(){
 	sendDriveDir();
 	checkEvents();
 
-
 	if(panicHoldStart != 0 && millis() - panicHoldStart >= PanicHoldDuration){
 		startPanic();
 	}

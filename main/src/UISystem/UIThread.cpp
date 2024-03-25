@@ -26,7 +26,7 @@ void UIThread::loop(){
 		creator = {};
 	}
 
-	const auto currMicros = esp_timer_get_time();
+	const auto currMicros = micros();
 
 	currentScreen->loop();
 	if(creator){
