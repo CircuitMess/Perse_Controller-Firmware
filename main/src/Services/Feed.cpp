@@ -5,7 +5,7 @@
 
 static const char* tag = "Feed";
 
-Feed::Feed() : rxBuf(RxBufSize), dataAvailable(0), readTask([this](){ readLoop(); }, "FeedRead", 4096, 5, 1),
+Feed::Feed() : rxBuf(RxBufSize), dataAvailable(0), readTask([this](){ readLoop(); }, "FeedRead", 4096, 5, 0),
 			   decodeTask([this](){ decodeLoop(); }, "FeedDecode", 4096, 5, 0){
 
 	readBuf.resize(ReadBufSize);
