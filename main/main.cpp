@@ -93,8 +93,6 @@ void init(){
 	Services.set(Service::Input, input);
 
 #ifdef CTRL_TYPE_MISSIONCTRL
-	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-	auto aw9523 = new AW9523(*i2c, 0x5b);
 	auto led = new LEDService(*aw9523);
 #elifdef CTRL_TYPE_BASIC
 	auto led = new LEDService();
