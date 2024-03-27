@@ -53,7 +53,15 @@ void init(){
 	auto battery = new Battery(*adc);
 	Services.set(Service::Battery, battery);
 
+#ifdef CTRL_TYPE_MISSIONCTRL
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5b);
+#endif
+
 	if(battery->isShutdown()){
+	#ifdef CTRL_TYPE_MISSIONCTRL
+		aw9523->resetDimOutputs();
+	#endif
 		shutdown();
 		return;
 	}

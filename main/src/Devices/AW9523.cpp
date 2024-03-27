@@ -42,6 +42,12 @@ AW9523::AW9523(I2C& i2c, uint8_t addr) : i2c(i2c), Addr(addr){
 	}
 }
 
+void AW9523::resetDimOutputs(){
+	for(int i = 0; i < 16; ++i){
+		dim(i, 0);
+	}
+}
+
 void AW9523::reset(){
 	writeReg(REG_RESET, VAL_RESET);
 	regs = Regs();
