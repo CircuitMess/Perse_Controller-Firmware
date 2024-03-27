@@ -66,6 +66,15 @@ void init(){
 		return;
 	}
 
+#ifdef CTRL_TYPE_MISSIONCTRL
+	auto led = new LEDService(*aw9523);
+#elifdef CTRL_TYPE_BASIC
+	auto led = new LEDService();
+#endif
+
+	Services.set(Service::LED, led);
+	led->on(LED::Power);
+
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
 		ESP_ERROR_CHECK(nvs_flash_erase());
@@ -91,16 +100,6 @@ void init(){
 
 	auto input = new Input();
 	Services.set(Service::Input, input);
-
-#ifdef CTRL_TYPE_MISSIONCTRL
-	auto led = new LEDService(*aw9523);
-#elifdef CTRL_TYPE_BASIC
-	auto led = new LEDService();
-#endif
-
-	Services.set(Service::LED, led);
-	led->on(LED::Power);
-
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 	auto encoders = new Encoders();
