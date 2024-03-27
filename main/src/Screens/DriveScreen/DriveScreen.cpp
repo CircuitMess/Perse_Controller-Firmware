@@ -844,9 +844,9 @@ void DriveScreen::stopHoldingPanic(){
 }
 
 void DriveScreen::startPanic(){
+	comm.sendScanningEnable(false);
 	comm.sendEmergencyMode(true);
 	isInPanicMode = true;
-	comm.sendScanningEnable(false);
 	isScanningEnabled = false;
 	panicHoldStart = 0;
 	scanningLabel.setPos(-getWidth(), -getHeight());
@@ -865,10 +865,10 @@ void DriveScreen::startPanic(){
 }
 
 void DriveScreen::stopPanic(){
+	sendCurrentStates();
 	comm.sendEmergencyMode(false);
 	isInPanicMode = false;
 	panicHoldStart = 0;
-	sendCurrentStates();
 
 	auto led = (LEDService*) Services.get(Service::LED);
 	if(led != nullptr){
