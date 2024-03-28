@@ -133,7 +133,6 @@ void WiFiSTA::event(int32_t id, void* data){
 		std::string netSSID = cachedSSID;
 
 		if(netSSID.empty()){
-			wifi_ap_record_t ap_info[ScanListSize];
 			memset(ap_info, 0, sizeof(ap_info));
 
 			auto number = ScanListSize;
