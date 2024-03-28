@@ -6,9 +6,12 @@
 #include <esp_mac.h>
 #include <driver/adc.h>
 #include <driver/ledc.h>
-#include "Devices/Input.h"
 
-#ifdef CTRL_TYPE_MISSIONCTRL
+#ifdef CTRL_TYPE_BASIC
+#include <map>
+#include "Devices/Input.h"
+#include "Util/Events.h"
+#elifdef CTRL_TYPE_MISSIONCTRL
 #include "SPIFFSChecksum.hpp"
 #endif
 
@@ -38,6 +41,10 @@ JigHWTest::JigHWTest(){
 
 	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){} });
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
+
+#ifdef CTRL_TYPE_BASIC
+	tests.push_back({ JigHWTest::ButtonCheck, "Button check", [](){} });
+#endif
 }
 
 bool JigHWTest::checkJig(){
@@ -284,6 +291,73 @@ bool JigHWTest::BatteryCheck(){
 
 	return true;
 }
+
+#ifdef CTRL_TYPE_BASIC
+bool JigHWTest::ButtonCheck(){
+	gpio_config_t cfg = {
+			.pin_bit_mask = ((uint64_t) 1) << LED_PAIR,
+			.mode = GPIO_MODE_OUTPUT,
+			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE
+	};
+
+	gpio_config(&cfg);
+
+	cfg.pin_bit_mask = ((uint64_t) 1) << LED_WARN;
+
+	gpio_config(&cfg);
+
+	new Input();
+	EventQueue queue(1);
+	Events::listen(Facility::Input, &queue);
+
+	std::map<Input::Button, bool> buttonPresses;
+
+	while(true){
+		Event evt;
+		if(queue.get(evt, 1)){
+			auto data = (Input::Data*) evt.data;
+
+			if(data->action == Input::Data::Press){
+				test->log("Button Pressed", (uint32_t) data->btn);
+
+				buttonPresses[data->btn] = true;
+
+				gpio_set_level((gpio_num_t) LED_PAIR, 1);
+
+				delayMillis(500);
+
+				gpio_set_level((gpio_num_t) LED_PAIR, 0);
+			}
+
+			free(evt.data);
+		}
+
+		bool allPressed = true;
+		for(int button = 0; button <= 5; ++button){
+			if(!buttonPresses.contains((Input::Button) button)){
+				allPressed = false;
+				break;
+			}
+
+			if(!buttonPresses[(Input::Button) button]){
+				allPressed = false;
+				break;
+			}
+		}
+
+		if(allPressed){
+			gpio_set_level((gpio_num_t) LED_WARN, 0);
+			break;
+		}else{
+			gpio_set_level((gpio_num_t) LED_WARN, 1);
+		}
+	}
+
+	return true;
+}
+#endif
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 bool JigHWTest::AW9523Check(){

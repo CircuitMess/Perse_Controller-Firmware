@@ -49,7 +49,9 @@ private:
 
 	static bool BatteryCalib();
 	static bool BatteryCheck();
-#ifdef CTRL_TYPE_MISSIONCTRL
+#ifdef CTRL_TYPE_BASIC
+	static bool ButtonCheck();
+#elifdef CTRL_TYPE_MISSIONCTRL
 	static bool AW9523Check();
 	static bool SPIFFSTest();
 	void rgb();
