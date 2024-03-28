@@ -16,7 +16,7 @@ protected:
 
 private:
 	static constexpr uint64_t ArmControlInterval = 40; // [ms]
-	static constexpr int8_t ArmDirectionMultiplier = -2;
+	static constexpr int8_t ArmDirectionMultiplier = 2;
 	static constexpr int8_t PinchDirectionMultiplier = 5;
 
 	Comm& comm;

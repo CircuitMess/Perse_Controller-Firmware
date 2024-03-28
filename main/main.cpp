@@ -49,13 +49,6 @@
 }
 
 void init(){
-	auto ret = nvs_flash_init();
-	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
-		ESP_ERROR_CHECK(nvs_flash_erase());
-		ret = nvs_flash_init();
-	}
-	ESP_ERROR_CHECK(ret);
-
 	if(JigHWTest::checkJig()){
 		printf("Jig\n");
 		auto test = new JigHWTest();
@@ -68,10 +61,34 @@ void init(){
 	auto battery = new Battery(*adc);
 	Services.set(Service::Battery, battery);
 
+#ifdef CTRL_TYPE_MISSIONCTRL
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5b);
+#endif
+
 	if(battery->isShutdown()){
+	#ifdef CTRL_TYPE_MISSIONCTRL
+		aw9523->resetDimOutputs();
+	#endif
 		shutdown();
 		return;
 	}
+
+#ifdef CTRL_TYPE_MISSIONCTRL
+	auto led = new LEDService(*aw9523);
+#elifdef CTRL_TYPE_BASIC
+	auto led = new LEDService();
+#endif
+
+	Services.set(Service::LED, led);
+	led->on(LED::Power);
+
+	auto ret = nvs_flash_init();
+	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
+		ESP_ERROR_CHECK(nvs_flash_erase());
+		ret = nvs_flash_init();
+	}
+	ESP_ERROR_CHECK(ret);
 
 	const auto spiffs = new SPIFFS();
 
@@ -91,18 +108,6 @@ void init(){
 
 	auto input = new Input();
 	Services.set(Service::Input, input);
-
-#ifdef CTRL_TYPE_MISSIONCTRL
-	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-	auto aw9523 = new AW9523(*i2c, 0x5b);
-	auto led = new LEDService(*aw9523);
-#elifdef CTRL_TYPE_BASIC
-	auto led = new LEDService();
-#endif
-
-	Services.set(Service::LED, led);
-	led->on(LED::Power);
-
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 	auto encoders = new Encoders();
