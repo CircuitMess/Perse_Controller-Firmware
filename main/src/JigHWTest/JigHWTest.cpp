@@ -13,6 +13,7 @@
 #endif
 
 JigHWTest* JigHWTest::test = nullptr;
+adc_oneshot_unit_handle_t JigHWTest::hndl = nullptr;
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 Display* JigHWTest::display = nullptr;
@@ -200,11 +201,26 @@ bool JigHWTest::BatteryCalib(){
 	constexpr uint16_t readDelay = 50;
 	uint32_t reading = 0;
 
-	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC1_CHANNEL_1, ADC_ATTEN_DB_6);
+	adc_oneshot_unit_init_cfg_t config = {
+			.unit_id = ADC_UNIT_1,
+			.ulp_mode = ADC_ULP_MODE_DISABLE
+	};
+	ESP_ERROR_CHECK(adc_oneshot_new_unit(&config, &hndl));
+
+	adc_unit_t unit;
+	adc_channel_t chan;
+	adc_oneshot_io_to_channel(PIN_BATT, &unit, &chan);
+
+	adc_oneshot_chan_cfg_t cfg = {
+			.atten = ADC_ATTEN_DB_11,
+			.bitwidth = ADC_BITWIDTH_12
+	};
+	adc_oneshot_config_channel(hndl, chan, &cfg);
 
 	for(int i = 0; i < numReadings; i++){
-		reading += adc1_get_raw(ADC1_CHANNEL_1);
+		int val;
+		adc_oneshot_read(hndl, chan, &val);
+		reading += val;
 		vTaskDelay(readDelay / portTICK_PERIOD_MS);
 	}
 	reading /= numReadings;
@@ -235,15 +251,24 @@ bool JigHWTest::BatteryCalib(){
 
 
 bool JigHWTest::BatteryCheck(){
-	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC1_CHANNEL_1, ADC_ATTEN_DB_6);
+	adc_unit_t unit;
+	adc_channel_t chan;
+	adc_oneshot_io_to_channel(PIN_BATT, &unit, &chan);
+
+	adc_oneshot_chan_cfg_t cfg = {
+			.atten = ADC_ATTEN_DB_11,
+			.bitwidth = ADC_BITWIDTH_12
+	};
+	adc_oneshot_config_channel(hndl, chan, &cfg);
 
 	constexpr uint16_t numReadings = 50;
 	constexpr uint16_t readDelay = 10;
 	uint32_t reading = 0;
 
 	for(int i = 0; i < numReadings; i++){
-		reading += adc1_get_raw(ADC1_CHANNEL_1);
+		int val;
+		adc_oneshot_read(hndl, chan, &val);
+		reading += val;
 		vTaskDelay(readDelay / portTICK_PERIOD_MS);
 	}
 	reading /= numReadings;

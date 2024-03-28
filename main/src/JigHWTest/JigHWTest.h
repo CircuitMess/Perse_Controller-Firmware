@@ -37,6 +37,8 @@ private:
 	std::vector<Test> tests;
 	const char* currentTest;
 
+	static adc_oneshot_unit_handle_t hndl;
+
 	void log(const char* property, const char* value);
 	void log(const char* property, float value);
 	void log(const char* property, double value);
