@@ -802,8 +802,6 @@ void DriveScreen::sendCurrentStates(){
 	}else{
 		comm.sendFeedQuality(15);
 	}
-
-	comm.sendArmEnabled(armEnabled);
 }
 
 void DriveScreen::startHoldingPanic(){
