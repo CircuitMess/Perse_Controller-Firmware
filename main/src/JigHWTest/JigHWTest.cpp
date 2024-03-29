@@ -4,7 +4,6 @@
 #include <esp_efuse.h>
 #include <iostream>
 #include <esp_mac.h>
-#include <driver/adc.h>
 #include <driver/ledc.h>
 
 #ifdef CTRL_TYPE_BASIC
@@ -320,13 +319,12 @@ bool JigHWTest::ButtonCheck(){
 			auto data = (Input::Data*) evt.data;
 
 			if(data->action == Input::Data::Press){
-				test->log("Button Pressed", (uint32_t) data->btn);
-
+				test->log("Button Pressed", Input::PinLabels.at(data->btn));
 				buttonPresses[data->btn] = true;
 
 				gpio_set_level((gpio_num_t) LED_PAIR, 1);
-
-				delayMillis(500);
+			}else if(data->action == Input::Data::Release){
+				test->log("Button Released", Input::PinLabels.at(data->btn));
 
 				gpio_set_level((gpio_num_t) LED_PAIR, 0);
 			}
@@ -354,6 +352,8 @@ bool JigHWTest::ButtonCheck(){
 			gpio_set_level((gpio_num_t) LED_WARN, 1);
 		}
 	}
+
+	Events::unlisten(&queue);
 
 	return true;
 }
