@@ -15,6 +15,7 @@
 #include "Util/Services.h"
 #include "Pins.hpp"
 #include "Util/stdafx.h"
+#include "JigHWTest/JigHWTest.h"
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 
@@ -48,6 +49,13 @@
 }
 
 void init(){
+	if(JigHWTest::checkJig()){
+		printf("Jig\n");
+		auto test = new JigHWTest();
+		test->start();
+		vTaskDelete(nullptr);
+	}
+
 	auto adc = new ADC(ADC_UNIT_1);
 
 	auto battery = new Battery(*adc);
