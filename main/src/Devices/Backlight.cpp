@@ -63,7 +63,7 @@ void Backlight::fadeOut(){
 	for(int i = 100; i >= 0; i--){
 		uint8_t val = map((double) i, 0, 100, 0, mapped);
 		pwm.setDuty(val);
-		vTaskDelay(FadeDelay / portTICK_PERIOD_MS);
+		delayMillis(FadeDelay);
 	}
 
 	pwm.detach();
