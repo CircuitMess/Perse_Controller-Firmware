@@ -131,6 +131,9 @@ void DriveState::changeMode(DriveState::ControlMode nextMode){
 		default:
 			break;
 	}
+
+	comm.sendDriveDir({ 0, 0 });
+	armMovement = false;
 }
 
 
