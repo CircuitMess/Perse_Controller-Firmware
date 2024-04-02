@@ -30,7 +30,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 	lastFrame.resize(160 * 120, 0);
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
-		led->on(LED::Pair);
+		led->breathe(LED::Pair);
 		led->on(LED::CamCenter);
 	}
 
