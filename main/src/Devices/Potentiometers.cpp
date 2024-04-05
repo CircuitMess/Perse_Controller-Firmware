@@ -55,7 +55,7 @@ void Potentiometers::sleepyLoop(){
 		adcPair.second.sample();
 		const float percentValue = adcPair.second.getValue();
 
-		if(!adcValues.contains(adcPair.first) || std::abs(adcValues[adcPair.first] - percentValue) >= Step){
+		if(!adcValues.contains(adcPair.first) || std::abs(adcValues[adcPair.first] - percentValue) >= Step || ((percentValue <= 0.0f || percentValue >= 100.0f) && adcValues[adcPair.first] != percentValue)){
 			adcValues[adcPair.first] = percentValue;
 
 			Data data{

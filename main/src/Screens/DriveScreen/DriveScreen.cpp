@@ -112,6 +112,9 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	muteIcon.setPos(-getWidth(), -getHeight());
 
+	qualityLine.setPos(-getWidth(), -getHeight());
+	qualityBar.setPos(-getWidth(), -getHeight());
+
 	startTime = millis();
 
 	Events::listen(Facility::TCP, &dcEvts);
@@ -315,6 +318,11 @@ void DriveScreen::onLoop(){
 			scanningLabel.setText("");
 		}
 	}
+
+	if(lastFeedQualityUpdate >= 0 && millis() - lastFeedQualityUpdate >= 1000){
+		buildUI();
+		lastFeedQualityUpdate = -1;
+	}
 }
 
 void DriveScreen::setCamPosValue(uint8_t pos){
@@ -490,6 +498,9 @@ void DriveScreen::buildUI(){
 	rvrElement.setPos(0, getHeight());
 	rssiElement.setPos(getWidth() / 2, getHeight());
 	ctrlElement.setPos(getWidth(), getHeight());
+
+	qualityBar.setPos(-getWidth(), -getHeight());
+	qualityLine.setPos(-getWidth(), -getHeight());
 }
 
 void DriveScreen::setupControl(){
@@ -710,6 +721,22 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 	const uint8_t quality = map(value, 0, 100, 1, 30);
 
 	comm.sendFeedQuality(quality);
+
+	if(panicHoldStart == 0 && !roverState.getNoFeed()){
+		lastFeedQualityUpdate = millis();
+
+		qualityBar.setPos(6, 52);
+
+		const float percent = value / 100.0f;
+		qualityLine.setPos(6 + (qualityBar.getWidth() - 2) * (1.0f - percent), 50);
+
+		arrowUp.setPos(-getWidth(), -getHeight());
+		arrowDown.setPos(-getWidth(), -getHeight());
+		arrowLeft.setPos(-getWidth(), -getHeight());
+		arrowRight.setPos(-getWidth(), -getHeight());
+		leftMotorSpeedLabel.setPos(-getWidth(), -getHeight());
+		rightMotorSpeedLabel.setPos(-getWidth(), -getHeight());
+	}
 }
 
 void DriveScreen::createModule(ModuleBus bus, ModuleType type){

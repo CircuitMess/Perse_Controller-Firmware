@@ -28,7 +28,7 @@ private:
 	static constexpr uint64_t SleepTime = 15; // [ms]
 	static const std::map<Potentiometer, gpio_num_t> PinMappings;
 	static const std::map<Potentiometer, glm::vec<2, int>> LimitMappings;
-	static constexpr float Step = 100.0f / 31.0f;
+	static constexpr float Step = 100.0f / 50.0f;
 	std::map<Potentiometer, ADCReader> adcReaders;
 	std::map<Potentiometer, float> adcValues;
 };

@@ -73,6 +73,8 @@ private:
 
 	bool audio = true;
 
+	int64_t lastFeedQualityUpdate = -1;
+
 	ImageElement* connectedSign = new ImageElement(this, "/spiffs/drive/connected.raw", 103, 51);
 
 	ImageElement arrowUp = ImageElement(this, "/spiffs/drive/arrow-up.raw", 13, 8);
@@ -124,6 +126,9 @@ private:
 	ImageElement shutdownIcon = ImageElement(this, IconPath, 91, 48);
 
 	ImageElement muteIcon = ImageElement(this, "/spiffs/drive/mute.raw", 15, 15);
+
+	ImageElement qualityBar = ImageElement(this, "/spiffs/drive/quality-bar.raw", 119, 15);
+	ImageElement qualityLine = ImageElement(this, "/spiffs/drive/quality-line.raw", 3, 11);
 
 private:
 	void sendDriveDir();
