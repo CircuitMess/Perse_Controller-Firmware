@@ -11,7 +11,7 @@
 DriveState::DriveState() : comm(*((Comm*) Services.get(Service::Comm))), evts(12){
 
 	if(auto led = (LEDService*) Services.get(Service::LED)){
-		led->on(LED::Pair);
+		led->breathe(LED::Pair);
 		led->on(LED::Navigation);
 	}
 
@@ -131,6 +131,9 @@ void DriveState::changeMode(DriveState::ControlMode nextMode){
 		default:
 			break;
 	}
+
+	comm.sendDriveDir({ 0, 0 });
+	armMovement = false;
 }
 
 
