@@ -23,6 +23,7 @@ public:
 
 private:
 	inline static constexpr const uint8_t ConnectionAttempts = 3;
+	inline static constexpr const uint32_t AbortTimeout = 2000;
 
 	WiFiSTA& wifi;
 	TCPClient& tcp;
@@ -32,6 +33,7 @@ private:
 	EventQueue queue;
 
 	uint8_t attempted = 1;
+	int64_t connectStart = -1;
 
 	void processEvent(const WiFiSTA::Event& event);
 

@@ -202,7 +202,7 @@ esp_netif_t* WiFiSTA::createNetif(){
 }
 
 void WiFiSTA::connect(){
-	if(state != Disconnected) return;
+	if(state != Disconnected && state != ConnAbort) return;
 
 	state = Scanning;
 	const wifi_scan_config_t ScanConfig = {
@@ -240,6 +240,9 @@ int WiFiSTA::getConnectionRSSI() const{
 
 void WiFiSTA::disconnect(){
 	if(state == Disconnected) return;
+
+	cachedSSID = "";
+	attemptedCachedSSID = false;
 
 	switch(state){
 		case Connected:

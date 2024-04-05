@@ -30,19 +30,36 @@ PairService::State PairService::getState() const{
 }
 
 void PairService::loop(){
-	::Event event{};
-	if(!queue.get(event, portMAX_DELAY)) return;
+	for(::Event event{}; queue.get(event, 1); ){
+		if(event.data == nullptr){
+			return;
+		}
 
-	if(event.data == nullptr){
-		return;
+		if(event.facility == Facility::WiFiSTA){
+			auto& data = *((WiFiSTA::Event*) event.data);
+			processEvent(data);
+		}
+
+		free(event.data);
 	}
 
-	if(event.facility == Facility::WiFiSTA){
-		auto& data = *((WiFiSTA::Event*) event.data);
-		processEvent(data);
-	}
+	if(wifi.getState() == WiFiSTA::State::Connecting){
+		if(connectStart < 0){
+			connectStart = millis();
+		}
 
-	free(event.data);
+		if(millis() - connectStart >= AbortTimeout){
+			wifi.disconnect();
+
+			if(tcp.isConnected()){
+				tcp.disconnect();
+			}
+
+			wifi.connect();
+		}
+	}else{
+		connectStart = -1;
+	}
 }
 
 void PairService::processEvent(const WiFiSTA::Event& event){
