@@ -22,12 +22,16 @@ public:
 	};
 
 private:
+	inline static constexpr const uint8_t ConnectionAttempts = 3;
+
 	WiFiSTA& wifi;
 	TCPClient& tcp;
 
 	State state = State::Pairing;
 	ThreadedClosure thread;
 	EventQueue queue;
+
+	uint8_t attempted = 1;
 
 	void processEvent(const WiFiSTA::Event& event);
 

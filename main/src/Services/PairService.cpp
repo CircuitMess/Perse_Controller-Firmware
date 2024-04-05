@@ -63,6 +63,12 @@ void PairService::processEvent(const WiFiSTA::Event& event){
 		}
 		state = res ? State::Success : State::Fail;
 	}else{
+		if(attempted < ConnectionAttempts){
+			++attempted;
+			wifi.connect();
+			return;
+		}
+
 		state = State::Fail;
 	}
 
