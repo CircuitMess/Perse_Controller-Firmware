@@ -142,35 +142,10 @@ void init(){
 #endif
 
 	battery->setShutdownCallback([](){
-		if(TCPClient* tcp = (TCPClient*) Services.get(Service::TCP)){
-			tcp->disconnect();
-		}
-
-		if(WiFiSTA* wifi = (WiFiSTA*) Services.get(Service::WiFi)){
-			wifi->disconnect();
-			while(wifi->getState() != WiFiSTA::Disconnected){
-				delayMillis(1);
-			}
-		}
 
 	#ifdef CTRL_TYPE_MISSIONCTRL
-		if(UIThread* uiThread = (UIThread*) Services.get(Service::UI)){
-			uiThread->stop();
-		}
-
 		if(Backlight* bl = (Backlight*) Services.get(Service::Backlight)){
 			bl->fadeOut();
-		}
-
-	#elifdef CTRL_TYPE_BASIC
-		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattery)){
-			Services.set(Service::LowBattery, nullptr);
-			delete lowBatteryService;
-		}
-
-		if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
-			Services.set(Service::StateMachine, nullptr);
-			delete stateMachine;
 		}
 	#endif
 
