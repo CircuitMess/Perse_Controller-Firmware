@@ -16,7 +16,7 @@ Potentiometers::Potentiometers(ADC& adc) : SleepyThreaded(SleepTime, "Potentiome
 			continue;
 		}
 
-		ADCReader adcReader(adc, mapping.second, 0.05, LimitMappings.at(mapping.first).x, LimitMappings.at(mapping.first).y, 0);
+		ADCReader adcReader(adc, mapping.second, 0.8, LimitMappings.at(mapping.first).x, LimitMappings.at(mapping.first).y, 0);
 
 		adc_unit_t unit;
 		adc_channel_t chan;
