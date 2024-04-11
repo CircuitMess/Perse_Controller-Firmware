@@ -721,7 +721,7 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 
 	comm.sendFeedQuality(quality);
 
-	if(panicHoldStart == 0 && !roverState.getNoFeed()){
+	if(panicHoldStart == 0 && !roverState.getNoFeed() && (shutdownIcon.getX() <= -shutdownIcon.getWidth() || shutdownIcon.getY() <= -shutdownIcon.getHeight())){
 		lastFeedQualityUpdate = millis();
 
 		qualityBar.setPos(6, 52);
@@ -848,6 +848,8 @@ void DriveScreen::startHoldingPanic(){
 	arrowRight.setPos(-getWidth(), -getHeight());
 	leftMotorSpeedLabel.setPos(-getWidth(), -getHeight());
 	rightMotorSpeedLabel.setPos(-getWidth(), -getHeight());
+	qualityBar.setPos(-getWidth(), -getHeight());
+	qualityLine.setPos(-getWidth(), -getHeight());
 }
 
 void DriveScreen::stopHoldingPanic(){
