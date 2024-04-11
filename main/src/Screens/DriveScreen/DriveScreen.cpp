@@ -19,7 +19,7 @@
 #include "Modules/UnkownModule.h"
 
 DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Services.get(Service::Comm))), joy(*((Joystick*) Services.get(Service::Joystick))),
-										   dcEvts(6), evts(12), roverState(*(RoverState*) Services.get(Service::RoverState)){
+										   dcEvts(6), evts(32), roverState(*(RoverState*) Services.get(Service::RoverState)){
 	if(const TCPClient* tcp = (TCPClient*) Services.get(Service::TCP)){
 		if(!tcp->isConnected()){
 			transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas, true); });
@@ -527,28 +527,27 @@ void DriveScreen::setupControl(){
 }
 
 void DriveScreen::checkEvents(){
-	Event evt{};
-	if(!evts.get(evt, 0)) return;
+	for(Event evt{}; evts.get(evt, 0); ){
+		if(evt.data == nullptr){
+			return;
+		}
 
-	if(evt.data == nullptr){
-		return;
+		if(evt.facility == Facility::Input){
+			auto data = (Input::Data*) evt.data;
+			processInput(*data);
+		}else if(evt.facility == Facility::Encoders){
+			auto data = (Encoders::Data*) evt.data;
+			processEncoders(*data);
+		}else if(evt.facility == Facility::RoverState){
+			auto data = (RoverState::Event*) evt.data;
+			processRoverState(*data);
+		}else if(evt.facility == Facility::Potentiometers){
+			auto data = (Potentiometers::Data*) evt.data;
+			processPotentiometers(*data);
+		}
+
+		free(evt.data);
 	}
-
-	if(evt.facility == Facility::Input){
-		auto data = (Input::Data*) evt.data;
-		processInput(*data);
-	}else if(evt.facility == Facility::Encoders){
-		auto data = (Encoders::Data*) evt.data;
-		processEncoders(*data);
-	}else if(evt.facility == Facility::RoverState){
-		auto data = (RoverState::Event*) evt.data;
-		processRoverState(*data);
-	}else if(evt.facility == Facility::Potentiometers){
-		auto data = (Potentiometers::Data*) evt.data;
-		processPotentiometers(*data);
-	}
-
-	free(evt.data);
 }
 
 void DriveScreen::processInput(const Input::Data& evt){
@@ -689,11 +688,11 @@ void DriveScreen::processRoverState(const RoverState::Event& evt){
     }
 
     if(evt.type == RoverState::StateType::ArmPos){
-        armPos = evt.armPos;
+        armPos = roverState.getArmPositionState();
     }else if(evt.type == RoverState::StateType::ArmPinch){
-        pinchPos = evt.armPinch;
+        pinchPos = roverState.getArmPinchState();
     }else if(evt.type == RoverState::StateType::CameraRotation){
-        setCamPosValue(evt.cameraRotation);
+        setCamPosValue(roverState.getCameraRotationState());
     }
 }
 
