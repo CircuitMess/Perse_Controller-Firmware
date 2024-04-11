@@ -103,7 +103,10 @@ void Battery::sample(bool fresh/* = false*/) {
 #ifdef CTRL_TYPE_MISSIONCTRL
         delayMillis(BattPopupTime); //wait for BattPopup to show
 #endif
-		stop(0);
+		if(running()){
+			setPriority(10);
+			stop(0);
+		}
 		shutdown = true;
 		if(!shutdownCallback) return;
 		shutdownCallback();

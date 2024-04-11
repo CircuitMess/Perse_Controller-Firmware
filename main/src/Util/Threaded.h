@@ -16,6 +16,8 @@ public:
 
 	bool running();
 
+	void setPriority(uint8_t newPriority);
+
 protected:
 	Threaded(const char* name, size_t stackSize = 12000, uint8_t priority = 5, int8_t core = -1);
 

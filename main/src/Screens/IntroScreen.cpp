@@ -4,6 +4,8 @@
 #include "Util/stdafx.h"
 #include "Util/Services.h"
 #include "Screens/Pair/PairScreen.h"
+#include "Devices/Battery.h"
+#include "Screens/Pair/ShutdownScreen.h"
 
 const std::vector<std::tuple<std::string, uint16_t, uint16_t>> IntroScreen::imageInfos = {
 		{ "/spiffs/intro/logo-cm.raw",    91,  91 },
@@ -50,6 +52,11 @@ void IntroScreen::onLoop() {
 	}
 
 	if (!movingImages.empty() && movingImages.back() != nullptr && movingImages.back()->getY() <= (getHeight() - movingImages.back()->getHeight()) / 2) {
+		Battery* battery = (Battery*) Services.get(Service::Battery);
+		if(battery->getLevel() == Battery::Critical){
+			transition([](Sprite& canvas){ return std::make_unique<ShutdownScreen>(canvas); });
+			return;
+		}
 		transition([](Sprite& canvas){ return std::make_unique<PairScreen>(canvas); });
 		return;
 	}
