@@ -13,7 +13,7 @@ const std::unordered_map<ModuleType, const char*> moduleNames = {
 		{ ModuleType::Unknown,  "ERR" }
 };
 
-ModuleElement::ModuleElement(ElementContainer* parent, ModuleBus bus, ModuleType type) : Element(parent), bus(bus), type(type),
+ModuleElement::ModuleElement(ElementContainer* parent, ModuleBus bus, ModuleType type) : Element(parent, 1), bus(bus), type(type),
 																						 datum((bus == ModuleBus::Left) ? middle_left : middle_right),
 																						 nameLabel(this, ""), queue(4){
 	Events::listen(Facility::Comm, &queue);

@@ -3,8 +3,8 @@
 
 static const char* TAG = "ImageElement";
 
-ImageElement::ImageElement(ElementContainer* parent, const char* path, uint16_t width, uint16_t height) :
-		Element(parent), width(width), height(height){
+ImageElement::ImageElement(ElementContainer* parent, const char* path, uint16_t width, uint16_t height, uint8_t layer) :
+		Element(parent, layer), width(width), height(height){
 	file = fopen(path, "r");
 	if(file == nullptr){
 		ESP_LOGE(TAG, "Couldn't open file %s", path);

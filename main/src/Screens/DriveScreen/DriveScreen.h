@@ -104,10 +104,10 @@ private:
 	uint64_t lastMarkerVisualizationTime = 0;
 	std::vector<std::pair<int16_t, int16_t>> markerVisualizationData;
 
-	ImageElement panicText = ImageElement(this, "/spiffs/drive/panicText.raw", 74, 13);
-	AnimElement panicBar = AnimElement(this, "/spiffs/drive/panicBar.gif");
-	LabelElement panicDescription1 = LabelElement(this, "Press EMERGENCY");
-	LabelElement panicDescription2 = LabelElement(this, "to resume operation");
+	ImageElement panicText = ImageElement(this, "/spiffs/drive/panicText.raw", 74, 13, 10);
+	AnimElement panicBar = AnimElement(this, "/spiffs/drive/panicBar.gif", 10);
+	LabelElement panicDescription1 = LabelElement(this, "Press EMERGENCY", 10);
+	LabelElement panicDescription2 = LabelElement(this, "to resume operation", 10);
 	static constexpr uint32_t PanicTextBlinkDuration = 500; //[ms]
 	bool panicTextBlink = true;
 	uint32_t panicTextMillis = 0;

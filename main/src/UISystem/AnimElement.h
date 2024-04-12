@@ -6,7 +6,7 @@
 
 class AnimElement : public Element {
 public:
-	AnimElement(ElementContainer* parent, const char* path);
+	AnimElement(ElementContainer* parent, const char* path, uint8_t layer = 0);
 	void setPath(const char* path);
 	void setLoopMode(GIF::LoopMode loopMode);
 

@@ -1,12 +1,19 @@
 #include "Element.h"
 #include "ElementContainer.h"
 
-Element::Element(ElementContainer* parent) : parent(parent){
+Element::Element(ElementContainer* parent, uint8_t layer) : parent(parent), layer(layer){
 	if(parent == nullptr){
 		return;
 	}
 
-	parent->elements.push_back(this);
+	auto it = parent->elements.begin();
+	for(; it != parent->elements.end(); it++){
+		if(*it != nullptr && (*it)->layer >= layer){
+			break;
+		}
+	}
+
+	parent->elements.insert(it, this);
 }
 
 Element::~Element(){

@@ -6,7 +6,7 @@
 
 class ImageElement : public Element {
 public:
-	ImageElement(ElementContainer* parent, const char* path, uint16_t width, uint16_t height);
+	ImageElement(ElementContainer* parent, const char* path, uint16_t width, uint16_t height, uint8_t layer = 0);
 	~ImageElement() override;
 
 	void setPath(const char* path);
