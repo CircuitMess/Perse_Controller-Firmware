@@ -114,6 +114,7 @@ DriveScreen::DriveScreen(Sprite& canvas) : Screen(canvas), comm(*((Comm*) Servic
 
 	qualityLine.setPos(-getWidth(), -getHeight());
 	qualityBar.setPos(-getWidth(), -getHeight());
+	qualityText.setPos(-getWidth(), -getHeight());
 
 	startTime = millis();
 
@@ -501,6 +502,7 @@ void DriveScreen::buildUI(){
 
 	qualityBar.setPos(-getWidth(), -getHeight());
 	qualityLine.setPos(-getWidth(), -getHeight());
+	qualityText.setPos(-getWidth(), -getHeight());
 }
 
 void DriveScreen::setupControl(){
@@ -726,8 +728,10 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 
 		qualityBar.setPos(6, 52);
 
+		qualityText.setPos((getWidth() - qualityText.getWidth()) / 2, 36);
+
 		const float percent = value / 100.0f;
-		qualityLine.setPos(6 + (qualityBar.getWidth() - 2) * (1.0f - percent), 50);
+		qualityLine.setPos(6 + (qualityBar.getWidth() - 4) * (1.0f - percent), 50);
 
 		arrowUp.setPos(-getWidth(), -getHeight());
 		arrowDown.setPos(-getWidth(), -getHeight());
@@ -735,6 +739,14 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 		arrowRight.setPos(-getWidth(), -getHeight());
 		leftMotorSpeedLabel.setPos(-getWidth(), -getHeight());
 		rightMotorSpeedLabel.setPos(-getWidth(), -getHeight());
+
+		if(leftModule){
+			leftModule->setPos(-getWidth(), -getHeight());
+		}
+
+		if(rightModule){
+			rightModule->setPos(-getWidth(), -getHeight());
+		}
 	}
 }
 
@@ -850,6 +862,7 @@ void DriveScreen::startHoldingPanic(){
 	rightMotorSpeedLabel.setPos(-getWidth(), -getHeight());
 	qualityBar.setPos(-getWidth(), -getHeight());
 	qualityLine.setPos(-getWidth(), -getHeight());
+	qualityText.setPos(-getWidth(), -getHeight());
 }
 
 void DriveScreen::stopHoldingPanic(){

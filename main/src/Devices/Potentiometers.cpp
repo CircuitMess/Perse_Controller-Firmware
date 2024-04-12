@@ -7,7 +7,7 @@ const std::map<Potentiometers::Potentiometer, gpio_num_t> Potentiometers::PinMap
 };
 
 const std::map<Potentiometers::Potentiometer, glm::vec<2, int>> Potentiometers::LimitMappings = {
-		{ FeedQuality, { 0, 4096 }}
+		{ FeedQuality, { 50, 4000 }}
 };
 
 Potentiometers::Potentiometers(ADC& adc) : SleepyThreaded(SleepTime, "Potentiometers", 2 * 1024){

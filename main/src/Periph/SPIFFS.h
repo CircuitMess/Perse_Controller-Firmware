@@ -10,7 +10,7 @@ public:
 	virtual ~SPIFFS();
 
 private:
-	static constexpr size_t MaxFileNumber = 16;
+	static constexpr size_t MaxFileNumber = 18;
 	static constexpr char* BasePath = "/spiffs";
 	static constexpr char* PartitionLabel = "storage";
 };
