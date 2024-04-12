@@ -17,6 +17,7 @@ public:
 	float getX() const;
 	float getY() const;
 	glm::vec2 getPos() const;
+	glm::vec2 readAndGetPos();
 
 	void startRangeCalib();
 	void stopRangeCalib();

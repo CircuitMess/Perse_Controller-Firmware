@@ -12,6 +12,7 @@
 #include "Services/RoverState.h"
 #include "Services/LEDService.h"
 #include "Services/Settings.h"
+#include "Services/InactivityService.h"
 #include "Util/Services.h"
 #include "Pins.hpp"
 #include "Util/stdafx.h"
@@ -36,6 +37,34 @@
 #include "Services/BatteryLowService.h"
 
 #endif
+
+void preShutdown(){
+#ifdef CTRL_TYPE_MISSIONCTRL
+	if(Backlight* bl = (Backlight*) Services.get(Service::Backlight)){
+		bl->fadeOut();
+	}
+#endif
+
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		for(int i = 0; i < (uint8_t) LED::COUNT; i++){
+			led->off((LED) i);
+		}
+	}
+
+	//delay to ensure queued LED off instructions are processed
+	delayMillis(1000);
+
+#ifdef CTRL_TYPE_BASIC
+	//necessary since LED_ARMPINCH (GPIO8) is internally pulled-up in deep sleep
+		gpio_config_t conf{
+				1 << LED_ARMPINCH, GPIO_MODE_OUTPUT, GPIO_PULLUP_DISABLE, GPIO_PULLDOWN_ENABLE, GPIO_INTR_DISABLE
+		};
+		gpio_config(&conf);
+		gpio_set_level((gpio_num_t) LED_ARMPINCH, 0);
+		gpio_hold_en((gpio_num_t) LED_ARMPINCH);
+		gpio_deep_sleep_hold_en();
+#endif
+}
 
 [[noreturn]] void shutdown(){
 #ifdef CTRL_TYPE_MISSIONCTRL
@@ -141,34 +170,10 @@ void init(){
 	Services.set(Service::LowBattery, lowBatteryService);
 #endif
 
+	auto inactivityService = new InactivityService();
+
 	battery->setShutdownCallback([](){
-
-	#ifdef CTRL_TYPE_MISSIONCTRL
-		if(Backlight* bl = (Backlight*) Services.get(Service::Backlight)){
-			bl->fadeOut();
-		}
-	#endif
-
-		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
-			for(int i = 0; i < (uint8_t) LED::COUNT; i++){
-				led->off((LED) i);
-			}
-		}
-
-		//delay to ensure queued LED off instructions are processed
-		delayMillis(1000);
-
-	#ifdef CTRL_TYPE_BASIC
-		//necessary since LED_ARMPINCH (GPIO8) is internally pulled-up in deep sleep
-		gpio_config_t conf{
-				1 << LED_ARMPINCH, GPIO_MODE_OUTPUT, GPIO_PULLUP_DISABLE, GPIO_PULLDOWN_ENABLE, GPIO_INTR_DISABLE
-		};
-		gpio_config(&conf);
-		gpio_set_level((gpio_num_t) LED_ARMPINCH, 0);
-		gpio_hold_en((gpio_num_t) LED_ARMPINCH);
-		gpio_deep_sleep_hold_en();
-	#endif
-
+		preShutdown();
 		shutdown();
 	});
 
