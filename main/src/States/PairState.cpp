@@ -7,10 +7,24 @@ PairState::PairState(bool connectionError) : State(), evts(10){
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Pair, &evts);
 
-	if(!connectionError) return;
-	if(auto* led = (LEDService*) Services.get(Service::LED)){
-		led->off(LED::Pair);
+	auto* led = (LEDService*) Services.get(Service::LED);
+	if(led == nullptr){
+		return;
 	}
+
+	if(!connectionError) {
+		led->blink(LED::Warning, 1, 3000);
+		vTaskDelay(200);
+		led->blink(LED::Navigation, 1, 2600);
+		vTaskDelay(200);
+		led->blink(LED::ArmPinch, 1, 2200);
+		vTaskDelay(200);
+		led->blink(LED::SoundLight, 1, 1800);
+
+		return;
+	}
+
+	led->off(LED::Pair);
 }
 
 PairState::~PairState(){
