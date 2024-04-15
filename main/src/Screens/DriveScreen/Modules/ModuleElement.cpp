@@ -55,3 +55,7 @@ void ModuleElement::loop(){
 	free(data);
 }
 
+ModuleType ModuleElement::getType() const{
+	return type;
+}
+
