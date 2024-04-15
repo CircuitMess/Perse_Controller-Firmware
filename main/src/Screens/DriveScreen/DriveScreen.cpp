@@ -442,11 +442,11 @@ void DriveScreen::buildUI(){
 	busB.setPos(getWidth() - 2, 2);
 	busAStatus.setPos(2, 13);
 	busBStatus.setPos(getWidth() - 2, 13);
-	if(roverState.getLeftModuleInsert()){
+	if(roverState.getLeftModuleInsert() && (!leftModule || leftModule->getType() != roverState.getLeftModuleType())){
 		createModule(ModuleBus::Left, roverState.getLeftModuleType());
 	}
 
-	if(roverState.getRightModuleInsert()){
+	if(roverState.getRightModuleInsert() && (!rightModule || rightModule->getType() != roverState.getRightModuleType())){
 		createModule(ModuleBus::Right, roverState.getRightModuleType());
 	}
 

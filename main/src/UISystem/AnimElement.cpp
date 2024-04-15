@@ -4,7 +4,7 @@
 
 static const char* TAG = "AnimElement";
 
-AnimElement::AnimElement(ElementContainer* parent, const char* path) : Element(parent), gif(std::make_unique<GIFSprite>(fopen(path, "r"))){
+AnimElement::AnimElement(ElementContainer* parent, const char* path, uint8_t layer) : Element(parent, layer), gif(std::make_unique<GIFSprite>(fopen(path, "r"))){
 
 	lastMicros = micros();
 }

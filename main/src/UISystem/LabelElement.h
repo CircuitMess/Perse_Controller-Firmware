@@ -18,7 +18,7 @@ struct TextStyle {
 
 class LabelElement : public Element {
 public:
-	LabelElement(ElementContainer* parent, std::string text);
+	LabelElement(ElementContainer* parent, std::string text, uint8_t layer = 0);
 	~LabelElement() override = default;
 
 	void setText(const std::string& text);
