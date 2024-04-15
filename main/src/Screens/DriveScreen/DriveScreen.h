@@ -129,7 +129,7 @@ private:
 	ImageElement muteIcon = ImageElement(this, "/spiffs/drive/mute.raw", 15, 15);
 
 	ImageElement qualityBar = ImageElement(this, "/spiffs/drive/quality-bar.raw", 119, 15);
-	ImageElement qualityLine = ImageElement(this, "/spiffs/drive/quality-line.raw", 3, 11);
+	ImageElement qualityLine = ImageElement(this, "/spiffs/drive/quality-line.raw", 3, 11, 1);
 	ImageElement qualityText = ImageElement(this, "/spiffs/drive/camera-feed-text.raw", 86, 13);
 
 private:

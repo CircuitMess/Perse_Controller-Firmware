@@ -321,7 +321,10 @@ void DriveScreen::onLoop(){
 	}
 
 	if(lastFeedQualityUpdate >= 0 && millis() - lastFeedQualityUpdate >= 1000){
-		buildUI();
+		if(panicHoldStart == 0){
+			buildUI();
+		}
+
 		lastFeedQualityUpdate = -1;
 	}
 }
@@ -451,6 +454,15 @@ void DriveScreen::buildUI(){
 	busB.setPos(getWidth() - 2, 2);
 	busAStatus.setPos(2, 13);
 	busBStatus.setPos(getWidth() - 2, 13);
+
+	if(leftModule){
+		leftModule->setPos(2, 30);
+	}
+
+	if(rightModule){
+		rightModule->setPos(126, 30);
+	}
+
 	if(roverState.getLeftModuleInsert() && (!leftModule || leftModule->getType() != roverState.getLeftModuleType())){
 		createModule(ModuleBus::Left, roverState.getLeftModuleType());
 	}
@@ -849,6 +861,14 @@ void DriveScreen::startHoldingPanic(){
 	if(led != nullptr){
 		led->breathe(LED::PanicLeft, 2 * PanicHoldDuration);
 		led->breathe(LED::PanicRight, 2 * PanicHoldDuration);
+	}
+
+	if(leftModule){
+		leftModule->setPos(2, 30);
+	}
+
+	if(rightModule){
+		rightModule->setPos(126, 30);
 	}
 
 	panicBar.setPos(9, 54);
