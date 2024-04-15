@@ -18,6 +18,8 @@ struct {
 	{ "/spiffs/drive/mute.raw", 29427},
 	{ "/spiffs/drive/panicBar.gif", 48779},
 	{ "/spiffs/drive/panicText.raw", 86352},
+	{ "/spiffs/drive/quality-bar.raw", 132084},
+	{ "/spiffs/drive/quality-line.raw", 3726},
 	{ "/spiffs/drive/signal1.raw", 18462},
 	{ "/spiffs/drive/signal2.raw", 20822},
 	{ "/spiffs/drive/signal3.raw", 24952},

@@ -51,6 +51,7 @@ private:
 	uint64_t lastDirSend = 0;
 	uint64_t panicHoldStart = 0;
 	bool isInPanicMode = false;
+	bool isInShutdown = false;
 
 	uint64_t startTime;
 	bool holdDone = false;
@@ -72,6 +73,8 @@ private:
 	uint8_t camPos = 50;
 
 	bool audio = true;
+
+	int64_t lastFeedQualityUpdate = -1;
 
 	ImageElement* connectedSign = new ImageElement(this, "/spiffs/drive/connected.raw", 103, 51);
 
@@ -124,6 +127,10 @@ private:
 	ImageElement shutdownIcon = ImageElement(this, IconPath, 91, 48);
 
 	ImageElement muteIcon = ImageElement(this, "/spiffs/drive/mute.raw", 15, 15);
+
+	ImageElement qualityBar = ImageElement(this, "/spiffs/drive/quality-bar.raw", 119, 15);
+	ImageElement qualityLine = ImageElement(this, "/spiffs/drive/quality-line.raw", 3, 11, 1);
+	ImageElement qualityText = ImageElement(this, "/spiffs/drive/camera-feed-text.raw", 86, 13);
 
 private:
 	void sendDriveDir();

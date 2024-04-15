@@ -7,7 +7,7 @@ const std::map<Potentiometers::Potentiometer, gpio_num_t> Potentiometers::PinMap
 };
 
 const std::map<Potentiometers::Potentiometer, glm::vec<2, int>> Potentiometers::LimitMappings = {
-		{ FeedQuality, { 0, 4096 }}
+		{ FeedQuality, { 50, 4000 }}
 };
 
 Potentiometers::Potentiometers(ADC& adc) : SleepyThreaded(SleepTime, "Potentiometers", 2 * 1024){
@@ -16,7 +16,7 @@ Potentiometers::Potentiometers(ADC& adc) : SleepyThreaded(SleepTime, "Potentiome
 			continue;
 		}
 
-		ADCReader adcReader(adc, mapping.second, 0.05, LimitMappings.at(mapping.first).x, LimitMappings.at(mapping.first).y, 0);
+		ADCReader adcReader(adc, mapping.second, 0.8, LimitMappings.at(mapping.first).x, LimitMappings.at(mapping.first).y, 0);
 
 		adc_unit_t unit;
 		adc_channel_t chan;
@@ -55,7 +55,7 @@ void Potentiometers::sleepyLoop(){
 		adcPair.second.sample();
 		const float percentValue = adcPair.second.getValue();
 
-		if(!adcValues.contains(adcPair.first) || std::abs(adcValues[adcPair.first] - percentValue) >= Step){
+		if(!adcValues.contains(adcPair.first) || std::abs(adcValues[adcPair.first] - percentValue) >= Step || ((percentValue <= 0.0f || percentValue >= 100.0f) && adcValues[adcPair.first] != percentValue)){
 			adcValues[adcPair.first] = percentValue;
 
 			Data data{
