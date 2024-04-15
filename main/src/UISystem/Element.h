@@ -7,7 +7,7 @@ class ElementContainer;
 
 class Element {
 public:
-	explicit Element(ElementContainer* parent);
+	explicit Element(ElementContainer* parent, uint8_t layer = 0);
 	virtual ~Element();
 
 	virtual void draw(Sprite* canvas) = 0;
@@ -25,6 +25,7 @@ protected:
 
 private:
 	ElementContainer* parent;
+	uint8_t layer;
 };
 
 

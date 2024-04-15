@@ -150,3 +150,9 @@ void Joystick::calibLoop(){
 
 	delayMillis(10);
 }
+
+glm::vec2 Joystick::readAndGetPos(){
+	adcX.sample();
+	adcY.sample();
+	return getPos();
+}

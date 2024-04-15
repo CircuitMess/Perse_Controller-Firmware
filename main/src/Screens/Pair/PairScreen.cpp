@@ -9,10 +9,10 @@
 PairScreen::PairScreen(Sprite& canvas, bool disconnectOccurred) : Screen(canvas), evts(6), disconnectMessageActive(disconnectOccurred),
 																  frame(this, "/spiffs/pair/frame.raw", 122, 56),
 																  controllerRover(this, "/spiffs/pair/controller_rover.raw", 122, 41),
-																  signalAnim(this, "/spiffs/pair/signal.gif"),
-																  buttonAnim(this, "/spiffs/pair/button.gif"),
-																  error(this, "/spiffs/pair/error.raw", 40, 40),
-																  description(this, TextPaths[0], 70, 54){
+																  signalAnim(this, "/spiffs/pair/signal.gif", 1),
+																  buttonAnim(this, "/spiffs/pair/button.gif", 1),
+																  error(this, "/spiffs/pair/error.raw", 40, 40, 1),
+																  description(this, TextPaths[0], 70, 54, 1){
 
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Battery, &evts);

@@ -15,6 +15,8 @@ public:
 	void draw(Sprite* canvas) override;
 	void loop() override;
 
+	ModuleType getType() const;
+
 protected:
 	const ModuleBus bus;
 	const ModuleType type;

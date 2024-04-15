@@ -1,6 +1,6 @@
 #include "LabelElement.h"
 
-LabelElement::LabelElement(ElementContainer* parent, std::string text) : Element(parent), text(std::move(text)){}
+LabelElement::LabelElement(ElementContainer* parent, std::string text, uint8_t layer) : Element(parent, layer), text(std::move(text)){}
 
 void LabelElement::setText(const std::string& text){
 	this->text = text;
