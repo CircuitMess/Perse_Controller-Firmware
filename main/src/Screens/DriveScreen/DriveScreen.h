@@ -51,6 +51,7 @@ private:
 	uint64_t lastDirSend = 0;
 	uint64_t panicHoldStart = 0;
 	bool isInPanicMode = false;
+	bool isInShutdown = false;
 
 	uint64_t startTime;
 	bool holdDone = false;

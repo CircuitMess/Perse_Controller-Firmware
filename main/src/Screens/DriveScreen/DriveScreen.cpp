@@ -723,7 +723,7 @@ void DriveScreen::processPotentiometers(const Potentiometers::Data& evt){
 
 	comm.sendFeedQuality(quality);
 
-	if(panicHoldStart == 0 && !roverState.getNoFeed() && (shutdownIcon.getX() <= -shutdownIcon.getWidth() || shutdownIcon.getY() <= -shutdownIcon.getHeight())){
+	if(panicHoldStart == 0 && !roverState.getNoFeed() && (shutdownIcon.getX() <= -shutdownIcon.getWidth() || shutdownIcon.getY() <= -shutdownIcon.getHeight()) && !isInShutdown){
 		lastFeedQualityUpdate = millis();
 
 		qualityBar.setPos(6, 52);
@@ -926,6 +926,8 @@ void DriveScreen::stopPanic(){
 }
 
 void DriveScreen::shutdown(){
+	isInShutdown = true;
+
 	if(isInPanicMode){
 		stopPanic();
 	}
@@ -934,6 +936,9 @@ void DriveScreen::shutdown(){
 	arrowDown.setPos(-getWidth(), -getHeight());
 	arrowLeft.setPos(-getWidth(), -getHeight());
 	arrowRight.setPos(-getWidth(), -getHeight());
+	qualityBar.setPos(-getWidth(), -getHeight());
+	qualityLine.setPos(-getWidth(), -getHeight());
+	qualityText.setPos(-getWidth(), -getHeight());
 
 	shutdownIcon.setPos((int16_t) ((this->getWidth() - shutdownIcon.getWidth()) / 2.0),
 						(int16_t) ((this->getHeight() - shutdownIcon.getHeight()) / 2.0));
