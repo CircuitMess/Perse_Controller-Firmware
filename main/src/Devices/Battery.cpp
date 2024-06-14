@@ -7,11 +7,24 @@
 #include "Services/Comm.h"
 #include "Util/Services.h"
 
-#define MAX_READ 3787	// 4.5V
-#define MIN_READ 2873	// 3.6V
+#ifdef CTRL_TYPE_MISSIONCTRL
+#define MAX_READ 4600	// 4.6V
+#define MIN_READ 3600	// 3.6V
+#define FACTOR2 (-0.000215947f)
+#define FACTOR1 2.4594f
+#define FACTOR0 (-1742.26f)
+
+#elifdef CTRL_TYPE_BASIC
+#define MAX_READ 4200    // 4.2V
+#define MIN_READ 3600    // 3.6V
+#define FACTOR2 (-0.000163675f)
+#define FACTOR1  2.13009f
+#define FACTOR0 (-1678.34f)
+#endif
+
 
 Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1),
-					 adc(adc, (gpio_num_t)PIN_BATT, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
+					 adc(adc, (gpio_num_t)PIN_BATT, 0.05, MIN_READ, MAX_READ, (float) getVoltOffset() + FACTOR0, FACTOR1, FACTOR2),
 					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3) {
 
 	adc_unit_t unit;
@@ -47,7 +60,8 @@ int16_t Battery::getVoltOffset() {
 }
 
 uint16_t Battery::mapRawReading(uint16_t reading) {
-	return std::round(map((double)reading, MIN_READ, MAX_READ, 3600, 4500));
+	const float fval = reading;
+	return std::round(FACTOR0 + fval * FACTOR1 + std::pow(fval, 2.0f) * FACTOR2);
 }
 
 bool Battery::isShutdown() const {
