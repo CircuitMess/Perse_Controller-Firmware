@@ -119,7 +119,9 @@ void init(){
 	}
 	ESP_ERROR_CHECK(ret);
 
+#ifdef CTRL_TYPE_MISSIONCTRL
 	const auto spiffs = new SPIFFS();
+#endif
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
