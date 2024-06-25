@@ -49,6 +49,8 @@ private:
 
 	static bool BatteryCalib();
 	static bool BatteryCheck();
+	static bool HWVersion();
+
 #ifdef CTRL_TYPE_BASIC
 	static bool ButtonCheck();
 #elifdef CTRL_TYPE_MISSIONCTRL
