@@ -93,6 +93,7 @@ void init(){
 #ifdef CTRL_TYPE_MISSIONCTRL
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
+	aw9523->setCurrentLimit(AW9523::IMAX_1Q);
 #endif
 
 	if(battery->isShutdown()){

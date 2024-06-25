@@ -9,17 +9,18 @@
 static const char* TAG = "LEDService";
 
 const std::map<LED, LEDService::PwnMappingInfo> LEDService::PwmMappings = {
+#ifdef CTRL_TYPE_MISSIONCTRL
 		{ LED::Power, { (gpio_num_t) LED_POWER, LEDC_CHANNEL_1, 7 } },
 		{ LED::Pair, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_2, 20 } },
-#ifdef CTRL_TYPE_MISSIONCTRL
 		{ LED::PanicLeft,  { (gpio_num_t) LED_PANIC_L, LEDC_CHANNEL_3, 20 }},
 		{ LED::PanicRight, { (gpio_num_t) LED_PANIC_R, LEDC_CHANNEL_4, 20 }},
 #elifdef CTRL_TYPE_BASIC
-		{ LED::Warning, { (gpio_num_t) LED_WARN, LEDC_CHANNEL_3, 100 } },
-		{ LED::SoundLight, { (gpio_num_t) LED_SOUNDLIGHT, LEDC_CHANNEL_4, 100 } },
-		{ LED::ArmPinch, { (gpio_num_t) LED_ARMPINCH, LEDC_CHANNEL_5, 100 } },
-		{ LED::Navigation, { (gpio_num_t) LED_NAVIGATION, LEDC_CHANNEL_0, 100 } },
-
+		{ LED::Power, { (gpio_num_t) LED_POWER, LEDC_CHANNEL_1, 50 } },
+		{ LED::Pair, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_2, 70 } },
+		{ LED::Warning, { (gpio_num_t) LED_WARN, LEDC_CHANNEL_3, 70 } },
+		{ LED::SoundLight, { (gpio_num_t) LED_SOUNDLIGHT, LEDC_CHANNEL_4, 70 } },
+		{ LED::ArmPinch, { (gpio_num_t) LED_ARMPINCH, LEDC_CHANNEL_5, 70 } },
+		{ LED::Navigation, { (gpio_num_t) LED_NAVIGATION, LEDC_CHANNEL_0, 70 } },
 
 #endif
 };
