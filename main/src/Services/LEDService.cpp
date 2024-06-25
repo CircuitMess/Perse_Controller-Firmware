@@ -9,11 +9,11 @@
 static const char* TAG = "LEDService";
 
 const std::map<LED, LEDService::PwnMappingInfo> LEDService::PwmMappings = {
-		{ LED::Power, { (gpio_num_t) LED_POWER, LEDC_CHANNEL_1, 100 } },
-		{ LED::Pair, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_2, 100 } },
+		{ LED::Power, { (gpio_num_t) LED_POWER, LEDC_CHANNEL_1, 7 } },
+		{ LED::Pair, { (gpio_num_t) LED_PAIR, LEDC_CHANNEL_2, 20 } },
 #ifdef CTRL_TYPE_MISSIONCTRL
-		{ LED::PanicLeft,  { (gpio_num_t) LED_PANIC_L, LEDC_CHANNEL_3, 100 }},
-		{ LED::PanicRight, { (gpio_num_t) LED_PANIC_R, LEDC_CHANNEL_4, 100 }},
+		{ LED::PanicLeft,  { (gpio_num_t) LED_PANIC_L, LEDC_CHANNEL_3, 20 }},
+		{ LED::PanicRight, { (gpio_num_t) LED_PANIC_R, LEDC_CHANNEL_4, 20 }},
 #elifdef CTRL_TYPE_BASIC
 		{ LED::Warning, { (gpio_num_t) LED_WARN, LEDC_CHANNEL_3, 100 } },
 		{ LED::SoundLight, { (gpio_num_t) LED_SOUNDLIGHT, LEDC_CHANNEL_4, 100 } },
@@ -27,22 +27,22 @@ const std::map<LED, LEDService::PwnMappingInfo> LEDService::PwmMappings = {
 #ifdef CTRL_TYPE_MISSIONCTRL
 const std::map<LED, LEDService::ExpanderMappingInfo> LEDService::ExpanderMappings = {
 		//1 blok za svaki type
-		{ LED::CamL4,      { EXTLED_CAM_L4,      0x10 } },
-		{ LED::CamL3,      { EXTLED_CAM_L3,      0x10 } },
-		{ LED::CamL2,      { EXTLED_CAM_L2,      0x10 } },
-		{ LED::CamL1,      { EXTLED_CAM_L1,      0x10 } },
-		{ LED::CamCenter,  { EXTLED_CAM_0,       0x10 } },
-		{ LED::CamR1,      { EXTLED_CAM_R1,      0x10 } },
-		{ LED::CamR2,      { EXTLED_CAM_R2,      0x10 } },
-		{ LED::CamR3,      { EXTLED_CAM_R3,      0x10 } },
-		{ LED::CamR4,      { EXTLED_CAM_R4,      0x10 } },
-		{ LED::Warning,    { EXTLED_WARN,        0x10 } },
-		{ LED::Arm,        { EXTLED_ARM,         0x50 } },
-		{ LED::ArmUp,      { EXTLED_ARM_UP,      0x50 } },
-		{ LED::ArmDown,    { EXTLED_ARM_DOWN,    0x50 } },
-		{ LED::Light,      { EXTLED_LIGHT,       0x10 } },
-		{ LED::PinchOpen,  { EXTLED_PINCH_OPEN,  0x50 } },
-		{ LED::PinchClose, { EXTLED_PINCH_CLOSE, 0x50 } },
+		{ LED::CamL4,      { EXTLED_CAM_L4,      0x20 } },
+		{ LED::CamL3,      { EXTLED_CAM_L3,      0x20 } },
+		{ LED::CamL2,      { EXTLED_CAM_L2,      0x20 } },
+		{ LED::CamL1,      { EXTLED_CAM_L1,      0x20 } },
+		{ LED::CamCenter,  { EXTLED_CAM_0,       0x20 } },
+		{ LED::CamR1,      { EXTLED_CAM_R1,      0x20 } },
+		{ LED::CamR2,      { EXTLED_CAM_R2,      0x20 } },
+		{ LED::CamR3,      { EXTLED_CAM_R3,      0x20 } },
+		{ LED::CamR4,      { EXTLED_CAM_R4,      0x20 } },
+		{ LED::Warning,    { EXTLED_WARN,        0x20 } },
+		{ LED::Arm,        { EXTLED_ARM,         0x06 } },
+		{ LED::ArmUp,      { EXTLED_ARM_UP,      0x06 } },
+		{ LED::ArmDown,    { EXTLED_ARM_DOWN,    0x06 } },
+		{ LED::Light,      { EXTLED_LIGHT,       0x06 } },
+		{ LED::PinchOpen,  { EXTLED_PINCH_OPEN,  0x06 } },
+		{ LED::PinchClose, { EXTLED_PINCH_CLOSE, 0x06 } },
 };
 #endif
 
