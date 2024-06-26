@@ -8,8 +8,11 @@ class HWVersion {
 public:
 	static bool check();
 	static bool write();
+	static void log();
 
 private:
+	static inline uint16_t CachedVersion = 0;
+
 #ifdef CTRL_TYPE_MISSIONCTRL
 	static inline constexpr const uint16_t Version = 0x0001;
 #elifdef CTRL_TYPE_BASIC
