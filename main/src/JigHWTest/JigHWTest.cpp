@@ -5,6 +5,7 @@
 #include <iostream>
 #include <esp_mac.h>
 #include <driver/ledc.h>
+#include "Util/HWVersion.h"
 
 #ifdef CTRL_TYPE_BASIC
 #include <map>
@@ -40,6 +41,7 @@ JigHWTest::JigHWTest(){
 
 	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){} });
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
+	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){} });
 
 #ifdef CTRL_TYPE_BASIC
 	tests.push_back({ JigHWTest::ButtonCheck, "Button check", [](){} });
@@ -639,4 +641,8 @@ void JigHWTest::AudioVisualTest(){
 
 		vTaskDelay(500);
 	}
+}
+
+bool JigHWTest::HWVersion(){
+	return HWVersion::write() && HWVersion::check();
 }

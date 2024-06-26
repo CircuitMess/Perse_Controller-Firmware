@@ -17,6 +17,7 @@
 #include "Pins.hpp"
 #include "Util/stdafx.h"
 #include "JigHWTest/JigHWTest.h"
+#include "Util/HWVersion.h"
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 
@@ -83,6 +84,13 @@ void init(){
 		auto test = new JigHWTest();
 		test->start();
 		vTaskDelete(nullptr);
+	}
+
+	if(!HWVersion::check()){
+		while(true){
+			vTaskDelay(1000);
+			HWVersion::log();
+		}
 	}
 
 	auto adc = new ADC(ADC_UNIT_1);
