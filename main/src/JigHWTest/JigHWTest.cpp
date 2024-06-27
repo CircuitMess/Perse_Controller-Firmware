@@ -17,6 +17,7 @@
 
 JigHWTest* JigHWTest::test = nullptr;
 adc_oneshot_unit_handle_t JigHWTest::hndl = nullptr;
+int16_t JigHWTest::voltOffset = 0;
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 Display* JigHWTest::display = nullptr;
@@ -39,13 +40,14 @@ JigHWTest::JigHWTest(){
 	tests.push_back({ JigHWTest::AW9523Check, "AW9523", [](){} });
 #endif
 
-	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){} });
+	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){ esp_efuse_batch_write_cancel(); } });
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
-	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){} });
 
 #ifdef CTRL_TYPE_BASIC
 	tests.push_back({ JigHWTest::ButtonCheck, "Button check", [](){} });
 #endif
+
+	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){ esp_efuse_batch_write_cancel(); } });
 }
 
 bool JigHWTest::checkJig(){
@@ -81,6 +83,8 @@ void JigHWTest::start(){
 	uint64_t _chipmacid = 0LL;
 	esp_efuse_mac_get_default((uint8_t*) (&_chipmacid));
 	printf("\nTEST:begin:%llx\n", _chipmacid);
+
+	esp_efuse_batch_write_begin();
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 	gpio_config_t cfg = {
@@ -140,6 +144,8 @@ void JigHWTest::start(){
 		printf("TEST:fail:%s\n", currentTest);
 		vTaskDelete(nullptr);
 	}
+
+	esp_efuse_batch_write_commit();
 
 	printf("TEST:passall\n");
 
@@ -254,6 +260,8 @@ bool JigHWTest::BatteryCalib(){
 	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &offsetHigh, 8);
 	esp_efuse_batch_write_commit();
 
+	voltOffset = offset;
+
 	return true;
 }
 
@@ -290,11 +298,11 @@ bool JigHWTest::BatteryCheck(){
 	}
 	reading /= numReadings;
 
-	uint32_t voltage = Battery::mapRawReading(reading) + Battery::getVoltOffset();
+	uint32_t voltage = Battery::mapRawReading(reading) + voltOffset;
 	if(voltage < referenceVoltage - 100 || voltage > referenceVoltage + 100){
 		test->log("raw", reading);
 		test->log("mapped", (int32_t) Battery::mapRawReading(reading));
-		test->log("offset", (int32_t) Battery::getVoltOffset());
+		test->log("offset", (int32_t) voltOffset);
 		test->log("mapped+offset", voltage);
 		return false;
 	}
@@ -653,5 +661,18 @@ void JigHWTest::AudioVisualTest(){
 }
 
 bool JigHWTest::HWVersion(){
-	return HWVersion::write() && HWVersion::check();
+	uint16_t version = 1;
+	bool result = HWVersion::readVersion(version);
+
+	if(!result){
+		test->log("HW version", "couldn't read from efuse");
+		return false;
+	}
+
+	if(version != 0){
+		test->log("Existing HW version", (uint32_t) version);
+		return false;
+	}
+
+	return HWVersion::write();
 }

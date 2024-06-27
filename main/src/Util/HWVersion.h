@@ -10,6 +10,8 @@ public:
 	static bool write();
 	static void log();
 
+	static bool readVersion(uint16_t &version);
+
 private:
 	static inline uint16_t CachedVersion = 0;
 
@@ -23,4 +25,4 @@ private:
 	static constexpr const esp_efuse_desc_t* Efuse_ver[] = { &Ver, nullptr };
 };
 
-#endif //PERSE_ROVER_HWVERSION_H
+#endif //PERSE_MISSIONCTRL_HWVERSION_H
