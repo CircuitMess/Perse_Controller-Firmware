@@ -7,6 +7,7 @@
 #include <esp_efuse.h>
 #include <esp_spiffs.h>
 #include <Pins.hpp>
+#include <string>
 
 #ifdef CTRL_TYPE_MISSIONCTRL
 #include "Devices/Display.h"

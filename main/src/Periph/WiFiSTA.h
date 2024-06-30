@@ -8,6 +8,7 @@
 #include <CommData.h>
 #include "Util/Threaded.h"
 #include "Util/Hysteresis.h"
+#include <string>
 
 class WiFiSTA {
 public:

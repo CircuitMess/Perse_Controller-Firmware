@@ -22,8 +22,13 @@
 #define FACTOR0 (-1678.34f)
 #endif
 
+#ifdef CTRL_TYPE_MISSIONCTRL
+#define BATTERY_TASK_COREID 1
+#elifdef CTRL_TYPE_BASIC
+#define BATTERY_TASK_COREID 0
+#endif
 
-Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1),
+Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, BATTERY_TASK_COREID),
 					 adc(adc, (gpio_num_t)PIN_BATT, 0.05, MIN_READ, MAX_READ, (float) getVoltOffset() + FACTOR0, FACTOR1, FACTOR2),
 					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3) {
 
