@@ -208,6 +208,7 @@ bool JigHWTest::BatteryCalib(){
 	#ifdef CTRL_TYPE_MISSIONCTRL
 		canvas->print("fused. ");
 	#endif
+		voltOffset = Battery::getVoltOffset();
 		return true;
 	}
 
