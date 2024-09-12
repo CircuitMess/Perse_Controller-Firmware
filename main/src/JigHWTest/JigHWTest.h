@@ -63,7 +63,11 @@ private:
 
 	static void AudioVisualTest();
 
+#ifdef CTRL_TYPE_MISSIONCTRL
+	static const int16_t referenceVoltage = 3590; //3620mv - 30mV backlight offset
+#elifdef CTRL_TYPE_BASIC
 	static const int16_t referenceVoltage = 4050; // 50mV for backlight voltage drop compensation
+#endif
 	static int16_t voltOffset;
 
 	static constexpr uint32_t CheckTimeout = 500;
