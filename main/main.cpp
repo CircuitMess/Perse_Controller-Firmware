@@ -70,6 +70,15 @@ void preShutdown(){
 [[noreturn]] void shutdown(){
 #ifdef CTRL_TYPE_MISSIONCTRL
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
+
+	gpio_config_t conf{
+		1ULL << PIN_BL, GPIO_MODE_OUTPUT, GPIO_PULLUP_ENABLE, GPIO_PULLDOWN_DISABLE, GPIO_INTR_DISABLE
+	};
+	gpio_config(&conf);
+	gpio_set_level((gpio_num_t) PIN_BL, 1);
+	gpio_hold_en((gpio_num_t) PIN_BL);
+	gpio_deep_sleep_hold_en();
+
 #endif
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
