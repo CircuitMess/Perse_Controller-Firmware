@@ -68,6 +68,8 @@ private:
 #elifdef CTRL_TYPE_BASIC
 	static const int16_t referenceVoltage = 4050; // 50mV for backlight voltage drop compensation
 #endif
+	static constexpr int32_t RefVoltageTolerance = 500; // allowed +/- deviation from ReferenceVoltage
+
 	static int16_t voltOffset;
 
 	static constexpr uint32_t CheckTimeout = 500;
